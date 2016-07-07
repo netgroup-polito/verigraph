@@ -16,7 +16,6 @@ import it.polito.escape.verify.exception.InternalServerErrorException;
 import it.polito.escape.verify.model.Graph;
 import it.polito.escape.verify.model.Neighbour;
 import it.polito.escape.verify.model.Node;
-import it.polito.escape.verify.service.GraphService;
 
 public class DatabaseClass {
 	

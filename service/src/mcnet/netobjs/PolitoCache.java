@@ -49,7 +49,6 @@ public class PolitoCache extends NetworkObject{
 		DatatypeExpr politoCache;
 		Network net;
 		NetContext nctx;
-		FuncDecl isInBlacklist;
 		
 		public PolitoCache(Context ctx, Object[]... args) {
 			super(ctx, args);

@@ -1,6 +1,4 @@
 package tests;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.FuncDecl;
@@ -8,7 +6,6 @@ import com.microsoft.z3.Model;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 
-import mcnet.components.DataIsolationResult;
 import mcnet.components.IsolationResult;
 import tests.examples.Test_1;
 public class Test{
