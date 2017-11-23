@@ -1,0 +1,132 @@
+/* This Protocol Buffer has been created for TOSCA-based objects.
+ * The only granularity for executing CRUD operations is at the TopologyTemplate level.
+ *
+ * The names of the objects are assigned according to the TOSCA standard, and can be
+ * mapped as follows in the Verigraph domain:
+ * TopologyTemplate -> Graph
+ * NodeTemplate -> Node
+ * RelationshipTemplate -> Neighbour */
+
+syntax = "proto3";
+
+package verigraph;
+
+option java_multiple_files = true;
+option java_package = "it.polito.verigraph.grpc.tosca";
+option java_outer_classname = "ToscaVerigraphProto";
+
+// The service definition.
+service ToscaVerigraph {
+  // Obtains a list of topology templates
+  rpc GetTopologyTemplates (GetRequest) returns (stream TopologyTemplateGrpc) {}
+  // Obtains a topology template
+  rpc GetTopologyTemplate (RequestID) returns (TopologyTemplateGrpc) {}
+
+  // Creates a TopologyTemplate
+  rpc CreateTopologyTemplate (TopologyTemplateGrpc) returns (NewTopologyTemplate) {}
+  // Delete a TopologyTemplate
+  rpc DeleteTopologyTemplate (RequestID) returns (Status) {}
+  // Updates a TopologyTemplate
+  rpc UpdateTopologyTemplate (TopologyTemplateGrpc) returns (NewTopologyTemplate) {}
+  // Verify a policy
+  rpc VerifyPolicy (Policy) returns (VerificationGrpc) {}
+}
+
+message GetRequest {
+}
+
+message RequestID {
+  int64 idTopologyTemplate = 1;
+}
+
+message Policy{
+  int64 idTopologyTemplate = 1;
+  string source = 2;
+  string destination = 3;
+  enum PolicyType {
+    reachability = 0;
+    isolation = 1;
+    traversal = 2;
+  }
+  PolicyType type = 4;
+  string middlebox = 5;
+}
+
+message ConfigurationGrpc{
+  int64 idTopologyTemplate = 1;
+  int64 idNodeTemplate = 2;
+  string description = 3;
+  string configuration = 4;
+  string id = 5;
+}
+
+message NodeTemplateGrpc{
+  int64 idTopologyTemplate = 1;
+  string name = 2;
+  int64 id = 3;//long
+  enum Type {
+    antispam = 0;
+    cache = 1;
+    dpi = 2;
+    endhost = 3;
+    endpoint = 4;
+    fieldmodifier = 5;
+    firewall = 6;
+    mailclient = 7;
+    mailserver = 8;
+    nat = 9;
+    vpnaccess = 10;
+    vpnexit = 11;
+    webclient = 12;
+    webserver = 13;
+  }
+  Type type = 4;
+  ConfigurationGrpc configuration = 6;
+  string errorMessage = 7;
+}
+
+message RelationshipTemplateGrpc{
+  int64 idTopologyTemplate = 1;
+  int64 idSourceNodeTemplate = 2;
+  int64 idTargetNodeTemplate = 3;
+  string name = 4;
+  int64 id = 5;//long
+  string errorMessage = 6;
+}
+
+message TopologyTemplateGrpc{
+  int64 id = 1;//long
+  repeated NodeTemplateGrpc nodeTemplate = 2;
+  repeated RelationshipTemplateGrpc relationshipTemplate = 3;
+  string errorMessage = 4;
+}
+
+// message ServiceTemplateGrpc{
+//   int64 id = 1;//long
+//   repeated TopologyTemplateGrpc TopologyTemplate = 2;
+//   string errorMessage = 3;
+// }
+
+message NewTopologyTemplate{
+  bool success = 1;
+  //TopologyTemplateGrpc TopologyTemplate = 2;
+  string errorMessage = 3;
+}
+
+message TestGrpc {
+  repeated NodeTemplateGrpc NodeTemplate = 1;
+  string result = 2;
+}
+
+message VerificationGrpc{
+  bool successOfOperation = 1;
+  string result = 2;
+  string comment = 3;
+  repeated TestGrpc test = 4;
+  string errorMessage = 5;
+}
+
+message Status{
+  bool success = 1;
+  string errorMessage = 2;
+}
