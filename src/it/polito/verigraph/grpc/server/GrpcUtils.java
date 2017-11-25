@@ -28,6 +28,16 @@ import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Test;
 import it.polito.verigraph.model.Verification;
+//new import
+import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.tosca.NewTopologyTemplate;
+import it.polito.verigraph.grpc.tosca.RequestID;
+import it.polito.verigraph.grpc.tosca.Policy;
+import it.polito.verigraph.grpc.tosca.Status;
+import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc;
+
 
 public class GrpcUtils {
     private static final Logger logger = Logger.getLogger(GrpcUtils.class.getName());
@@ -106,13 +116,82 @@ public class GrpcUtils {
     public static GraphGrpc obtainGraph(Graph graph){
         GraphGrpc.Builder gr = GraphGrpc.newBuilder();
         gr.setId(graph.getId());
-        for(Node node:graph.getNodes().values()){
+        for(Node node : graph.getNodes().values()){
             NodeGrpc ng = obtainNode(node);
             gr.addNode(ng);
         }
         return gr.build();
     }
-
+    
+    /** Mapping method --> from Graph to TopologyTemplate */
+    public static TopologyTemplateGrpc obtainTopologyTemplate(Graph graph) {
+    	TopologyTemplateGrpc.Builder topol = TopologyTemplateGrpc.newBuilder();
+    	topol.setId(graph.getId());
+    	
+    	//NodeTemplate 
+    	for(Node node:graph.getNodes().values()) {
+    		NodeTemplateGrpc nt = obtainNodeTemplate(node, graph.getId());
+    		topol.addNodeTemplate(nt);
+    		//RelationshipTemplate
+    		Map<Long,Neighbour> neighMap = node.getNeighbours();
+    		for (Map.Entry<Long, Neighbour> myentry : neighMap.entrySet()) {
+    		    Neighbour neigh = myentry.getValue();
+    		    RelationshipTemplateGrpc relat = obtainRelationshipTemplate(neigh, nt.getId(), graph.getId());
+    		    topol.addRelationshipTemplate(relat);
+    		}
+    	}
+    	return topol.build();
+    }
+    
+    /** Mapping method --> from Node to NodeTemplate */
+    public static NodeTemplateGrpc obtainNodeTemplate(Node node, long topologyID) {
+    	NodeTemplateGrpc.Builder nodegrpc = NodeTemplateGrpc.newBuilder();
+    	nodegrpc.setIdTopologyTemplate(topologyID);
+    	nodegrpc.setId(node.getId());
+    	nodegrpc.setName(node.getName());
+    	
+    	NodeTemplateGrpc.Type type = node.getFunctional_type().toLowerCase();
+    	nodegrpc.setType(type); //PROBLEM TO SOLVE
+    	
+    	it.polito.verigraph.grpc.tosca.ConfigurationGrpc config = obtainConfiguration(node.getConfiguration());
+    	nodegrpc.setConfiguration(config); //NAME CONFLICT TO BE SOLVED SOON
+    	
+    	return nodegrpc.build();
+    }
+    
+    /** Mapping method --> from Neighbour to RelationshipTemplate */
+    public static RelationshipTemplateGrpc obtainRelationshipTemplate(Neighbour neigh, long sourceID, long topologyID) {
+    	RelationshipTemplateGrpc.Builder relat = RelationshipTemplateGrpc.newBuilder();
+    	relat.setIdTopologyTemplate(topologyID);
+    	relat.setId(neigh.getId());
+    	relat.setIdSourceNodeTemplate(sourceID);
+    	relat.setIdTargetNodeTemplate(neigh.getId());
+    	relat.setName(neigh.getName());
+    	return relat.build();
+    }
+    
+    /** Mapping method --> from TopologyTemplate to Graph */
+    public static Graph deriveGraph(TopologyTemplateGrpc request) {
+        Graph graph = new Graph();
+        Map<Long, Node> nodes = graph.getNodes();
+        long i=1; //dummy value, it will be changed during usage
+        
+        for(NodeTemplateGrpc nodetempl : request.getNodeTemplateList()){
+        	Node node = deriveNode(nodetempl, request);
+        	nodes.put(node.getId(), node);
+        }
+     
+        return graph;
+    }
+    /** Mapping method --> from NodeTemplate to Node */
+    public static Node deriveNode(NodeTemplateGrpc node) {
+    	
+    }
+    /** Mapping method --> from RelationshipTemplate to Neighbour */
+    public static Neighbour deriveNeighbour(RelationshipTemplateGrpc request) {
+    	
+    }
+    
     public static Graph deriveGraph(GraphGrpc request) {
         //id is not present
         Graph graph = new Graph();
