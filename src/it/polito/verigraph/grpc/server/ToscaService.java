@@ -50,8 +50,6 @@ public class ToscaService {
     private Server server;
     private GraphService graphService= new GraphService();
     private VerificationService verificationService = new VerificationService();
-    private NodeService nodeService = new NodeService();
-    private NeighbourService neighboursService = new NeighbourService();
 
     public ToscaService(int port) {
         this(ServerBuilder.forPort(port), port);
@@ -59,7 +57,7 @@ public class ToscaService {
 
     /** Create a ToscaService server using serverBuilder as a base and features as data. */
     public ToscaService(ServerBuilder<?> serverBuilder, int port) {
-        server = serverBuilder.addService(new VerigraphImpl())
+        server = serverBuilder.addService(new ToscaVerigraphImpl())
                 .build();
     }
 

@@ -129,7 +129,7 @@ public class GrpcUtils {
     	topol.setId(graph.getId());
     	
     	//NodeTemplate 
-    	for(Node node:graph.getNodes().values()) {
+    	for(Node node : graph.getNodes().values()) {
     		NodeTemplateGrpc nt = obtainNodeTemplate(node, graph.getId());
     		topol.addNodeTemplate(nt);
     		//RelationshipTemplate
@@ -174,22 +174,39 @@ public class GrpcUtils {
     public static Graph deriveGraph(TopologyTemplateGrpc request) {
         Graph graph = new Graph();
         Map<Long, Node> nodes = graph.getNodes();
-        long i=1; //dummy value, it will be changed during usage
-        
         for(NodeTemplateGrpc nodetempl : request.getNodeTemplateList()){
-        	Node node = deriveNode(nodetempl, request);
+        	Node node = deriveNode(nodetempl, request); //Topology is necessary to obtain Neighbour
         	nodes.put(node.getId(), node);
         }
-     
         return graph;
     }
+    
     /** Mapping method --> from NodeTemplate to Node */
-    public static Node deriveNode(NodeTemplateGrpc node) {
+    public static Node deriveNode(NodeTemplateGrpc nodegrpc, TopologyTemplateGrpc request) {
+    	Node node = new Node();
+    	Map<Long,Neighbour> neighbours = node.getNeighbours();
     	
+    	node.setId(nodegrpc.getId());
+    	node.setName(nodegrpc.getName());
+    	Configuration conf = obtainConfiguration(nodegrpc.getConfiguration()); //NAME CONFLICT
+    	node.setConfiguration(conf);
+    	for(RelationshipTemplateGrpc relat : request.getRelationshipTemplateList()){
+    		if(relat.getIdSourceNodeTemplate() == node.getId()) {
+    			Neighbour neigh = deriveNeighbour(relat);
+    			neighbours.put(neigh.getId(), neigh);
+    		}
+    	}
+    	node.setNeighbours(neighbours);
+    	node.setFunctional_type(nodegrpc.getType().toString());
+    	return node;
     }
+    
     /** Mapping method --> from RelationshipTemplate to Neighbour */
-    public static Neighbour deriveNeighbour(RelationshipTemplateGrpc request) {
-    	
+    public static Neighbour deriveNeighbour(RelationshipTemplateGrpc relat) {
+    	Neighbour neigh = new Neighbour();
+    	neigh.setName(relat.getName());
+    	neigh.setId(relat.getId());
+    	return neigh;
     }
     
     public static Graph deriveGraph(GraphGrpc request) {
@@ -202,7 +219,6 @@ public class GrpcUtils {
             Node ng = deriveNode(node);
             nodes.put(i++, ng);  
         }
-
         return graph;
     }
 
