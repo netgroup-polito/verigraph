@@ -32,11 +32,9 @@ import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
 import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
 import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.NewTopologyTemplate;
-import it.polito.verigraph.grpc.tosca.RequestID;
-import it.polito.verigraph.grpc.tosca.Policy;
-import it.polito.verigraph.grpc.tosca.Status;
-import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaTestGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
 
 
 public class GrpcUtils {
@@ -123,92 +121,6 @@ public class GrpcUtils {
         return gr.build();
     }
     
-    /** Mapping method --> from Graph to TopologyTemplate */
-    public static TopologyTemplateGrpc obtainTopologyTemplate(Graph graph) {
-    	TopologyTemplateGrpc.Builder topol = TopologyTemplateGrpc.newBuilder();
-    	topol.setId(graph.getId());
-    	
-    	//NodeTemplate 
-    	for(Node node : graph.getNodes().values()) {
-    		NodeTemplateGrpc nt = obtainNodeTemplate(node, graph.getId());
-    		topol.addNodeTemplate(nt);
-    		//RelationshipTemplate
-    		Map<Long,Neighbour> neighMap = node.getNeighbours();
-    		for (Map.Entry<Long, Neighbour> myentry : neighMap.entrySet()) {
-    		    Neighbour neigh = myentry.getValue();
-    		    RelationshipTemplateGrpc relat = obtainRelationshipTemplate(neigh, nt.getId(), graph.getId());
-    		    topol.addRelationshipTemplate(relat);
-    		}
-    	}
-    	return topol.build();
-    }
-    
-    /** Mapping method --> from Node to NodeTemplate */
-    public static NodeTemplateGrpc obtainNodeTemplate(Node node, long topologyID) {
-    	NodeTemplateGrpc.Builder nodegrpc = NodeTemplateGrpc.newBuilder();
-    	nodegrpc.setIdTopologyTemplate(topologyID);
-    	nodegrpc.setId(node.getId());
-    	nodegrpc.setName(node.getName());
-    	
-    	NodeTemplateGrpc.Type type = node.getFunctional_type().toLowerCase();
-    	nodegrpc.setType(type); //PROBLEM TO SOLVE
-    	
-    	it.polito.verigraph.grpc.tosca.ConfigurationGrpc config = obtainConfiguration(node.getConfiguration());
-    	nodegrpc.setConfiguration(config); //NAME CONFLICT TO BE SOLVED SOON
-    	
-    	return nodegrpc.build();
-    }
-    
-    /** Mapping method --> from Neighbour to RelationshipTemplate */
-    public static RelationshipTemplateGrpc obtainRelationshipTemplate(Neighbour neigh, long sourceID, long topologyID) {
-    	RelationshipTemplateGrpc.Builder relat = RelationshipTemplateGrpc.newBuilder();
-    	relat.setIdTopologyTemplate(topologyID);
-    	relat.setId(neigh.getId());
-    	relat.setIdSourceNodeTemplate(sourceID);
-    	relat.setIdTargetNodeTemplate(neigh.getId());
-    	relat.setName(neigh.getName());
-    	return relat.build();
-    }
-    
-    /** Mapping method --> from TopologyTemplate to Graph */
-    public static Graph deriveGraph(TopologyTemplateGrpc request) {
-        Graph graph = new Graph();
-        Map<Long, Node> nodes = graph.getNodes();
-        for(NodeTemplateGrpc nodetempl : request.getNodeTemplateList()){
-        	Node node = deriveNode(nodetempl, request); //Topology is necessary to obtain Neighbour
-        	nodes.put(node.getId(), node);
-        }
-        return graph;
-    }
-    
-    /** Mapping method --> from NodeTemplate to Node */
-    public static Node deriveNode(NodeTemplateGrpc nodegrpc, TopologyTemplateGrpc request) {
-    	Node node = new Node();
-    	Map<Long,Neighbour> neighbours = node.getNeighbours();
-    	
-    	node.setId(nodegrpc.getId());
-    	node.setName(nodegrpc.getName());
-    	Configuration conf = obtainConfiguration(nodegrpc.getConfiguration()); //NAME CONFLICT
-    	node.setConfiguration(conf);
-    	for(RelationshipTemplateGrpc relat : request.getRelationshipTemplateList()){
-    		if(relat.getIdSourceNodeTemplate() == node.getId()) {
-    			Neighbour neigh = deriveNeighbour(relat);
-    			neighbours.put(neigh.getId(), neigh);
-    		}
-    	}
-    	node.setNeighbours(neighbours);
-    	node.setFunctional_type(nodegrpc.getType().toString());
-    	return node;
-    }
-    
-    /** Mapping method --> from RelationshipTemplate to Neighbour */
-    public static Neighbour deriveNeighbour(RelationshipTemplateGrpc relat) {
-    	Neighbour neigh = new Neighbour();
-    	neigh.setName(relat.getName());
-    	neigh.setId(relat.getId());
-    	return neigh;
-    }
-    
     public static Graph deriveGraph(GraphGrpc request) {
         //id is not present
         Graph graph = new Graph();
@@ -236,13 +148,140 @@ public class GrpcUtils {
         }
         return ver.build();
     }
-
-    /**Intended for string that begins with "?"
-     * */
+    
+    /** Mapping method --> from Graph to TopologyTemplate */
+    public static ToscaVerificationGrpc obtainToscaVerification(Verification verify){
+        ToscaVerificationGrpc.Builder ver = ToscaVerificationGrpc.newBuilder();
+        ver.setComment(verify.getComment());
+        ver.setResult(verify.getResult());
+        for(Test test:verify.getTests()){
+            ToscaTestGrpc.Builder tst = ToscaTestGrpc.newBuilder().setResult(test.getResult());
+            for(Node node:test.getPath()){
+                NodeTemplateGrpc nodetempl = obtainNodeTemplate(node);
+                tst.addNodeTemplate(nodetempl);
+            }
+            ver.addTest(tst);
+        }
+        return ver.build();
+    }
+    
+    /** Mapping method --> from Graph to TopologyTemplate */
+    public static TopologyTemplateGrpc obtainTopologyTemplate(Graph graph) {
+    	TopologyTemplateGrpc.Builder topol = TopologyTemplateGrpc.newBuilder();
+    	topol.setId(graph.getId());
+    	
+    	//NodeTemplate 
+    	for(Node node : graph.getNodes().values()) {
+    		NodeTemplateGrpc nt = obtainNodeTemplate(node);
+    		topol.addNodeTemplate(nt);
+    		//RelationshipTemplate
+    		Map<Long,Neighbour> neighMap = node.getNeighbours();
+    		for (Map.Entry<Long, Neighbour> myentry : neighMap.entrySet()) {
+    		    Neighbour neigh = myentry.getValue();
+    		    RelationshipTemplateGrpc relat = obtainRelationshipTemplate(neigh, nt.getId());
+    		    topol.addRelationshipTemplate(relat);
+    		}
+    	}
+    	return topol.build();
+    }
+    
+    /** Mapping method --> from TopologyTemplate to Graph */
+    public static Graph deriveGraph(TopologyTemplateGrpc request) {
+        Graph graph = new Graph();
+        Map<Long, Node> nodes = graph.getNodes();
+        for(NodeTemplateGrpc nodetempl : request.getNodeTemplateList()){
+        	Node node = deriveNode(nodetempl, request); //Topology is necessary to obtain Neighbour
+        	nodes.put(node.getId(), node);
+        }
+        return graph;
+    }
+    
+    /** Mapping method --> from Node to NodeTemplate */
+    public static NodeTemplateGrpc obtainNodeTemplate(Node node){
+    	NodeTemplateGrpc.Builder nodegrpc = NodeTemplateGrpc.newBuilder();
+    	
+    	nodegrpc.setId(node.getId());
+    	nodegrpc.setName(node.getName());
+    	nodegrpc.setType(NodeTemplateGrpc.Type.valueOf(node.getFunctional_type().toLowerCase()));
+    	
+    	ToscaConfigurationGrpc config = obtainToscaConfiguration(node.getConfiguration());
+    	nodegrpc.setConfiguration(config); 
+    	
+    	return nodegrpc.build();
+    }
+    
+    /** Mapping method --> from NodeTemplate to Node */
+    public static Node deriveNode(NodeTemplateGrpc nodegrpc, TopologyTemplateGrpc request) {
+    	Node node = new Node();
+    	Map<Long,Neighbour> neighbours = node.getNeighbours();
+    	
+    	node.setId(nodegrpc.getId());
+    	node.setName(nodegrpc.getName());
+    	Configuration conf = deriveConfiguration(nodegrpc.getConfiguration());
+    	node.setConfiguration(conf);
+    	for(RelationshipTemplateGrpc relat : request.getRelationshipTemplateList()){
+    		if(relat.getIdSourceNodeTemplate() == node.getId()) {
+    			Neighbour neigh = deriveNeighbour(relat);
+    			neighbours.put(neigh.getId(), neigh);
+    		}
+    	}
+    	node.setNeighbours(neighbours);
+    	node.setFunctional_type(nodegrpc.getType().toString());
+    	return node;
+    }
+    
+    /** Mapping method --> from Neighbour to RelationshipTemplate */
+    public static RelationshipTemplateGrpc obtainRelationshipTemplate(Neighbour neigh, long sourceID) {
+    	RelationshipTemplateGrpc.Builder relat = RelationshipTemplateGrpc.newBuilder();
+    	relat.setId(neigh.getId());
+    	relat.setIdSourceNodeTemplate(sourceID);
+    	relat.setIdTargetNodeTemplate(neigh.getId());
+    	relat.setName(neigh.getName());
+    	return relat.build();
+    }
+    
+    /** Mapping method --> from RelationshipTemplate to Neighbour */
+    public static Neighbour deriveNeighbour(RelationshipTemplateGrpc relat) {
+    	Neighbour neigh = new Neighbour();
+    	neigh.setName(relat.getName());
+    	neigh.setId(relat.getId());
+    	return neigh;
+    }
+    
+    /** Mapping method --> from model Configuration to ToscaConfigurationGrpc */
+    public static ToscaConfigurationGrpc obtainToscaConfiguration(Configuration conf) {
+    	return ToscaConfigurationGrpc.newBuilder()
+                .setId(conf.getId())
+                .setDescription(conf.getDescription())
+                .setConfiguration(conf.getConfiguration().toString())
+                .build();
+    }
+    
+    /** Mapping method --> from ToscaConfiguration to model Configuration */
+    public static Configuration deriveConfiguration(ToscaConfigurationGrpc request) {
+    	Configuration conf = new Configuration();
+        conf.setId(request.getId());
+        conf.setDescription(request.getDescription());
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = null;
+        try {
+            if ("".equals(request.getConfiguration()))
+                rootNode=mapper.readTree("[]");
+            else
+                rootNode = mapper.readTree(request.getConfiguration());
+        } catch (IOException e) {
+            logger.log(Level.WARNING, e.getMessage());
+        }
+        conf.setConfiguration(rootNode);
+        return conf;
+    }
+    
+    /** Intended for string that begins with "?" */
     public static Map<String,String> getParamGivenString(String str){
         String string = str.substring(1);
         final Map<String, String> map = Splitter.on('&').trimResults().withKeyValueSeparator("=").
                 split(string);
         return map;
     }
+ 
 }
