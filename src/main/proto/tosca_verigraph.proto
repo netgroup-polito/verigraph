@@ -113,12 +113,12 @@ message TopologyTemplateGrpc{
 
 message NewTopologyTemplate{
   bool success = 1;
-  TopologyTemplateGrpc TopologyTemplate = 2;
+  TopologyTemplateGrpc topologyTemplate = 2;
   string errorMessage = 3;
 }
 
 message ToscaTestGrpc {
-  repeated NodeTemplateGrpc NodeTemplate = 1;
+  repeated NodeTemplateGrpc nodeTemplate = 1;
   string result = 2;
 }
 
