@@ -10,130 +10,120 @@ import java.util.logging.Logger;
 import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import com.google.protobuf.Message;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import it.polito.verigraph.tosca.classes.*;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import it.polito.verigraph.tosca.classes.*;
-
-import com.google.protobuf.Message;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
-import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
 import it.polito.verigraph.grpc.tosca.*;
+//import it.polito.verigraph.grpc.*;
+import it.polito.verigraph.tosca.classes.*;
+
+import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
 import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
 
-
-
-public class toscaClient {
+public class ToscaClient {
 	
     private final ManagedChannel channel;
     private final ToscaVerigraphBlockingStub blockingStub;
-    private static final Logger logger = Logger.getLogger(toscaClient.class.getName());
+    private static final Logger logger = Logger.getLogger(ToscaClient.class.getName());
     private static FileHandler fh;
     
     
-    public toscaClient(String host, int port) {
+    public ToscaClient(String host, int port) {
         this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true));
     }
 	
     /** Construct client for accessing toscaVerigraph server using the existing channel. */
-    public toscaClient(ManagedChannelBuilder<?> channelBuilder) {
+    public ToscaClient(ManagedChannelBuilder<?> channelBuilder) {
     	  channel = channelBuilder.build();
     	  blockingStub = ToscaVerigraphGrpc.newBlockingStub(channel);
-    	}
+    }
     
     /** Close the channel */
     public void shutdown() throws InterruptedException {
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-      }
+    }    
     
-    
+    /** Obtain a list of the available TopologyTemplates*/
     public List<TopologyTemplateGrpc> getTopologyTemplates(){
     	List<TopologyTemplateGrpc> templates = new ArrayList<TopologyTemplateGrpc>();
     	GetRequest request = GetRequest.newBuilder().build();
     	
-    	/** Iterates on received topology templates, prints on log file in case of errors*/
-    	Iterator<TopologyTemplateGrpc> recTempls;
+    	/*Iterates on received topology templates, prints on log file in case of errors*/
+    	Iterator<TopologyTemplateGrpc> receivedTemplates;
     	try {
-    		recTempls = blockingStub.getTopologyTemplates(request);
-    		System.out.println("[toscaClient] Receiving Topology Templates...");
-    		while(recTempls.hasNext()) {
-    			TopologyTemplateGrpc nxtTempl = recTempls.next();
-    			if(nxtTempl.getErrorMessage().equals("")) {
-    				System.out.println("[toscaClient] Received Template: id - " + nxtTempl.getId());
-    				templates.add(nxtTempl);
-    			}else {
-    				System.out.println("[toscaClient] Error receiving TopologyTemplates: " + nxtTempl.getErrorMessage());
-    				return templates;
+    		receivedTemplates = blockingStub.getTopologyTemplates(request);
+    		System.out.println("[ToscaClient] Receiving Topology Templates...");
+    		while(receivedTemplates.hasNext()) {
+    			TopologyTemplateGrpc received = receivedTemplates.next();
+    			if(received.getErrorMessage().equals("")) {
+    				System.out.println("[ToscaClient] Received Template: id - " + received.getId());
+    				templates.add(received);
+    			} else {
+    				System.out.println("[ToscaClient] Error receiving TopologyTemplates: " + received.getErrorMessage());
+    				return templates; //DA VALUTARE
     			}	
     		}
- 
-    	}catch(StatusRuntimeException ex) {
-    		System.err.println("[toscaClient] RPC failed : " + ex.getMessage());
-    		warning("RPC failed - on getTopologyTemplates", ex.getStatus());
+    	} catch (StatusRuntimeException ex) {
+    		System.err.println("[ToscaClient] RPC failed on getTopologyTemplates : " + ex.getMessage());
+    		warning("RPC failed - on getTopologyTemplates method", ex.getStatus());
     	}
     	
     	return templates;
-    	
-    }
+    }   
     
-    
-    /** Get Topology Template by ID */
+    /** Obtain a TopologyTemplate by ID */
     public TopologyTemplateGrpc getTopologyTemplate(long id) {
-        RequestID request = RequestID.newBuilder().setIdTopologyTemplate(id).build();
-        TopologyTemplateGrpc response;
+        ToscaRequestID request = ToscaRequestID.newBuilder().setIdTopologyTemplate(id).build();
         try {
-            response = blockingStub.getTopologyTemplate(request);
+        	TopologyTemplateGrpc response = blockingStub.getTopologyTemplate(request);
             if(response.getErrorMessage().equals("")){
-                System.out.println("[toscaClient] ReceivedTemplate : id - " + response.getId());
+                System.out.println("[ToscaClient] Received TopologyTemplate : id - " + response.getId());
+                return response;
             }else{
-                System.err.println("[toscaClient] Error : " + response.getErrorMessage());
-                return null;
+                System.err.println("[ToscaClient] Error receiving TopologyTemplate : " + response.getErrorMessage());
+                return response;
             }
         } catch (StatusRuntimeException ex) {
-            System.err.println("[toscaClient] RPC failed: " + ex.getStatus());
+            System.err.println("[ToscaClient] RPC failed on getTopologyTemplate: " + ex.getStatus());
             return null;
         }
-        return response;
     }
     
-
-    /** Creates a new TopologyTemplate, takes in input a tosca compliant filename */
-    
+    /** Creates a new TopologyTemplate, takes in input a tosca compliant filename */   
     public void createTopologyTemplate(String toscaFile) {
-    	TServiceTemplate jaxbServ = parseToscaFile(toscaFile);
-
-    	if(jaxbServ == null) {
-    		System.out.println("[toscaClient] Unable to retrieve any Service Template from file...");
+    	TServiceTemplate serviceTemplate = obtainServiceTemplate(toscaFile); //catchare eccezione FileNotFound e FileNotToscaCompliance
+    	
+    	//DA GESTIRE CON ECCEZIONE DI QUA SOPRA
+    	/*if(jaxbServ == null) {
+    		System.out.println("[ToscaClient] Unable to retrieve any Service Template from file...");
     		return;
-    	}
-    	
-    	//String servId = jaxbServ.getId();
-    	TTopologyTemplate jaxbTempl = jaxbServ.getTopologyTemplate();
-    	TopologyTemplateGrpc.Builder templ = TopologyTemplateGrpc.newBuilder();
-    	
+    	}*/
+ 
+    	TTopologyTemplate topologyTemplate = serviceTemplate.getTopologyTemplate();
+    	TopologyTemplateGrpc.Builder topologyTemplateGrpc = TopologyTemplateGrpc.newBuilder();    	
     	
     	//Setting Id of the new topology template
-    	templ = templ.setId(0);
+    	topologyTemplateGrpc = topologyTemplateGrpc.setId(0);
     	
-    	//Retrieving a list of nodes and relationship jaxb Objects
-    	List<TEntityTemplate> elements = jaxbTempl.getNodeTemplateOrRelationshipTemplate();
+    	//Retrieving of list of NodeTemplate and RelationshipTemplate
+    	List<TEntityTemplate> elements = topologyTemplate.getNodeTemplateOrRelationshipTemplate();
     	List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
-    	List<RelationshipTemplateGrpc> rels = new ArrayList<RelationshipTemplateGrpc>();
+    	List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();
     
-
     	for(int i = 0; i < elements.size(); i++) {
-    		if(elements.get(i) instanceof TNodeTemplate) {
+    		if(elements.get(i) instanceof TNodeTemplate)
     			nodes.add(parseToscaNode((TNodeTemplate)elements.get(i)));
-
-    		}else if(elements.get(i) instanceof TRelationshipTemplate) {
+    		else if(elements.get(i) instanceof TRelationshipTemplate) {
     			
     		}
     		
@@ -141,62 +131,7 @@ public class toscaClient {
     	
     	
     	
-    }
-    
-    
-    
-    
-    /** Method for parsing a Tosca xml file into Tosca objects.
-     *  Additional functionalities for yaml support must be defined*/
-    
-    public TServiceTemplate parseToscaFile(String file) {
-    	
-        TServiceTemplate parsed = null;
-    	
-        try {
-            // create a JAXBContext capable of handling the generated classes
-            JAXBContext jc = JAXBContext.newInstance( "it.polito.verigraph.tosca.classes" );
-            
-            // create an Unmarshaller
-            Unmarshaller u = jc.createUnmarshaller();
-            
-            // unmarshal a document into a tree of Java content objects
-            Object jaxbElement = u.unmarshal( new FileInputStream(file) );
-            JAXBElement<TDefinitions> jaxbRoot = (JAXBElement<TDefinitions>)jaxbElement;
-            TDefinitions root = (TDefinitions)jaxbRoot.getValue();
-            
-            List<TExtensibleElements> elements = root.getServiceTemplateOrNodeTypeOrNodeTypeImplementation();
-            Object toRet = null;
-            
-            for(int i = 0; i < elements.size(); i++) {
-            	toRet = elements.get(i);
-            	if(toRet instanceof TServiceTemplate) break;
-            	toRet = null;
-            }
-            
-            if(toRet == null) {
-            	System.out.println("[toscaClient] No Service Template in the provided file...");
-            }else {
-            	parsed = (TServiceTemplate)toRet;
-            }
-          
-        } catch( JAXBException je ) {
-        	System.err.println("[toscaClient] Error while unmarshalling...");
-            je.printStackTrace();
-            System.exit(1);
-        } catch( IOException ioe ) {
-            ioe.printStackTrace();
-            System.exit(1);
-        } catch( ClassCastException cce) {
-        	System.out.println("[toscaClient] Wrong data type found in XML document");
-        	cce.printStackTrace();
-            System.exit(1);
-        }
-    	
-        return parsed;
-    }
-    
-    
+    }    
     
     /** Method for parsing a tosca Node into a Grpc Node */
    
