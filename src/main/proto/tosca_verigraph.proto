@@ -5,7 +5,10 @@
  * mapped as follows in the Verigraph domain:
  * TopologyTemplate -> Graph
  * NodeTemplate -> Node
- * RelationshipTemplate -> Neighbour */
+ * RelationshipTemplate -> Neighbour (partial)
+ *
+ * idTopologyTemplate is commented into some messages definitions because, being TopologyTemplate
+ * the only granularity, a further reference to the TopologyTemplate is not needed.
 
 syntax = "proto3";
 
@@ -15,31 +18,31 @@ option java_multiple_files = true;
 option java_package = "it.polito.verigraph.grpc.tosca";
 option java_outer_classname = "ToscaVerigraphProto";
 
+import "verigraph.proto"; //Importing the original Protocol Buffer for common messages
+
 // The service definition.
 service ToscaVerigraph {
-  // Obtains a list of topology templates
-  rpc GetTopologyTemplates (GetRequest) returns (stream TopologyTemplateGrpc) {}
-  // Obtains a topology template
-  rpc GetTopologyTemplate (RequestID) returns (TopologyTemplateGrpc) {}
 
-  // Creates a TopologyTemplate
+  // Obtain a list of topology templates
+  rpc GetTopologyTemplates (GetRequest) returns (stream TopologyTemplateGrpc) {}
+  // Obtain a topology template
+  rpc GetTopologyTemplate (ToscaRequestID) returns (TopologyTemplateGrpc) {}
+  // Create a TopologyTemplate
   rpc CreateTopologyTemplate (TopologyTemplateGrpc) returns (NewTopologyTemplate) {}
   // Delete a TopologyTemplate
-  rpc DeleteTopologyTemplate (RequestID) returns (Status) {}
-  // Updates a TopologyTemplate
+  rpc DeleteTopologyTemplate (ToscaRequestID) returns (Status) {}
+  // Update a TopologyTemplate
   rpc UpdateTopologyTemplate (TopologyTemplateGrpc) returns (NewTopologyTemplate) {}
+
   // Verify a policy
-  rpc VerifyPolicy (Policy) returns (VerificationGrpc) {}
+  rpc VerifyPolicy (ToscaPolicy) returns (ToscaVerificationGrpc) {}
 }
 
-message GetRequest {
-}
-
-message RequestID {
+message ToscaRequestID {
   int64 idTopologyTemplate = 1;
 }
 
-message Policy{
+message ToscaPolicy{
   int64 idTopologyTemplate = 1;
   string source = 2;
   string destination = 3;
@@ -52,16 +55,16 @@ message Policy{
   string middlebox = 5;
 }
 
-message ConfigurationGrpc{
-  int64 idTopologyTemplate = 1;
-  int64 idNodeTemplate = 2;
+message ToscaConfigurationGrpc{
+  //int64 idTopologyTemplate = 1;
+  //int64 idNodeTemplate = 2;
   string description = 3;
   string configuration = 4;
   string id = 5;
 }
 
 message NodeTemplateGrpc{
-  int64 idTopologyTemplate = 1;
+  //int64 idTopologyTemplate = 1;
   string name = 2;
   int64 id = 3;//long
   enum Type {
@@ -81,52 +84,48 @@ message NodeTemplateGrpc{
     webserver = 13;
   }
   Type type = 4;
-  ConfigurationGrpc configuration = 6;
+  ToscaConfigurationGrpc configuration = 6;
   string errorMessage = 7;
 }
 
 message RelationshipTemplateGrpc{
-  int64 idTopologyTemplate = 1;
+  //int64 idTopologyTemplate = 1;
   int64 idSourceNodeTemplate = 2;
   int64 idTargetNodeTemplate = 3;
   string name = 4;
-  int64 id = 5;//long
+  int64 id = 5; //long
   string errorMessage = 6;
 }
 
 message TopologyTemplateGrpc{
-  int64 id = 1;//long
+  int64 id = 1; //long That's the same ID as the ServiceTemplate in which is contained
   repeated NodeTemplateGrpc nodeTemplate = 2;
   repeated RelationshipTemplateGrpc relationshipTemplate = 3;
   string errorMessage = 4;
 }
 
+// Since each ServiceTemplate can contain only one TopologyTemplate, this message is omitted.
 // message ServiceTemplateGrpc{
 //   int64 id = 1;//long
-//   repeated TopologyTemplateGrpc TopologyTemplate = 2;
+//   TopologyTemplateGrpc TopologyTemplate = 2;
 //   string errorMessage = 3;
 // }
 
 message NewTopologyTemplate{
   bool success = 1;
-  //TopologyTemplateGrpc TopologyTemplate = 2;
+  TopologyTemplateGrpc TopologyTemplate = 2;
   string errorMessage = 3;
 }
 
-message TestGrpc {
+message ToscaTestGrpc {
   repeated NodeTemplateGrpc NodeTemplate = 1;
   string result = 2;
 }
 
-message VerificationGrpc{
+message ToscaVerificationGrpc{
   bool successOfOperation = 1;
   string result = 2;
   string comment = 3;
-  repeated TestGrpc test = 4;
+  repeated ToscaTestGrpc test = 4;
   string errorMessage = 5;
-}
-
-message Status{
-  bool success = 1;
-  string errorMessage = 2;
 }
