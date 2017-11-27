@@ -2,7 +2,7 @@
 <xsd:schema	xmlns="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraph/NodeTypes"
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 			targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraph/NodeTypes"> 
-	
+<!--  
 	<xsd:complexType name="tAntispamProperties">
 		<xsd:sequence>
 			<xsd:element name="spamSource" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
@@ -126,7 +126,7 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:element name="WebserverProperties" type="tWebserverProperties" />
-	
+ -->	
 	
 	<!-- Generic Configuration type, JSON string common to all FunctionalTypes -->
 	<xsd:complexType name="tConfiguration">

@@ -38,7 +38,6 @@ public class toscaClient {
     private static FileHandler fh;
     
     
-    
     public toscaClient(String host, int port) {
         this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true));
     }
@@ -106,8 +105,38 @@ public class toscaClient {
     
 
     /** Creates a new TopologyTemplate, takes in input a tosca compliant filename */
+    
     public void createTopologyTemplate(String toscaFile) {
-    	TTopologyTemplate jaxbTempl = parseToscaFile(toscaFile);
+    	TServiceTemplate jaxbServ = parseToscaFile(toscaFile);
+
+    	if(jaxbServ == null) {
+    		System.out.println("[toscaClient] Unable to retrieve any Service Template from file...");
+    		return;
+    	}
+    	
+    	//String servId = jaxbServ.getId();
+    	TTopologyTemplate jaxbTempl = jaxbServ.getTopologyTemplate();
+    	TopologyTemplateGrpc.Builder templ = TopologyTemplateGrpc.newBuilder();
+    	
+    	
+    	//Setting Id of the new topology template
+    	templ = templ.setId(0);
+    	
+    	//Retrieving a list of nodes and relationship jaxb Objects
+    	List<TEntityTemplate> elements = jaxbTempl.getNodeTemplateOrRelationshipTemplate();
+    	List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
+    	List<RelationshipTemplateGrpc> rels = new ArrayList<RelationshipTemplateGrpc>();
+    
+
+    	for(int i = 0; i < elements.size(); i++) {
+    		if(elements.get(i) instanceof TNodeTemplate) {
+    			nodes.add(parseToscaNode((TNodeTemplate)elements.get(i)));
+
+    		}else if(elements.get(i) instanceof TRelationshipTemplate) {
+    			
+    		}
+    		
+    	}
     	
     	
     	
@@ -119,7 +148,10 @@ public class toscaClient {
     /** Method for parsing a Tosca xml file into Tosca objects.
      *  Additional functionalities for yaml support must be defined*/
     
-    public TTopologyTemplate parseToscaFile(String file) {
+    public TServiceTemplate parseToscaFile(String file) {
+    	
+        TServiceTemplate parsed = null;
+    	
         try {
             // create a JAXBContext capable of handling the generated classes
             JAXBContext jc = JAXBContext.newInstance( "it.polito.verigraph.tosca.classes" );
@@ -131,23 +163,52 @@ public class toscaClient {
             Object jaxbElement = u.unmarshal( new FileInputStream(file) );
             JAXBElement<TDefinitions> jaxbRoot = (JAXBElement<TDefinitions>)jaxbElement;
             TDefinitions root = (TDefinitions)jaxbRoot.getValue();
-
+            
+            List<TExtensibleElements> elements = root.getServiceTemplateOrNodeTypeOrNodeTypeImplementation();
+            Object toRet = null;
+            
+            for(int i = 0; i < elements.size(); i++) {
+            	toRet = elements.get(i);
+            	if(toRet instanceof TServiceTemplate) break;
+            	toRet = null;
+            }
+            
+            if(toRet == null) {
+            	System.out.println("[toscaClient] No Service Template in the provided file...");
+            }else {
+            	parsed = (TServiceTemplate)toRet;
+            }
+          
         } catch( JAXBException je ) {
-        	System.out.println("Error while unmarshalling or marshalling");
+        	System.err.println("[toscaClient] Error while unmarshalling...");
             je.printStackTrace();
             System.exit(1);
         } catch( IOException ioe ) {
             ioe.printStackTrace();
             System.exit(1);
         } catch( ClassCastException cce) {
-        	System.out.println("Wrong data type found in XML document");
+        	System.out.println("[toscaClient] Wrong data type found in XML document");
         	cce.printStackTrace();
             System.exit(1);
         }
     	
-    	
+        return parsed;
     }
     
+    
+    
+    /** Method for parsing a tosca Node into a Grpc Node */
+    public NodeTemplateGrpc parseToscaNode(TNodeTemplate toscaNode) {
+
+    	NodeTemplateGrpc.Builder parsed = NodeTemplateGrpc.newBuilder();
+    	parsed.setId(toscaNode.getId()); //to convert
+    	parsed.setName(toscaNode.getName());
+    	
+    	TConfiguration nodeConfig = (TConfiguration)toscaNode.getProperties().getAny()).getJSON();
+    	
+    	
+    	return parsed;
+    }
     
     
     /** The clients prints logs on File - to be defined, two levels of log*/
