@@ -17,6 +17,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.tosca.classes.TConfiguration;
@@ -39,9 +41,12 @@ public class XmlParsingUtils {
         Unmarshaller u = jc.createUnmarshaller();
         
         // Unmarshal a document into a tree of Java content objects
-		Object jaxbElement = u.unmarshal(new FileInputStream(file));
+/*		Object jaxbElement = u.unmarshal(new FileInputStream(file));
         JAXBElement<TDefinitions> jaxbRoot = (JAXBElement<TDefinitions>) jaxbElement;
-		TDefinitions definitions = (TDefinitions) jaxbRoot.getValue();
+		TDefinitions definitions = (TDefinitions) jaxbRoot.getValue();*/
+        Source source = new StreamSource(new FileInputStream(file));
+        JAXBElement<TDefinitions> root = u.unmarshal(source, TDefinitions.class);
+        TDefinitions definitions = root.getValue();
         
         List<TExtensibleElements> elements = definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation();
         
@@ -93,12 +98,12 @@ public class XmlParsingUtils {
 	
 	/** Returns the TConfiguration JAXB-generated TOSCA object of a TOSCA NodeTemplate. */
 	public static TConfiguration obtainConfiguration(TNodeTemplate nodeTemplate) throws DataNotFoundException {
-		Object any = nodeTemplate.getProperties().getAny();
+		/*Object any = nodeTemplate.getProperties().getAny();*/
 		TConfiguration configuration = new TConfiguration(); // To avoid a NullPointerException
-		if (any instanceof TConfiguration)
+		/*if (any instanceof TConfiguration)
 			configuration = (TConfiguration) any;
 		else
-			throw new DataNotFoundException("There is no Configuration into NodeTemplate " + nodeTemplate.toString());
+			throw new DataNotFoundException("There is no Configuration into NodeTemplate " + nodeTemplate.toString());*/
 		return configuration; // Could be an empty object if there is no TConfiguration object
 	}
 }

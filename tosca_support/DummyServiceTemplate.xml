@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Definitions id="exampleDefinition"
+	name="Example of service described with modified Tosca" xmlns="http://docs.oasis-open.org/tosca/ns/2011/12"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://www.example.com/servicetemplates/ExampleService"
+	xs:schemaLocation="http://docs.oasis-open.org/tosca/TOSCA/v1.0/os/schemas/TOSCA-v1.0.xsd">
+
+	<Extensions>
+		<Extension
+			namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinitions"
+			mustUnderstand="yes" />
+	</Extensions>
+
+	<Import importType=" http://docs.oasis-open.org/tosca/ns/2011/12"
+		namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
+		location="../ToscaVerigraph_compliance/ToscaVerigraphDefinitions.xml" />
+
+
+	<ServiceTemplate id="dummyTemplate">
+
+		<TopologyTemplate id="dummyTopology">
+			<NodeTemplate id="user1" name="Host" type="EndhostType">
+				<Properties confID="blabla" confDescr="blabla2">
+					<JSON>
+						{
+						"body": "sex",
+						"protocol": "HTTP_REQUEST",
+						"destination": "webserver"
+						}
+					</JSON>
+				</Properties>
+			</NodeTemplate>
+
+			<NodeTemplate id="nat" name="NAT" type="NatType">
+				<Properties>
+					<Configuration>
+						<JSON>
+							"user1"
+						</JSON>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+
+			<NodeTemplate id="dpi" name="DPI" type="DpiType">
+				<Properties>
+					<Configuration>
+						<JSON>
+							"sex", "droga"
+						</JSON>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+
+			<NodeTemplate id="webserver" name="Endpoint" type="Endpoint" />
+
+
+			<RelationshipTemplate id="user1ToNat" type="linkedTo">
+				<SourceElement ref="user1" />
+				<TargetElement ref="nat" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="natToDpi" type="linkedTo">
+				<SourceElement ref="nat" />
+				<TargetElement ref="dpi" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="dpiToWebserver" type="linkedTo">
+				<SourceElement ref="dpi" />
+				<TargetElement ref="webserver" />
+			</RelationshipTemplate>
+
+		</TopologyTemplate>
+	</ServiceTemplate>
+
+
+</Definitions>
