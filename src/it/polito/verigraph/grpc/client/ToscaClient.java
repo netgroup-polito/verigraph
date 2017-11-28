@@ -10,30 +10,19 @@ import java.util.logging.Logger;
 import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import com.google.protobuf.Message;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.grpc.tosca.*;
-import it.polito.verigraph.grpc.client.*;
 import it.polito.verigraph.grpc.*;
-import it.polito.verigraph.grpc.Policy.PolicyType;
+import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
 import it.polito.verigraph.tosca.classes.*;
 import it.polito.verigraph.tosca.*;
-
-import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
-
 
 public class ToscaClient {
 	
@@ -104,8 +93,9 @@ public class ToscaClient {
     /** Creates a new TopologyTemplate, takes in input a tosca compliant filename */   
     public NewTopologyTemplate createTopologyTemplate(String toscaFile) {
     	try {
-	    	TServiceTemplate serviceTemplate = XmlParsingUtils.obtainServiceTemplate(toscaFile); 
-	    	
+    		List<TServiceTemplate> serviceTList = XmlParsingUtils.obtainServiceTemplates(toscaFile); 
+	    	TServiceTemplate serviceTemplate = serviceTList.get(0); //obtain only the first ServiceTemplate of the TOSCA compliance file
+
 	    	//Retrieving of list of NodeTemplate and RelationshipTemplate
 	    	List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
 	    	List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();	    
@@ -132,24 +122,30 @@ public class ToscaClient {
     		return response;
     	} catch (StatusRuntimeException ex) {
     		warning("[createTopologyTemplate] RPC failed : " + ex.getStatus());
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
     	} catch (IOException ex) {
     		warning("[createTopologyTemplate] RPC failed : ");
     		ex.printStackTrace();
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         } catch (JAXBException ex) {
         	warning("[createTopologyTemplate] RPC failed : ");
     		ex.printStackTrace();
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         } catch (ClassCastException ex) {
         	warning("[createTopologyTemplate] RPC failed : ");
     		ex.printStackTrace();
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         } catch (DataNotFoundException ex) {
         	warning("[createTopologyTemplate] RPC failed : ");
     		ex.printStackTrace();
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         }
 }   
     /** Update a TopologyTemplate, takes in input a tosca compliant filename */   
     public NewTopologyTemplate updateTopologyTemplate(String toscaFile, long id) {
     	try {
-	    	TServiceTemplate serviceTemplate = XmlParsingUtils.obtainServiceTemplate(toscaFile); 
+	    	List<TServiceTemplate> serviceTList = XmlParsingUtils.obtainServiceTemplates(toscaFile); 
+	    	TServiceTemplate serviceTemplate = serviceTList.get(0); //obtain only the first SerivceTemplate of the TOSCA compliance file
 	    	
 	    	//Retrieving of list of NodeTemplate and RelationshipTemplate
 	    	List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
@@ -172,23 +168,27 @@ public class ToscaClient {
     		if(response.getSuccess())
     			info("[updateTopologyTemplate] TopologyTemplate successfully updated.");
 	    	else
-	    		warning("[updateTopologyTemplate] RPC failed on updateTopologyTemplate : " + response.getErrorMessage());
-    	
+	    		warning("[updateTopologyTemplate] RPC failed on updateTopologyTemplate : " + response.getErrorMessage());    	
     		return response;
     	} catch (StatusRuntimeException ex) {
     		warning("[updateTopologyTemplate] RPC failed : " + ex.getStatus());
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
     	} catch (IOException ex) {
     		warning("[updateTopologyTemplate] RPC failed : ");
     		ex.printStackTrace();
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         } catch (JAXBException ex) {
         	warning("[updateTopologyTemplate] RPC failed : ");
     		ex.printStackTrace();
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         } catch (ClassCastException ex) {
         	warning("[updateTopologyTemplate] RPC failed : ");
     		ex.printStackTrace();
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         } catch (DataNotFoundException ex) {
         	warning("[updateTopologyTemplate] RPC failed : ");
     		ex.printStackTrace();
+    		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         }
 }   
     
@@ -201,13 +201,12 @@ public class ToscaClient {
             if(response.getSuccess())
             	info("[deleteTopologyTemplate] TopologyTemplate successfully deleted.");
             else
-            	warning("[deleteTopologyTemplate] Error deleting TopologyTemplate : " + response.getErrorMessage());
-            
+            	warning("[deleteTopologyTemplate] Error deleting TopologyTemplate : " + response.getErrorMessage());           
             return response;
+            
         } catch (StatusRuntimeException ex) {
         	warning("[deleteTopologyTemplate] RPC failed : " + ex.getStatus());
-            Status errStatus = Status.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
-            return errStatus;
+            return Status.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         }
     }
     
@@ -274,7 +273,7 @@ public class ToscaClient {
             return response;
         } catch (StatusRuntimeException e) {
             warning("[verifyToscaPolicy] RPC failed: " + e.getStatus());
-            return null;
+            return ToscaVerificationGrpc.newBuilder().setSuccessOfOperation(false).setErrorMessage(e.getStackTrace().toString()).build();
         }
     }
     
