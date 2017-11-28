@@ -1,49 +1,23 @@
 package it.polito.verigraph.grpc.client;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.FileHandler;
-import java.util.logging.SimpleFormatter;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
 import it.polito.verigraph.tosca.classes.*;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import it.polito.verigraph.tosca.classes.*;
-
-import com.google.protobuf.Message;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
-import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
 import it.polito.verigraph.grpc.tosca.*;
 import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
-
-import it.polito.verigraph.tosca.*;
-
 
 
 public class ToscaClientGrpcUtils {
 	
 	/** Default configuration for a Tosca node non compliant with Verigraph types*/
 	public static final String defaultConfID = new String("0");
-	public static final String defaultDescr = new String("Default Confiuration");
+	public static final String defaultDescr = new String("Default Configuration");
 	public static final String defaultConfig = new String("");//add endhost default configuration
 	
 	
 
     /** Method for parsing a tosca Node into a Grpc Node */
-    public NodeTemplateGrpc parseNodeTemplate(TNodeTemplate toscaNode) {
+    public static NodeTemplateGrpc parseNodeTemplate(TNodeTemplate toscaNode) {
     	
     	Boolean isVerigraphCompl = true;
     	
@@ -107,5 +81,25 @@ public class ToscaClientGrpcUtils {
     	return parsed.build();
     }
 	
+    
+    
+    /** Cast a tosca RelationshipTemplate into a grpc RelationshipTemplate */
+    public static RelationshipTemplateGrpc parseRelationshipTemplate(TRelationshipTemplate toscaRel)
+    	throws ClassCastException{
+    	
+    	RelationshipTemplateGrpc.Builder parsed = RelationshipTemplateGrpc.newBuilder();
+    	
+    	parsed.setId(Long.valueOf(toscaRel.getId()).longValue())
+    		.setName(toscaRel.getName());
+    	
+    	String source = ((QName)toscaRel.getSourceElement().getRef()).getLocalPart();
+    	String target = ((QName)toscaRel.getTargetElement().getRef()).getLocalPart();
+    	
+    	parsed.setIdSourceNodeTemplate(Long.valueOf(source).longValue())
+    		.setIdTargetNodeTemplate(Long.valueOf(target).longValue());
+    	
+    	return parsed.build();
+    }
+    
 
 }
