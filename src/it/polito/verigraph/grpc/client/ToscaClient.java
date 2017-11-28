@@ -34,6 +34,7 @@ import it.polito.verigraph.tosca.*;
 import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
 import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
 
+
 public class ToscaClient {
 	
     private final ManagedChannel channel;
@@ -52,6 +53,7 @@ public class ToscaClient {
     	  blockingStub = ToscaVerigraphGrpc.newBlockingStub(channel);
     	  setUpLogger();
     }
+    
     
     /** Close the channel */
     public void shutdown() throws InterruptedException {
