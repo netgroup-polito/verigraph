@@ -28,7 +28,7 @@ import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc;
 
 public class ToscaService {
     /** Port on which the server should run. */
-    private static final Logger logger = Logger.getLogger(Service.class.getName());
+    private static final Logger logger = Logger.getLogger(ToscaService.class.getName());
     private static final int port = 50051;
     private static final String internalError = "Internal Server Error";
     private Server server;
