@@ -41,8 +41,7 @@ public class ToscaClient {
     private final ToscaVerigraphBlockingStub blockingStub;
     private static final Logger logger = Logger.getLogger(ToscaClient.class.getName());
     private static FileHandler fh;
-    
-    
+       
     public ToscaClient(String host, int port) {
         this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true));
     }
@@ -53,8 +52,7 @@ public class ToscaClient {
     	  blockingStub = ToscaVerigraphGrpc.newBlockingStub(channel);
     	  setUpLogger();
     }
-    
-    
+        
     /** Close the channel */
     public void shutdown() throws InterruptedException {
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
