@@ -1,6 +1,5 @@
 package it.polito.verigraph.grpc.client;
 
-
 import javax.xml.namespace.QName;
 import it.polito.verigraph.tosca.classes.*;
 import it.polito.verigraph.grpc.tosca.*;
@@ -14,10 +13,15 @@ public class ToscaClientGrpcUtils {
 	public static final String defaultDescr = new String("Default Configuration");
 	public static final String defaultConfig = new String("");//add endhost default configuration
 	
+	/** Helper for Client interface*/
+	public static final String helper = new String("");
+	
+	
 	
 
     /** Method for parsing a tosca Node into a Grpc Node */
-    public static NodeTemplateGrpc parseNodeTemplate(TNodeTemplate toscaNode) {
+    public static NodeTemplateGrpc parseNodeTemplate(TNodeTemplate toscaNode)
+    	throws ClassCastException{
     	
     	Boolean isVerigraphCompl = true;
     	
@@ -62,16 +66,16 @@ public class ToscaClientGrpcUtils {
     	}
     	
     	
-    	ConfigurationGrpc grpcConfig;
+    	ToscaConfigurationGrpc grpcConfig;
     	
     	if(isVerigraphCompl) {
     		TConfiguration nodeConfig = ((TConfiguration)toscaNode.getProperties().getAny());
-        	grpcConfig = ConfigurationGrpc.newBuilder()
+        	grpcConfig = ToscaConfigurationGrpc.newBuilder()
    			 	 .setId(nodeConfig.getConfID())
    				 .setDescription(nodeConfig.getConfDescr())
    			     .setConfiguration(nodeConfig.getJSON()).build();
     	}else {
-        	grpcConfig = ConfigurationGrpc.newBuilder()
+        	grpcConfig = ToscaConfigurationGrpc.newBuilder()
    			 	 .setId(ToscaClientGrpcUtils.defaultConfID)
    				 .setDescription(ToscaClientGrpcUtils.defaultDescr)
    			     .setConfiguration(ToscaClientGrpcUtils.defaultConfig).build();
@@ -79,6 +83,7 @@ public class ToscaClientGrpcUtils {
 	
     	parsed.setConfiguration(grpcConfig);
     	return parsed.build();
+    
     }
 	
     

@@ -3,12 +3,14 @@ package it.polito.verigraph.grpc.client;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
+import java.util.Scanner;
+import java.util.NoSuchElementException;
 
 import java.io.IOException;
 import io.grpc.ManagedChannel;
@@ -19,10 +21,13 @@ import javax.xml.bind.JAXBException;
 
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.grpc.tosca.*;
+import it.polito.verigraph.grpc.tosca.GetRequest;
+import it.polito.verigraph.grpc.tosca.Status;
 import it.polito.verigraph.grpc.*;
 import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
 import it.polito.verigraph.tosca.classes.*;
 import it.polito.verigraph.tosca.*;
+
 
 public class ToscaClient {
 	
@@ -30,7 +35,11 @@ public class ToscaClient {
     private final ToscaVerigraphBlockingStub blockingStub;
     private static final Logger logger = Logger.getLogger(ToscaClient.class.getName());
     private static FileHandler fh;
-       
+    
+    private HashMap<Long,TopologyTemplateGrpc> myTemplates = new HashMap<Long,TopologyTemplateGrpc>(); 
+    
+    
+    
     public ToscaClient(String host, int port) {
         this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true));
     }
@@ -276,6 +285,68 @@ public class ToscaClient {
             return ToscaVerificationGrpc.newBuilder().setSuccessOfOperation(false).setErrorMessage(e.getStackTrace().toString()).build();
         }
     }
+    
+    
+    
+    
+    public static void main(String args[]){
+    	System.out.println("[grpcClient] Welcome to Verigraph Verification Serivice grpcClient...");
+    	
+    	Scanner input = new Scanner(System.in);
+    	String command;
+    	Long idref;
+    	
+    	while(true) {
+    		System.out.println("[grpcClient] Insert command :");	
+    		try{
+    			command = input.next();
+    			switch (command.toUpperCase()) {
+    				case "GETALL": //gettopologyTemplates
+    					this.getAll();
+    					break;
+    				case "GET":
+    					//handle get
+    					break;
+    				case "CREATE":
+    					//handle create
+    					break;
+    				case "DELETE":
+    					//handle delete
+    					break;
+    				case "UPDATE":
+    					//handle update
+    					break;
+    				case "VERIFY":
+    					//handle update
+    					break;
+    				case "HELP":
+    					System.out.println(ToscaClientGrpcUtils.helper);
+    					break;
+    				case "CLOSE":
+    					//to be defined
+    					break;
+    				default:
+    					//clean line
+    					System.out.println(ToscaClientGrpcUtils.helper);
+    					break;
+    			}
+    		
+    		}catch(NoSuchElementException ex) {
+    			System.err.println("[toscaClient] Unrecognized or incorrect command,"
+    					+ " type help to know how to use the client...");
+    			continue;
+    		}
+    	}
+    	
+    	
+    }
+    
+
+    
+    
+    
+    
+    
     
     /** The clients prints logs on File - to be defined, two levels of log*/
     private void setUpLogger(){
