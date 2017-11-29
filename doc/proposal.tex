@@ -1,6 +1,31 @@
-\input{../preamble}
+%\input{preamble}
+\documentclass{report}
+\usepackage[latin1]{inputenc}% per macchine Windows
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{url}
+\usepackage{xspace}
+\usepackage{enumitem}
+\newcommand{\eg}{e.g.\xspace}
+\newcommand{\ie}{i.e.\xspace}
+\setlength\parindent{0pt}
+\usepackage{mathtools}
 
-\author{Serena Spinoso}
+\usepackage{listings}
+\lstset{
+	tabsize=2,
+	basicstyle=\ttfamily\footnotesize,
+	stringstyle=\ttfamily,
+	%    title=\lstname,
+	numbers=none,
+	numberstyle=\scriptsize,
+	numbersep=3pt, stepnumber=2,
+	firstnumber=1,
+	numberfirstline=true,
+	escapeinside={(*@}{@*)},
+	frameround=fttt,
+	aboveskip={-0\baselineskip},
+}
 
 \begin{document}
 

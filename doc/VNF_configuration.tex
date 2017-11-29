@@ -7,8 +7,9 @@ The semantic of the configuration parameters passed to VeriGraph depends on the 
 	\item \textbf{End-host, Mail Client/Server, Web CLient/Server}: at this version of VeriGraph, the tool does not support end-host configurations. This means that we cannot specify which traffic flow end-hosts send without changing their models (e.g., a client can generate packet with specific port number, destination address etc.). It could be useful to extend end-host model in this direction.
 \end{itemize}
 
-To better understand the information that VeriGraph needs to create the verification scenario, we show an example of JSON file~\footnote{Note that this is note the actual implementation of how VeriGraph supports the function configuration, but a simple example to clarify what VeriGraph expects.} that contains the configurations of each VNF involved in a generic chain, where we have included also the end-hosts configuration to have a complete understanding of the network scenario:
-\begin{lstlisting}[language=json,firstnumber=1]
+To better understand the information that VeriGraph needs to create the verification scenario, we show an example of JSON file~\footnote{Note that this is note the actual implementation of how VeriGraph supports the function configuration, but a simple example to clarify what VeriGraph expects.} that contains the configurations of each VNF involved in a generic chain, where we have included also the end-hosts configuration to have a complete understanding of the network scenario:\\
+
+\begin{lstlisting}[firstnumber=1]
 { "nodes": [ {
       "id": "mail-cliet",
       "description": "traffic flow specification",

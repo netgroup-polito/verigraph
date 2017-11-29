@@ -1,14 +1,14 @@
 VeriGraph models the network as a set of network nodes that send and receive packets. Each packet has a static structure, which is:
 \begin{figure}[h]
 	{\footnotesize
-		\begin{subequations}
-			\begin{align}
+		\begin{equation}
+			%\begin{align}
 				\begin{split}
 					Packet = \{& src, dst, origin, origin\_body, body,\\
 					&   seq, proto, emailFrom, url, options\}
 				\end{split}
-			\end{align}
-		\end{subequations}}
+			%\end{align}
+		\end{equation}}
 	\end{figure}
 \begin{itemize}
 	\item \textit{src} and \textit{dst} are the source and destination addresses of the current packet;
@@ -35,10 +35,11 @@ VeriGraph library provides also a set of functions for retrieving some useful in
 	\item \textit{Bool recv(node\_src, node\_dst, packet, time\_t)}:  this function returns a boolean and models a destination node (\textit{node\_dst}) that has received  a packet (\textit{packet}) at time \textit{time\_t} from a source node (\textit{node\_src}). 
 \end{itemize} 
 Hence the \textit{send} and \textit{recv} functions (as well the other previously defined) are the means to impose conditions for describing how network and VNFs operate. In particular, VeriGraph has already a set of conditions imposed on those two functions in order to model the fundamentals principals of a correct forwarding behaviour. The formulas of such conditions are:
+\\
 \begin{figure}[h]
 	{\footnotesize
-		\begin{subequations}
-			\begin{align}
+		\begin{equation}
+			%\begin{align}
 				\begin{split}
 					\label{send-formulas}
 					(send(n_{0}, n_{1}, p_{0}, t_{0})) \implies (& n_{0} \neq n_{1} \wedge p_{0}.src \neq p_{0}.dst \wedge \\
@@ -46,43 +47,44 @@ Hence the \textit{send} and \textit{recv} functions (as well the other previousl
 					& dport(p_{0}) \geq 0 \wedge dport(p_{0}) < MAX\_PORT \wedge \\
 					& t_{0} > 0 ), \quad \forall n_{0}, p_{0}, t_{0} \\
 				\end{split}
-			\end{align}
-		\end{subequations}}
+%			\end{align}
+		\end{equation}}
 \end{figure} 
 \begin{figure}[h]
 		{\footnotesize
-			\begin{subequations}
-				\begin{align}
+			\begin{equation}
+				%\begin{align}
 					\begin{split}
-						\label{recv-formulas}
+						%\label{recv-formulas}
  					    (recv(n_{0}, n_{1}, p_{0}, t_{0})) \implies (& n_{0} \neq n_{1} \wedge p_{0}.src \neq p_{0}.dst \wedge \\
  					    & sport(p_{0}) \geq 0 \wedge sport(p_{0}) < MAX\_PORT \wedge \\
  					    & dport(p_{0}) \geq 0 \wedge dport(p_{0}) < MAX\_PORT \wedge \\
  					    &\exists (t_{1}) | (send(n_{0}, n_{1}, p_{0}, t_{1}) \wedge t_{1} < t_{0} \wedge \\
  					    & t_{1} > 0 \wedge t_{0} > 0 ), \quad \forall n_{0}, p_{0}, t_{0} \\
 					\end{split}
-				\end{align}
+				%\end{align}
 				\label{formula1}
-			\end{subequations}}
-\end{figure} \\
-Formula~\ref{send-formulas} states that the source and destination nodes (\textit{$n_0$} and \textit{$n_1$}) must be different, as well source and destination addresses in the packet (\textit{$p_0.src$} and \textit{$p_0.dst$}). The source and destination ports must also be defined in a valid range of values and the sending time must be a positive value. In Formula~\ref{recv-formulas}, we can find the conditions for receiving a packet (similar to the formula for sending), but we have to consider an additional constrain: if a packet is received by a node (\textit{$n_1$}), this implies that this packet was previously sent to that node.   
+			\end{equation}}
+\end{figure} 
+\\
+Formula~\ref{send-formulas} states that the source and destination nodes (\textit{$n_0$} and \textit{$n_1$}) must be different, as well source and destination addresses in the packet (\textit{$p_0.src$} and \textit{$p_0.dst$}). The source and destination ports must also be defined in a valid range of values and the sending time must be a positive value. In Formula~\ref{formula1}, we can find the conditions for receiving a packet (similar to the formula for sending), but we have to consider an additional constrain: if a packet is received by a node (\textit{$n_1$}), this implies that this packet was previously sent to that node.   
 
 Finally, it is possible that source and destination nodes may be no directly connected, but they can exchange traffic through a set of functions. These functions process and potentially can modify received packets before forwarding them toward the final destination (e.g., NATs modify IP addresses). 
 
 In order to verify the correctness of reachability properties in presence of such functions, we have to assume that the original sent packet could be different from the received one. Hence VeriGraph ca verify the reachability between the \textit{$src$} and \textit{$dest$} nodes in presence of a set of middleboxes thanks to the following formula:
 \begin{figure}[h]
 	{\footnotesize
-		\begin{subequations}
-			\begin{align}
+		\begin{equation}
+			%\begin{align}
 				\begin{split}
 				\exists (n_{0}, n_{1}, p_{0}, p_{1}, t_{0}, t_{1}) \; |&  \; (send(src, n_{1}, p_{1}, t_{1}) \wedge nodeHasAddr(src, p_{1}.src) \wedge \\
 				& p_{1}.origin == src  \wedge nodeHasAddr(dest, p_{1}.dst) \wedge   \\
 				&  recv(n_{0}, dest, p_{0}, t_{0}) \wedge nodeHasAddr(dest, p_{0}.dst) \\
 				& \wedge p_{1}.origin == p_{0}.origin )
 				\end{split}
-			\end{align}
+			%\end{align}
 			\label{formula}
-		\end{subequations}}
+		\end{equation}}
 \end{figure}
 \\
 Here we are modelling the case of a source node (\textit{$src$}) that is sending a packet (\textit{$p_{1}$}) to a destination node \textit{$dst$} (\textit{$send(src, n_{1}, p_{1}, t_{1}) \wedge nodeHasAddr(dest, p_{1}.dst)$}), of which we want to check the reachability between each other. The sent packet is delivered to the first chain node (\textit{$n_{1}$}) that connect source and destination nodes and must also have the address of the \textit{$src$} node as source address (\textit{$nodeHasAddr(src, p_{1}.src)$}). As we have already explained, the destination node may receive a different packet from the one sent, because VNFs could modify the sent packet in its trip towards the destination. Thus we have to impose that the destination node receives a new packet (\textit{$p_{0}$}) from the last chain node (\textit{$n_{0}$}): the received packet  must have the address of the \textit{$dest$} node as destination, but it must have anyway the same origin of the sent packet (\textit{$p_{1}.origin == p_{0}.origin $}).
@@ -90,12 +92,12 @@ Here we are modelling the case of a source node (\textit{$src$}) that is sending
 Please note that Formula~\ref{formula} can be substituted by a simplified version thanks to the condition expressed in formula~\ref{formula1}; the simpler formula is the following: 
 \begin{figure}[h]
 	{\footnotesize
-		\begin{subequations}
-			\begin{align}
+		\begin{equation}
+%			\begin{align}
 				\begin{split}
 					\exists (n_{0}, p_{0}, t_{0}) \; |&  \; (recv(n_{0}, dest, p_{0}, t_{0}) \wedge nodeHasAddr(dest, p_{0}.dst) \wedge \\
 					& p_{0}.origin == src )
 				\end{split}
-			\end{align}
-		\end{subequations}}
+%			\end{align}
+		\end{equation}}
 \end{figure}

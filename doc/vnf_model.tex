@@ -24,7 +24,6 @@ An end-host is a network node which sends packets towards a destination and rece
 		\end{subequations}
 	}%
 	\caption{End-host model.}
-	\label{end-host_model}
 \end{figure}
 \\
 At this version of VeriGraph, the tool does not support end-host configurations, as well as the other end-host-based models (i.e., servers and clients). In other words, we cannot specify which traffic flow an end-host sends, without changing its model (e.g., a client can generate packet with specific port number, destination address etc.). It could be useful to extend VeriGraph to support end-host configurations.
@@ -43,14 +42,14 @@ At this version of VeriGraph, the tool does not support end-host configurations,
 					& p_{0}.dst = ip\_mail\_client \wedge p_{0}.emailFrom = mail\_server), \\
 					& \forall (n_{0}, p_{0}, t_{0})
 				\end{split} \\
-			\end{align}
-		\end{subequations}
-	}
-\end{figure}
-\begin{figure}
-	{\footnotesize
-		\begin{subequations} 
-		\begin{align}
+%			\end{align}
+%		\end{subequations}
+%	}
+%\end{figure}
+%\begin{figure}
+%	{\footnotesize
+%		\begin{subequations} 
+%		\begin{align}
 				\begin{split}
 					\label{mail-server_constr2}
 					(se& nd(mail\_server , n_{0}, p_{0}, t_{0}) \wedge p_{0}.proto = POP3\_RESPONSE) \implies \\
@@ -219,8 +218,6 @@ A different type of function is a NAT, which needs the notion of internal and ex
 \end{figure}
 
 In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_constr1} states for an internal node which initiates a communication with an external node. In this case, the NAT sends a packet (\textit{$p_0$}) to an external address (\textit{$\neg isPrivateAddress(p_{0}.dst)$}), if and only if it has previously received a packet (\textit{$p_1$}) from an internal node (\textit{$isPrivateAddress(p_{1}.src)$}). The received and sent packets must be equal for all fields, except for the \textit{src}, which must be equal to the NAT public address (\textit{$ip\_nat$}).\\
-
-
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
@@ -259,7 +256,6 @@ In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_cons
 	\caption{NAT model.}
 	\label{nat_model}
 \end{figure}
-
 On the other hand, the traffic from the external network to the private is modelled by Formula ~\ref{nat_constr2}. In this case, if the NAT is sending a packet to an internal address (\textit{$isPrivateAddress(p_{0}.dst)$}), this packet (\textit{$p_0$}) must have an external address as its source (\textit{$\neg isPrivateAddress(p_{0}.src)$}). Moreover, \textit{$p_0$} must be preceded by another packet (\textit{$p_1$}), which is, in turn, received by the NAT and it is equal to \textit{$p_0$} for all the other fields. It is worth noting that, generally, a communication between internal and external nodes cannot be started by the external node in presence of a NAT. As a consequence, this condition is expressed in the Formula~\ref{nat_constr2} by imposing that \textit{$p_1$} must be preceded by another packet \textit{$p_2$} (\textit{$(t_{2} < t_{1} \wedge recv(n_{2}, nat, p_{2}, t_{2})$}), sent to the NAT from an internal node (\textit{$isPrivateAddress(p_{2}.src)$}).
 
 \paragraph{Web Cache model} A simple version of web cache can be modelled with three formulas (Formulas~\ref{cache_constr1},~\ref{cache_constr2} and~\ref{cache_constr3}), where we have a notion of internal addresses (\textit{$isInternal$} function), which are configured when the chain model is created. VeriGraph follows a similar approach to the NAT model (Formula~\ref{nat_configuration1}) for configuring the internal nodes. For instance, if the internal network is composed of two nodes \textit{nodeA} and \textit{nodeB}, VeriGraph will give an interpretation to the \textit{isInternal} function by means of Formula~\ref{web-cache_configuration1}.
