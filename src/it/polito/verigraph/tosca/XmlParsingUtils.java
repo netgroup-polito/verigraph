@@ -10,6 +10,7 @@ package it.polito.verigraph.tosca;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import it.polito.verigraph.exception.DataNotFoundException;
+import it.polito.verigraph.grpc.client.ToscaClientGrpcUtils;
+import it.polito.verigraph.grpc.tosca.*;
 import it.polito.verigraph.tosca.classes.TConfiguration;
 import it.polito.verigraph.tosca.classes.TDefinitions;
 import it.polito.verigraph.tosca.classes.TEntityTemplate;
@@ -35,6 +38,27 @@ import it.polito.verigraph.tosca.classes.TServiceTemplate;
 import it.polito.verigraph.tosca.classes.TTopologyTemplate;
 
 public class XmlParsingUtils {
+	
+	/** Returns the (first) TopologyTemplate found in the TOSCA-compliant XML file */
+	public static TopologyTemplateGrpc obtainTopologyTemplateGrpc (String filepath) throws IOException, JAXBException, DataNotFoundException, ClassCastException{
+		List<TServiceTemplate> serviceTList = obtainServiceTemplates(filepath);
+		TServiceTemplate serviceTemplate = serviceTList.get(0); //obtain only the first ServiceTemplate of the TOSCA compliance file
+
+		//Retrieving of list of NodeTemplate and RelationshipTemplate
+	    List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
+	    List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();	    
+	    for(TNodeTemplate nt : obtainNodeTemplates(serviceTemplate) )
+	    	nodes.add(ToscaClientGrpcUtils.parseNodeTemplate(nt));
+	    for(TRelationshipTemplate rt : obtainRelationshipTemplates(serviceTemplate) )
+	    	relats.add(ToscaClientGrpcUtils.parseRelationshipTemplate(rt));
+	    
+	    //Creating TopologyTemplateGrpc object to be sent to server
+	    return TopologyTemplateGrpc.newBuilder()
+	    		.setId(0) //Setting Id of the new topology template, could be passed as parameter
+	    		.addAllNodeTemplate(nodes)
+	    		.addAllRelationshipTemplate(relats)
+	    		.build();
+	}
 	
 	/** Returns a List of TServiceTemplate JAXB-generated objects, parsed from a TOSCA-compliant XML. */
     public static List<TServiceTemplate> obtainServiceTemplates(String file) throws JAXBException, IOException, ClassCastException, DataNotFoundException {
