@@ -20,14 +20,16 @@
 
 		<TopologyTemplate id="dummyTopology">
 			<NodeTemplate id="user1" name="Host" type="EndhostType">
-				<Properties confID="blabla" confDescr="blabla2">
-					<JSON>
-						{
-						"body": "sex",
-						"protocol": "HTTP_REQUEST",
-						"destination": "webserver"
-						}
-					</JSON>
+				<Properties>
+					<Configuration confID="blabla" confDescr="blabla2" >
+						<JSON>
+							{
+							"body": "sex",
+							"protocol": "HTTP_REQUEST",
+							"destination": "webserver"
+							}
+						</JSON>
+					</Configuration>
 				</Properties>
 			</NodeTemplate>
 

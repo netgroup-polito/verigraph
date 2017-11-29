@@ -10,7 +10,7 @@
  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
  
 	<!-- INIZIO MODIFICHE AL TOSCA.xsd -->
-	 <xs:import namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraph/NodeTypes" schemaLocation="./ToscaTypes.xsd" />
+	 <xs:import namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition" schemaLocation="./ToscaTypes.xsd" />
 	<!-- FINE MODIFICHE AL TOSCA.xsd -->
   
  <xs:element name="documentation" type="tDocumentation"/>

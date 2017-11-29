@@ -1,140 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema	xmlns="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraph/NodeTypes"
+<xsd:schema	xmlns="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraph/NodeTypes"> 
-<!--  
-	<xsd:complexType name="tAntispamProperties">
-		<xsd:sequence>
-			<xsd:element name="spamSource" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="AntispamProperties" type="tAntispamProperties" />
-	
-	
-	<xsd:complexType name="tCacheProperties">
-		<xsd:sequence>
-			<xsd:element name="resource" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="CacheProperties" type="tCacheProperties" />
-	
-	
-	<xsd:complexType name="tDpiProperties">
-		<xsd:sequence>
-			<xsd:element name="notAllowed" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="DpiProperties" type="tDpiProperties" />
-	
-	
-	<xsd:complexType name="tEndhostProperties">
-		<xsd:attribute name="body" type="xsd:string" />
-		<xsd:attribute name="sequence" type="xsd:integer" />
-		<xsd:attribute name="protocol">
-			<xsd:simpleType>
-			   	<xsd:restriction base="xsd:string">
-			   		<xsd:enumeration value="HTTP_REQUEST"/>
-			   		<xsd:enumeration value="HTTP_RESPONSE"/>
-		      		<xsd:enumeration value="POP3_REQUEST"/>
-		      		<xsd:enumeration value="POP3_RESPONSE"/>
-		 	  	</xsd:restriction>
-		  	</xsd:simpleType>
-		</xsd:attribute>
-		<xsd:attribute name="email_from" type="xsd:string" />
-		<xsd:attribute name="url" type="xsd:string" />
-		<xsd:attribute name="options" type="xsd:string" />
-		<xsd:attribute name="destination" type="xsd:string" />
-	</xsd:complexType>
-	<xsd:element name="EndhostProperties" type="tEndhostProperties" />	
-	
-	
-	<xsd:complexType name="tEndpointProperties">
-		<xsd:sequence>
-			<xsd:element name="name" type="xsd:string" nillable="true" />
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="EndpointProperties" type="tEndpointProperties" />
-	
-	
-	<xsd:complexType name="tFieldModifierProperties">
-		<xsd:sequence>
-			<xsd:element name="name" type="xsd:string" nillable="true" />
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="FieldModifierProperties" type="tFieldModifierProperties" />	
-	
+			targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"> 
 
-  	<xsd:complexType name="tFirewallProperties">
-    	<xsd:sequence>
-      		<xsd:element name="elements" minOccurs="0" maxOccurs="unbounded" >
-        	<xsd:complexType>
-            	<xsd:sequence>
-              		<xsd:element name="source" type="xsd:string" />
-              		<xsd:element name="destination" type="xsd:string" />
-            	</xsd:sequence>
-          	</xsd:complexType>
-      		</xsd:element>
-    	</xsd:sequence>
-  	</xsd:complexType>
-  	<xsd:element name="FirewallProperties" type="tFirewallProperties" />
-  	
-  	
-	<xsd:complexType name="tMailclientProperties">
-		<xsd:attribute name="mailserver" type="xsd:string" use="required" />
-	</xsd:complexType>
-	<xsd:element name="MailclientProperties" type="tMailclientProperties" /> 
-	
-	
-	<xsd:complexType name="tMailserverProperties">
-		<xsd:sequence>
-			<xsd:element name="name" type="xsd:string" nillable="true" />
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="MailserverProperties" type="tMailserverProperties" />	
- 
- 
- 
- 	<xsd:complexType name="tNatProperties">
-		<xsd:sequence>
-			<xsd:element name="name" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="NatProperties" type="tNatProperties" />
-	
-	
-	<xsd:complexType name="tVpnAccessProperties">
-		<xsd:attribute name="vpnExit" type="xsd:string" use="required" />
-	</xsd:complexType>
-	<xsd:element name="VpnAccessProperties" type="tVpnAccessProperties" />
-	
-	
-	<xsd:complexType name="tVpnExitProperties">
-		<xsd:attribute name="vpnAccess" type="xsd:string" use="required" />
-	</xsd:complexType>
-	<xsd:element name="VpnExitProperties" type="tVpnExitProperties" />
-	
-	
-	<xsd:complexType name="tWebclientProperties">
-		<xsd:attribute name="webserverName" type="xsd:string" use="required" />
-	</xsd:complexType>
-	<xsd:element name="WebclientProperties" type="tWebclientProperties" />
-	
-	
-	<xsd:complexType name="tWebserverProperties">
-		<xsd:sequence>
-			<xsd:element name="name" type="xsd:string" nillable="true" />
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="WebserverProperties" type="tWebserverProperties" />
- -->	
-	
 	<!-- Generic Configuration type, JSON string common to all FunctionalTypes -->
 	<xsd:complexType name="tConfiguration">
 		<xsd:sequence>
-			<xsd:element name="JSON" type="xsd:string" maxOccurs="1"/>
+			<xsd:element name="JSON" type="xsd:string"/>
 		</xsd:sequence>
 		<xsd:attribute name="confID" type="xsd:string"/>
 		<xsd:attribute name="confDescr" type="xsd:string"/>
 	</xsd:complexType>
+	
+	<xsd:element name="Configuration" type="tConfiguration" />
 	
 </xsd:schema>

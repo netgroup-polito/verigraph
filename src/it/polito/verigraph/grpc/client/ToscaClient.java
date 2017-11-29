@@ -21,8 +21,6 @@ import javax.xml.bind.JAXBException;
 
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.grpc.tosca.*;
-import it.polito.verigraph.grpc.tosca.GetRequest;
-import it.polito.verigraph.grpc.tosca.Status;
 import it.polito.verigraph.grpc.*;
 import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
 import it.polito.verigraph.tosca.classes.*;
@@ -37,7 +35,6 @@ public class ToscaClient {
     private static FileHandler fh;
     
     private HashMap<Long,TopologyTemplateGrpc> myTemplates = new HashMap<Long,TopologyTemplateGrpc>(); 
-    
     
     
     public ToscaClient(String host, int port) {
@@ -80,6 +77,7 @@ public class ToscaClient {
     	return templates;
     }   
     
+    
     /** Obtain a TopologyTemplate by ID */
     public TopologyTemplateGrpc getTopologyTemplate(long id) {
         ToscaRequestID request = ToscaRequestID.newBuilder().setIdTopologyTemplate(id).build();
@@ -98,6 +96,7 @@ public class ToscaClient {
             return null;
         }
     }
+    
     
     /** Creates a new TopologyTemplate, takes in input a tosca compliant filename */   
     public NewTopologyTemplate createTopologyTemplate(String toscaFile) {
@@ -149,7 +148,9 @@ public class ToscaClient {
     		ex.printStackTrace();
     		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         }
-}   
+    }   
+    
+    
     /** Update a TopologyTemplate, takes in input a tosca compliant filename */   
     public NewTopologyTemplate updateTopologyTemplate(String toscaFile, long id) {
     	try {
@@ -199,7 +200,8 @@ public class ToscaClient {
     		ex.printStackTrace();
     		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         }
-}   
+    }   
+    
     
     /** Delete a TopologyTemplate by ID */
     public Status deleteTopologyTemplate(long id) {
@@ -218,6 +220,7 @@ public class ToscaClient {
             return Status.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         }
     }
+    
     
     /** Create a ToscaPolicy */
     public static ToscaPolicy createToscaPolicy(String src, String dst, String type, String middlebox, long idTopologyTemplate) throws IllegalArgumentException{
@@ -287,8 +290,6 @@ public class ToscaClient {
     }
     
     
-    
-    
     public static void main(String args[]){
     	System.out.println("[grpcClient] Welcome to Verigraph Verification Serivice grpcClient...");
     	
@@ -341,12 +342,7 @@ public class ToscaClient {
     	
     }
     
-
-    
-    
-    
-    
-    
+ 
     
     /** The clients prints logs on File - to be defined, two levels of log*/
     private void setUpLogger(){
