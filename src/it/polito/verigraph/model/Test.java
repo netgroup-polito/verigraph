@@ -10,16 +10,20 @@ package it.polito.verigraph.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.annotation.XmlTransient;
 
 public class Test {
     private List<Node> nodes= new ArrayList<Node>();
     private String result;
+    @XmlTransient
+    private String model;
+    private long graphId;
 
     public Test() {
 
     }
 
-    public Test(List<Node> paths, int result) {
+    public Test(List<Node> paths, int result, String m, long id) {
         switch (result) {
         case 0:
             this.result = "SAT";
@@ -35,11 +39,15 @@ public class Test {
             break;
         }
         this.nodes = paths;
+        this. model = m;
+        this.graphId = id;
     }
 
-    public Test(List<Node> paths, String result) {
+    public Test(List<Node> paths, String result, String m, long id) {
         this.nodes = paths;
         this.result = result;
+        this. model = m;
+        this.graphId=id;
     }
 
     public List<Node> getPath() {
@@ -58,4 +66,19 @@ public class Test {
         this.result = result;
     }
 
+    public void setModel(String m){
+        this.model= m;
+    }
+
+    public String getModel(){
+        return this.model;
+    }
+
+    public void setGraphId(long id){
+        this.graphId=id;
+    }
+
+    public long getGraphId(){
+        return this.graphId;
+    }
 }

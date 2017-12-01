@@ -82,7 +82,7 @@ public class GeneratorSolver{
         ctx = new Context(cfg);
     }
 
-    public String run(String src, String dst){
+    /*public String run(String src, String dst){
         IsolationResult result;
         result=check.checkIsolationProperty((NetworkObject)mo.get(src), (NetworkObject)mo.get(dst));
         String res=new String();
@@ -95,6 +95,20 @@ public class GeneratorSolver{
             res= "UNKNOWN";
         }
         return res;
+    }*/
+    public IsolationResult run(String src, String dst){
+        IsolationResult result;
+        result=check.checkIsolationProperty((NetworkObject)mo.get(src), (NetworkObject)mo.get(dst));
+       /* String res=new String();
+
+        if (result.result == Status.UNSATISFIABLE){
+            res="UNSAT"; // Nodes a and b are isolated
+        }else if(result.result == Status.SATISFIABLE){
+            res= "SAT";
+        }else if(result.result == Status.UNKNOWN){
+            res= "UNKNOWN";
+        }*/
+        return result;
     }
 
     public void genSolver() {

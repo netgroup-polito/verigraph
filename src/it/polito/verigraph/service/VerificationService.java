@@ -8,13 +8,20 @@
  *******************************************************************************/
 package it.polito.verigraph.service;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +38,7 @@ import it.polito.neo4j.translator.*;
 import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.exception.ForbiddenException;
+import it.polito.verigraph.mcnet.components.IsolationResult;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Test;
@@ -212,6 +220,30 @@ public class VerificationService {
         time_isolation = time_isolation +(cal_isolation_stop.getTime().getTime() - start_time_isolation.getTime());
         vlogger.logger.info("Time to check reachability policy: " + time_isolation);
         //System.out.println("Time to check reachability policy: " + time_isolation);
+
+        Logger logger = Logger.getLogger("isolation_result");
+        FileHandler fileTxt;
+        try {
+            if(System.getProperty("catalina.home") != null)
+                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/isolation_result_log"+UUID.randomUUID().toString()+".txt");
+            else fileTxt= new FileHandler("./logs/isolation_result_log"+UUID.randomUUID().toString()+".txt");
+
+            logger = Logger.getLogger(VerificationService.class.getName());
+            logger.addHandler(fileTxt);
+            logger.setLevel(Level.INFO);
+
+        } catch (IOException ex) {
+            // report
+            return isolation;
+        }
+
+        for(Test t : tests){
+            if(t.getModel() ==null)
+                logger.info("\n-------------------------\nGRAPH ID: "+ t.getGraphId()+"\n-------------------------\nVERIFICATION RESULT: UNSAT");
+            else logger.info("\n-------------------------\nGRAPH ID: "+ t.getGraphId()+"\n-------------------------\nVERIFICATION RESULT:\n"+t.getModel());
+        }
+
+        
         return isolation;
     }
 
@@ -222,7 +254,7 @@ public class VerificationService {
             for (String nodeName : path) {
                 nodes.add(graph.searchNodeByName(nodeName));
             }
-            tests.add(new Test(nodes, result));
+            tests.add(new Test(nodes, result, null, graph.getId()));
         }
         return tests;
     }
@@ -400,6 +432,30 @@ public class VerificationService {
         time_traversal = time_traversal +(cal_traversal_stop.getTime().getTime() - start_time_traversal.getTime());
         vlogger.logger.info("Time to check traversal policy: " + time_traversal);
         //System.out.println("Time to check traversal policy: " + time_traversal);
+
+        Logger logger = Logger.getLogger("traversal_result");
+        FileHandler fileTxt;
+        try {
+            if(System.getProperty("catalina.home") != null)
+                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/traversal_result_log"+UUID.randomUUID().toString()+".txt");
+            else fileTxt= new FileHandler("./logs/traversal_result_log"+UUID.randomUUID().toString()+".txt");
+
+            logger = Logger.getLogger(VerificationService.class.getName());
+            logger.addHandler(fileTxt);
+            logger.setLevel(Level.INFO);
+
+        } catch (IOException ex) {
+            // report
+            return traversal;
+        }
+
+        for(Test t : tests){
+            if(t.getModel() ==null)
+                logger.info("\n-------------------------\nGRAPH ID: "+ t.getGraphId()+"\n-------------------------\nVERIFICATION RESULT: UNSAT");
+            else logger.info("\n-------------------------\nGRAPH ID: "+ t.getGraphId()+"\n-------------------------\nVERIFICATION RESULT:\n"+t.getModel());
+        }
+
+        
         return traversal;
     }
 
@@ -478,6 +534,28 @@ public class VerificationService {
         vlogger.logger.info("Time to check reachability policy: " + time_reachability);
         //System.out.println("Time to check reachability policy: " + time_reachability);
 
+        Logger logger = Logger.getLogger("reachability_result");
+        FileHandler fileTxt;
+        try {
+            if(System.getProperty("catalina.home") != null)
+                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/reachability_result_log"+UUID.randomUUID().toString()+".txt");
+            else fileTxt= new FileHandler("./logs/reachability_result_log"+UUID.randomUUID().toString()+".txt");
+
+            logger = Logger.getLogger(VerificationService.class.getName());
+            logger.addHandler(fileTxt);
+            logger.setLevel(Level.INFO);
+
+        } catch (IOException ex) {
+            // report
+            return reachability;
+        }
+
+        for(Test t : tests){
+            if(t.getModel() ==null)
+                logger.info("\n-------------------------\nGRAPH ID: "+ t.getGraphId()+"\n-------------------------\nVERIFICATION RESULT: UNSAT");
+            else logger.info("\n-------------------------\nGRAPH ID: "+ t.getGraphId()+"\n-------------------------\nVERIFICATION RESULT:\n"+t.getModel());
+        }
+
         return reachability;
     }
 
@@ -491,15 +569,31 @@ public class VerificationService {
         //Date start_time = cal.getTime();
 
         for(Map.Entry<Integer, GeneratorSolver> t : scenarios.entrySet()){
+            IsolationResult res = t.getValue().run(src, dst);
 
-            result=t.getValue().run(src, dst);
+            if (res.result == Status.UNSATISFIABLE){
+                result="UNSAT"; // Nodes a and b are isolated
+            }else if(res.result == Status.SATISFIABLE){
+                result= "SAT";
+            }else if(res.result == Status.UNKNOWN){
+                result= "UNKNOWN";
+            } else {
+                result= "UNKNOWN";
+            }
+
+            //            result=t.getValue().run(src, dst).result;
 
             List<Node> path = new ArrayList<Node>();
             for (String nodeString : t.getValue().getPaths()) {
                 Node node = graph.searchNodeByName(nodeString);
                 path.add(node);
             }
-            Test test = new Test(path, result);
+            Test test;
+            if (res.model != null){
+                test = new Test(path, result, res.model.toString(), graph.getId());
+            } else {
+                test = new Test(path, result, null, graph.getId());
+            }
             tests.add(test);
         }
 
