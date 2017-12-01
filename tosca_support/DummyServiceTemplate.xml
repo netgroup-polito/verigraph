@@ -16,12 +16,12 @@
 		location="../ToscaVerigraph_compliance/ToscaVerigraphDefinitions.xml" />
 
 
-	<ServiceTemplate id="dummyTemplate">
+	<ServiceTemplate id="0" name="dummyTemplate">
 
-		<TopologyTemplate id="dummyTopology">
-			<NodeTemplate name="User1" id="10" type="EndhostType">
+		<TopologyTemplate id="10" name="dummyTopology">
+			<NodeTemplate id="100" name="User1" type="EndhostType">
 				<Properties>
-					<Configuration confID="magicNumber" confDescr="amazingDescription" >
+					<Configuration confid="1000" confDescr="amazingDescription" >
 						<JSON>
 							{
 							"body": "sex",
@@ -33,7 +33,7 @@
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate name="NAT" id="dummyID" type="nat">
+			<NodeTemplate id="101" name="NAT" type="NatType">
 				<Properties>
 					<Configuration>
 						<JSON>
@@ -43,7 +43,7 @@
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate name="DPI" id="100" type="DPI">
+			<NodeTemplate id="102" name="DPI" type="DpiType">
 				<Properties>
 					<Configuration>
 						<JSON>
@@ -53,26 +53,26 @@
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate name="Endpoint" id="webserver99" type="endpoint" />
+			<NodeTemplate id="103" name="Endpoint" type="EndpointType" />
 
 
-			<RelationshipTemplate id="user1ToNat" type="linkedTo">
-				<SourceElement ref="User1" />
-				<TargetElement ref="NAT" />
+			<RelationshipTemplate id="104" name="user1ToNat" type="linkedTo">
+				<SourceElement ref="100" />
+				<TargetElement ref="101" />
 			</RelationshipTemplate>
 
-			<RelationshipTemplate id="natToDpi" type="linkedTo">
-				<SourceElement ref="NAT" />
-				<TargetElement ref="DPI" />
+			<RelationshipTemplate id="105" name="natToDpi" type="linkedTo">
+				<SourceElement ref="101" />
+				<TargetElement ref="102" />
 			</RelationshipTemplate>
 
-			<RelationshipTemplate id="dpiToWebserver" type="linkedTo">
-				<SourceElement ref="DPI" />
-				<TargetElement ref="Endpoint" />
+			<RelationshipTemplate id="106" name="dpiToWebserver" type="linkedTo">
+				<SourceElement ref="102" />
+				<TargetElement ref="103" />
 			</RelationshipTemplate>
 
 		</TopologyTemplate>
-	</ServiceTemplate>
 
+	</ServiceTemplate>
 
 </Definitions>
