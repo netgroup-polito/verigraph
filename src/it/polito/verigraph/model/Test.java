@@ -15,7 +15,6 @@ import javax.xml.bind.annotation.XmlTransient;
 public class Test {
     private List<Node> nodes= new ArrayList<Node>();
     private String result;
-    @XmlTransient
     private String model;
     private long graphId;
 
@@ -70,6 +69,9 @@ public class Test {
         this.model= m;
     }
 
+    //This annotation will hide the produced model by Z3 on the verification response.
+    //This model is available on a file under the log folder.
+    @XmlTransient
     public String getModel(){
         return this.model;
     }
