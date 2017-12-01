@@ -8,11 +8,8 @@
  *******************************************************************************/
 package it.polito.verigraph.service;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,16 +22,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.xml.bind.JAXBException;
+
+import org.apache.commons.lang3.RandomStringUtils;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.microsoft.z3.*;
 import it.polito.neo4j.exceptions.MyInvalidDirectionException;
 import it.polito.neo4j.jaxb.Paths;
 import it.polito.neo4j.manager.Neo4jDBManager;
-import it.polito.neo4j.manager.Neo4jLibrary;
-import it.polito.neo4j.translator.*;
 import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.exception.ForbiddenException;
@@ -225,8 +222,8 @@ public class VerificationService {
         FileHandler fileTxt;
         try {
             if(System.getProperty("catalina.home") != null)
-                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/isolation_result_log"+UUID.randomUUID().toString()+".txt");
-            else fileTxt= new FileHandler("./logs/isolation_result_log"+UUID.randomUUID().toString()+".txt");
+                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/reachability_result_log_"+RandomStringUtils.randomAlphabetic(4)+".txt");
+            else fileTxt= new FileHandler("./logs/reachability_result_log_"+RandomStringUtils.randomAlphabetic(4)+".txt");
 
             logger = Logger.getLogger(VerificationService.class.getName());
             logger.addHandler(fileTxt);
@@ -437,8 +434,8 @@ public class VerificationService {
         FileHandler fileTxt;
         try {
             if(System.getProperty("catalina.home") != null)
-                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/traversal_result_log"+UUID.randomUUID().toString()+".txt");
-            else fileTxt= new FileHandler("./logs/traversal_result_log"+UUID.randomUUID().toString()+".txt");
+                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/reachability_result_log_"+RandomStringUtils.randomAlphabetic(4)+".txt");
+            else fileTxt= new FileHandler("./logs/reachability_result_log_"+RandomStringUtils.randomAlphabetic(4)+".txt");
 
             logger = Logger.getLogger(VerificationService.class.getName());
             logger.addHandler(fileTxt);
@@ -538,8 +535,8 @@ public class VerificationService {
         FileHandler fileTxt;
         try {
             if(System.getProperty("catalina.home") != null)
-                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/reachability_result_log"+UUID.randomUUID().toString()+".txt");
-            else fileTxt= new FileHandler("./logs/reachability_result_log"+UUID.randomUUID().toString()+".txt");
+                fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/reachability_result_log_"+RandomStringUtils.randomAlphabetic(4)+".txt");
+            else fileTxt= new FileHandler("./logs/reachability_result_log_"+RandomStringUtils.randomAlphabetic(4)+".txt");
 
             logger = Logger.getLogger(VerificationService.class.getName());
             logger.addHandler(fileTxt);

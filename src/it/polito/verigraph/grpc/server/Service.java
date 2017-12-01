@@ -15,6 +15,9 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
+import org.apache.commons.lang3.RandomStringUtils;
+
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -67,7 +70,7 @@ public class Service {
     }
 
     public void start() throws IOException {
-        FileHandler fileTxt = new FileHandler("grpc_server_log.txt");
+        FileHandler fileTxt = new FileHandler("./logs/grpc_server_log.txt",true);
         SimpleFormatter formatterTxt = new SimpleFormatter();
         fileTxt.setFormatter(formatterTxt);
         logger.addHandler(fileTxt);
