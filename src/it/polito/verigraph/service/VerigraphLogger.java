@@ -47,13 +47,11 @@ public class VerigraphLogger {
         try {
             if(System.getProperty("catalina.home") != null)
                 fileTxt = new FileHandler(System.getProperty("catalina.home")+"/logs/verigraph_log.txt");
-            else fileTxt= new FileHandler("verigraph_log.txt");
+            else fileTxt= new FileHandler("./logs/verigraph_log.txt");
 
         } catch (SecurityException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
