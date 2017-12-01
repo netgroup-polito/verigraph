@@ -14,4 +14,12 @@
 	
 	<xsd:element name="Configuration" type="tConfiguration" />
 	
+	<!-- <xsd:complexType name="tJSON">
+		<xsd:sequence>
+			<xsd:element name="JSON" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType> -->	
+	
+	<!-- <xsd:element name="JSON" type="tJSON" /> -->
+	
 </xsd:schema>

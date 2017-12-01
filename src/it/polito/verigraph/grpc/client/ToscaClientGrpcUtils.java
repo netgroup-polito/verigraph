@@ -1,12 +1,16 @@
 package it.polito.verigraph.grpc.client;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
+
+import it.polito.verigraph.tosca.XmlParsingUtils;
 import it.polito.verigraph.tosca.classes.*;
-import it.polito.verigraph.grpc.NeighbourGrpc;
-import it.polito.verigraph.grpc.NodeGrpc;
-import it.polito.verigraph.grpc.NodeGrpc.FunctionalType;
+import it.polito.verigraph.exception.DataNotFoundException;
+import it.polito.verigraph.grpc.*;
 import it.polito.verigraph.grpc.tosca.*;
 import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
 
@@ -15,101 +19,105 @@ public class ToscaClientGrpcUtils {
 	/** Default configuration for a Tosca NodeTemplate non compliant with Verigraph types*/
 	public static final String defaultConfID = new String("0");
 	public static final String defaultDescr = new String("Default Configuration");
-	public static final String defaultConfig = new String("");
+	public static final String defaultConfig = new String("{ }");
 	
 	/** Helper for Client interface*/
 	public static final String helper = new String("");
 
+	/** Returns the (first) TopologyTemplate found in the TOSCA-compliant XML file */
+	public static TopologyTemplateGrpc obtainTopologyTemplateGrpc (String filepath) throws IOException, JAXBException, DataNotFoundException, ClassCastException{
+		List<TServiceTemplate> serviceTList = XmlParsingUtils.obtainServiceTemplates(filepath);
+		TServiceTemplate serviceTemplate = serviceTList.get(0); //obtain only the first ServiceTemplate of the TOSCA compliance file
+
+		//Retrieving of list of NodeTemplate and RelationshipTemplate
+	    List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
+	    List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();	    
+	    for(TNodeTemplate nt : XmlParsingUtils.obtainNodeTemplates(serviceTemplate) )
+	    	nodes.add(ToscaClientGrpcUtils.parseNodeTemplate(nt));
+	    for(TRelationshipTemplate rt : XmlParsingUtils.obtainRelationshipTemplates(serviceTemplate) )
+	    	relats.add(ToscaClientGrpcUtils.parseRelationshipTemplate(rt));
+	    
+	    //Creating TopologyTemplateGrpc object to be sent to server
+	    return TopologyTemplateGrpc.newBuilder()
+	    		.setId(0) //useless value since the server chooses the actual value for the GraphID
+	    		.addAllNodeTemplate(nodes)
+	    		.addAllRelationshipTemplate(relats)
+	    		.build();
+	}
+	
 	
     /** Parsing method: TNodeTemplate(tosca) --> NodeTemplateGrpc */
-    public static NodeTemplateGrpc parseNodeTemplate(TNodeTemplate toscaNode) throws ClassCastException {   	
+    public static NodeTemplateGrpc parseNodeTemplate(TNodeTemplate nodeTempl) throws ClassCastException, NullPointerException {   	
     	Boolean isVerigraphCompl = true;
+    	Type type;
     	
     	//NodeTemplateGrpc building
-    	NodeTemplateGrpc.Builder parsed = NodeTemplateGrpc.newBuilder()
-    			.setId(Long.valueOf(toscaNode.getId()).longValue()) //longValue is used to convert in long
-    			.setName(toscaNode.getName());
-    	switch(toscaNode.getType().getLocalPart().toLowerCase()) {
-    		case "antispam":
-    			parsed.setType(Type.antispam);
-    			break;
-    		case "cache":
-    			parsed.setType(Type.cache);
-    			break;
-    		case "dpi":
-    			parsed.setType(Type.dpi);
-    			break;
-    		case "endhost":
-    			parsed.setType(Type.endhost);
-    			break;
-    		case "endpoint":
-    			parsed.setType(Type.endpoint);
-    			break;
-    		case "fieldmodifier":
-    			parsed.setType(Type.fieldmodifier);
-    			break;
-    		case "firewall":
-    			parsed.setType(Type.firewall);
-    			break;
-    		case "mailclient":
-    			parsed.setType(Type.mailclient);
-    			break;
-    		case "mailserver":
-    			parsed.setType(Type.mailserver);
-    			break;
-    		case "nat":
-    			parsed.setType(Type.nat);
-    			break;
-    		case "vpnaccess":
-    			parsed.setType(Type.vpnaccess);
-    			break;
-    		case "vpnexit":
-    			parsed.setType(Type.vpnexit);
-    			break;
-    		case "webclient":
-    			parsed.setType(Type.webclient);
-    			break;
-    		case "webserver":
-    			parsed.setType(Type.webserver);
-    			break;
-    		default: //in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be an endhost node
-    			parsed.setType(Type.endhost);
-    			isVerigraphCompl = false;
-    			break;
-    	}  	
-    	ToscaConfigurationGrpc grpcConfig;   	
+    	NodeTemplateGrpc.Builder nodegrpc = NodeTemplateGrpc.newBuilder()
+    			.setId(0); //useless value since the server chooses the actual value for the NodeID
+    	try {
+    		nodegrpc.setName(nodeTempl.getName());
+    	} catch (NullPointerException ex) {
+    		throw new NullPointerException("A name must be specified for each Node");
+    	}
+    	
+    	try { 
+    		type = Type.valueOf(nodeTempl.getType().getLocalPart().toLowerCase());
+    	} catch (IllegalArgumentException ex) {
+    		//in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be an endhost node
+			type = Type.endhost;
+			isVerigraphCompl = false;
+    	}
+    	nodegrpc.setType(type);
+    	ToscaConfigurationGrpc.Builder grpcConfig;   	
     	if(isVerigraphCompl) {
-    		TConfiguration nodeConfig = ((TConfiguration)toscaNode.getProperties().getAny());
-        	grpcConfig = ToscaConfigurationGrpc.newBuilder()
-   			 	 .setId(nodeConfig.getConfID())
-   				 .setDescription(nodeConfig.getConfDescr())
-   			     .setConfiguration(nodeConfig.getJSON()).build();
-    	} else {
-        	grpcConfig = ToscaConfigurationGrpc.newBuilder()
-   			 	 .setId(ToscaClientGrpcUtils.defaultConfID)
-   				 .setDescription(ToscaClientGrpcUtils.defaultDescr)
-   			     .setConfiguration(ToscaClientGrpcUtils.defaultConfig).build();
-    	}	
-    	parsed.setConfiguration(grpcConfig);
-    	return parsed.build();   
+    		TConfiguration nodeConfig = XmlParsingUtils.obtainConfiguration(nodeTempl);
+        	grpcConfig = ToscaConfigurationGrpc.newBuilder();
+        	//These fields are optional in TOSCA xml
+        	try {
+        		grpcConfig.setId(nodeConfig.getConfID());        		
+        	} catch(NullPointerException ex) {}
+       		try {
+       			grpcConfig.setDescription(nodeConfig.getConfDescr());
+       		} catch(NullPointerException ex) {}
+       		try {
+       			grpcConfig.setConfiguration(nodeConfig.getJSON());
+        	} catch(NullPointerException ex) {
+        		grpcConfig.setConfiguration(defaultConfig);
+        	}
+    	}
+       	else {
+            grpcConfig = ToscaConfigurationGrpc.newBuilder()
+            	.setId(defaultConfID)
+    			.setDescription(defaultDescr)
+    			.setConfiguration(defaultConfig);
+    	}   			
+    	nodegrpc.setConfiguration(grpcConfig.build());
+    	return nodegrpc.build();   
     }  
     
     
     /** Parsing method: TRelationshipTemplate(tosca) --> RelationshipTemplateGrpc */
-    public static RelationshipTemplateGrpc parseRelationshipTemplate(TRelationshipTemplate toscaRel) throws ClassCastException{   	
-    	
-    	//NodeTemplateGrpc building
-    	RelationshipTemplateGrpc.Builder parsed = RelationshipTemplateGrpc.newBuilder()  	
-    			.setId(Long.valueOf(toscaRel.getId()).longValue())
-    			.setName(toscaRel.getName());
-    	
-    	String source = ((QName)toscaRel.getSourceElement().getRef()).getLocalPart();
-    	String target = ((QName)toscaRel.getTargetElement().getRef()).getLocalPart();
-    	
-    	parsed.setIdSourceNodeTemplate(Long.valueOf(source).longValue())
+    public static RelationshipTemplateGrpc parseRelationshipTemplate(TRelationshipTemplate relatTempl) throws ClassCastException{   	
+    	String source, target;
+    	//RelationshipTemplateGrpc building
+    	RelationshipTemplateGrpc.Builder relatgrpc = RelationshipTemplateGrpc.newBuilder()  	
+    			.setId(0); //useless value since the server chooses the actual value for the NeighbourID
+    	try {
+    		relatgrpc.setName(relatTempl.getName());
+    	} catch (NullPointerException ex) {
+    		//throw new NullPointerException("A name must be specified for each Relationship");
+    		//No problem if name is not specified for the Relationship since the server will change it for its management
+    	}
+    	try {
+    		source = ((QName)relatTempl.getSourceElement().getRef()).getLocalPart();
+    		target = ((QName)relatTempl.getTargetElement().getRef()).getLocalPart();
+    	} catch (NullPointerException ex) {
+    		throw new NullPointerException("A valid Node name must be specified as SourceElement and Target Element for each Relationship");
+    	}    	
+    	relatgrpc.setIdSourceNodeTemplate(Long.valueOf(source).longValue())
     		.setIdTargetNodeTemplate(Long.valueOf(target).longValue());
     	
-    	return parsed.build();
+    	return relatgrpc.build();
     }
     
     
@@ -133,25 +141,29 @@ public class ToscaClientGrpcUtils {
     
     /** Create a NodeTemplateGrpc object */
     public static NodeTemplateGrpc createNodeTemplateGrpc (String name, long id, String type, ToscaConfigurationGrpc config) throws Exception {
-    	 NodeTemplateGrpc.Builder nodeBuilder = NodeTemplateGrpc.newBuilder().setId(id); //if you have called this method than you have inserted a valid long value
-
-         if(name != null)
+    	NodeTemplateGrpc.Builder nodeBuilder = NodeTemplateGrpc.newBuilder().setId(id); 
+    
+    	Type nodeType;
+    	if(name != null)
              nodeBuilder.setName(name);
-         else
+    	else
              throw new Exception("NodeTemplate must have a name");
 
-         if(type!= null) {
-        	 Type nodeType = Type.valueOf(type);
-             nodeBuilder.setType(nodeType);
-         } else
-        	 throw new Exception("NodeTemplate must have a valid type");
-         
-         if(config != null)
-        	 nodeBuilder.setConfiguration(config);
-         else
-        	 throw new Exception("NodeTemplate must have a configuration");
+        if(type == null)
+        	 throw new Exception("NodeTemplate must have a type");
+        try { 
+     		nodeType = Type.valueOf(type.toLowerCase());
+     	} catch (IllegalArgumentException ex) {
+     		//in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be an endhost node
+ 			nodeType = Type.endhost;
+ 		}
+     	
+        if(config != null)
+        	nodeBuilder.setConfiguration(config);
+        else
+        	throw new Exception("NodeTemplate must have a configuration");
              
-         return nodeBuilder.build();
+        return nodeBuilder.build();
     }
     
     
@@ -160,45 +172,30 @@ public class ToscaClientGrpcUtils {
     	RelationshipTemplateGrpc.Builder relatBuilder = RelationshipTemplateGrpc.newBuilder()
     			.setId(id)
     			.setIdSourceNodeTemplate(source)
-    			.setIdTargetNodeTemplate(dest); //if you have called this method than you have inserted a valid long values
+    			.setIdTargetNodeTemplate(dest); 
     	
     	if(name != null)
             relatBuilder.setName(name);
-        else
-            throw new Exception("RelationshipTemplate must have a name");
-    	
+        
     	return relatBuilder.build();    
     }
     
     
     /** Create a ToscaConfigurationGrpc object */
     public static ToscaConfigurationGrpc createToscaConfigurationGrpc (String id, String descr, String config) throws Exception{
-        ToscaConfigurationGrpc.Builder confBuilder = ToscaConfigurationGrpc.newBuilder().setDescription(descr); //description can be null
+        ToscaConfigurationGrpc.Builder confBuilder = ToscaConfigurationGrpc.newBuilder();
     	
         if(id != null)
             confBuilder.setId(id);
-        else
-            throw new Exception("ToscaConfigurationGrpc must have an id");
-        
-        /*if(config != null)
+        if(descr != null)
+            confBuilder.setDescription(descr);
+        if(config != null)
         	confBuilder.setConfiguration(config);
         else
-        	throw new Exception("ToscaConfigurationGrpc must have a configuration");*/
+        	throw new Exception("ToscaConfigurationGrpc must have a configuration");
         
         return confBuilder.build();
     }
-    
-    
-    /*/** Create a NodeTemplate.Type object 
-    public static NodeTemplateGrpc.Type createNodeTemplateType (String type) throws Exception {
-    	NodeTemplateGrpc.Type nodeType;
-    	if(type == null)
-    		throw new Exception("Invalid value for the NodeTemplateType");
-    	else
-    		nodeType = Type.valueOf(type); //check on correctness of value?
-
-    	return nodeType;
-    }*/
     
     
     /** Create a ToscaPolicy */

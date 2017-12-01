@@ -19,9 +19,9 @@
 	<ServiceTemplate id="dummyTemplate">
 
 		<TopologyTemplate id="dummyTopology">
-			<NodeTemplate id="user1" name="Host" type="EndhostType">
+			<NodeTemplate name="User1" id="10" type="EndhostType">
 				<Properties>
-					<Configuration confID="blabla" confDescr="blabla2" >
+					<Configuration confID="magicNumber" confDescr="amazingDescription" >
 						<JSON>
 							{
 							"body": "sex",
@@ -33,7 +33,7 @@
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="nat" name="NAT" type="NatType">
+			<NodeTemplate name="NAT" id="dummyID" type="nat">
 				<Properties>
 					<Configuration>
 						<JSON>
@@ -43,7 +43,7 @@
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="dpi" name="DPI" type="DpiType">
+			<NodeTemplate name="DPI" id="100" type="DPI">
 				<Properties>
 					<Configuration>
 						<JSON>
@@ -53,22 +53,22 @@
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="webserver" name="Endpoint" type="Endpoint" />
+			<NodeTemplate name="Endpoint" id="webserver99" type="endpoint" />
 
 
 			<RelationshipTemplate id="user1ToNat" type="linkedTo">
-				<SourceElement ref="user1" />
-				<TargetElement ref="nat" />
+				<SourceElement ref="User1" />
+				<TargetElement ref="NAT" />
 			</RelationshipTemplate>
 
 			<RelationshipTemplate id="natToDpi" type="linkedTo">
-				<SourceElement ref="nat" />
-				<TargetElement ref="dpi" />
+				<SourceElement ref="NAT" />
+				<TargetElement ref="DPI" />
 			</RelationshipTemplate>
 
 			<RelationshipTemplate id="dpiToWebserver" type="linkedTo">
-				<SourceElement ref="dpi" />
-				<TargetElement ref="webserver" />
+				<SourceElement ref="DPI" />
+				<TargetElement ref="Endpoint" />
 			</RelationshipTemplate>
 
 		</TopologyTemplate>

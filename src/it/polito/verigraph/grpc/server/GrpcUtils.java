@@ -9,6 +9,9 @@
 package it.polito.verigraph.grpc.server;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -149,7 +152,8 @@ public class GrpcUtils {
         return ver.build();
     }
     
-    /** Mapping method --> from Graph to TopologyTemplate */
+    
+    /** Mapping method --> from model Verification to grpc ToscaVerificationGrpc */
     public static ToscaVerificationGrpc obtainToscaVerification(Verification verify){
         ToscaVerificationGrpc.Builder ver = ToscaVerificationGrpc.newBuilder();
         ver.setComment(verify.getComment());
@@ -165,6 +169,7 @@ public class GrpcUtils {
         return ver.build();
     }
     
+    
     /** Mapping method --> from Graph to TopologyTemplate */
     public static TopologyTemplateGrpc obtainTopologyTemplate(Graph graph) {
     	TopologyTemplateGrpc.Builder topol = TopologyTemplateGrpc.newBuilder();
@@ -178,21 +183,32 @@ public class GrpcUtils {
     		Map<Long,Neighbour> neighMap = node.getNeighbours();
     		for (Map.Entry<Long, Neighbour> myentry : neighMap.entrySet()) {
     		    Neighbour neigh = myentry.getValue();
-    		    RelationshipTemplateGrpc relat = obtainRelationshipTemplate(neigh, nt.getId());
+    		    RelationshipTemplateGrpc relat = obtainRelationshipTemplate(neigh, node);
     		    topol.addRelationshipTemplate(relat);
     		}
     	}
     	return topol.build();
-    }
+}
     
-    /** Mapping method --> from TopologyTemplate to Graph */
+    
+    /** Mapping method --> from grpc TopologyTemplateGrpc to model Graph */
     public static Graph deriveGraph(TopologyTemplateGrpc request) {
         Graph graph = new Graph();
-        Map<Long, Node> nodes = graph.getNodes();
+        Map<Long, Node> nodes = new HashMap<>();
+        
+        //Create a list of Node without Neighbour
         for(NodeTemplateGrpc nodetempl : request.getNodeTemplateList()){
-        	Node node = deriveNode(nodetempl, request); //Topology is necessary to obtain Neighbour
+        	Node node = deriveNode(nodetempl);
         	nodes.put(node.getId(), node);
         }
+        
+        //Add Neighbour to the Node of the list
+        List<RelationshipTemplateGrpc> relatList = request.getRelationshipTemplateList();
+        nodes = deriveNeighboursNode(nodes, relatList);
+        
+        //Add Node and ID to the graph
+        graph.setNodes(nodes);
+        graph.setId(request.getId());
         return graph;
     }
     
@@ -210,42 +226,48 @@ public class GrpcUtils {
     	return nodegrpc.build();
     }
     
-    /** Mapping method --> from NodeTemplate to Node */
-    public static Node deriveNode(NodeTemplateGrpc nodegrpc, TopologyTemplateGrpc request) {
+    /** Mapping method --> from NodeTemplate to Node (with no Neighbour)*/
+    public static Node deriveNode(NodeTemplateGrpc nodegrpc) {
     	Node node = new Node();
-    	Map<Long,Neighbour> neighbours = node.getNeighbours();
-    	
     	node.setId(nodegrpc.getId());
     	node.setName(nodegrpc.getName());
     	Configuration conf = deriveConfiguration(nodegrpc.getConfiguration());
     	node.setConfiguration(conf);
-    	for(RelationshipTemplateGrpc relat : request.getRelationshipTemplateList()){
-    		if(relat.getIdSourceNodeTemplate() == node.getId()) {
-    			Neighbour neigh = deriveNeighbour(relat);
-    			neighbours.put(neigh.getId(), neigh);
-    		}
-    	}
-    	node.setNeighbours(neighbours);
     	node.setFunctional_type(nodegrpc.getType().toString());
     	return node;
     }
     
     /** Mapping method --> from Neighbour to RelationshipTemplate */
-    public static RelationshipTemplateGrpc obtainRelationshipTemplate(Neighbour neigh, long sourceID) {
+    public static RelationshipTemplateGrpc obtainRelationshipTemplate(Neighbour neigh, Node sourceNode) {
     	RelationshipTemplateGrpc.Builder relat = RelationshipTemplateGrpc.newBuilder();
-    	relat.setId(neigh.getId());
-    	relat.setIdSourceNodeTemplate(sourceID);
+    	relat.setId(sourceNode.getId()); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is set to sourceNodeID
+    	relat.setIdSourceNodeTemplate(sourceNode.getId());
     	relat.setIdTargetNodeTemplate(neigh.getId());
-    	relat.setName(neigh.getName());
+    	relat.setName(sourceNode.getName()+"to"+neigh.getName());
     	return relat.build();
-    }
+}
     
-    /** Mapping method --> from RelationshipTemplate to Neighbour */
-    public static Neighbour deriveNeighbour(RelationshipTemplateGrpc relat) {
-    	Neighbour neigh = new Neighbour();
-    	neigh.setName(relat.getName());
-    	neigh.setId(relat.getId());
-    	return neigh;
+    /** Mapping method --> from a list of model Node to a list of model Node with their Neighbour */
+    public static Map<Long,Node> deriveNeighboursNode(Map<Long,Node> nodes, List<RelationshipTemplateGrpc> relatList) {
+    	Map<Long,Node> updNodes = nodes; //new list to be filled with updated Node (update = Node + its Neighbour)
+    	for(RelationshipTemplateGrpc relat : relatList) {
+    		
+    		//Retrieve the target Node name and generate a new Neighbour
+    		String neighName = updNodes.get(relat.getIdTargetNodeTemplate()).getName();
+    		Neighbour neigh = new Neighbour();
+    	   	neigh.setName(neighName);
+    	   	neigh.setId(relat.getId());
+    	   	
+    	   	//Retrieve the Neighbour map of the source Node and add the Neighbour
+    	   	Node source = updNodes.get(relat.getIdSourceNodeTemplate());
+    	   	Map<Long,Neighbour> sourceNodeNeighMap = source.getNeighbours();
+    	   	sourceNodeNeighMap.put(neigh.getId(), neigh);
+    	   	source.setNeighbours(sourceNodeNeighMap);
+    	   	
+    	   	//Update the Node list
+    	   	updNodes.put(relat.getIdSourceNodeTemplate(), source);
+    	}
+    	return updNodes;
     }
     
     /** Mapping method --> from model Configuration to ToscaConfigurationGrpc */

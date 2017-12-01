@@ -86,19 +86,18 @@ public class ToscaService {
         }
     }
 
-    /**Here start method of my implementation*/
+    /**Here start methods */
     private class ToscaVerigraphImpl extends ToscaVerigraphGrpc.ToscaVerigraphImplBase{
     	
-    	/** Here start methods of TopologyTemplate (TOSCA)*/
-       
+    	/** Here start methods of server grpc TOSCA */      
     	@Override
         public void getTopologyTemplates (GetRequest request, StreamObserver<TopologyTemplateGrpc> responseObserver) {
-        	try{
+        	try {
                 for(Graph item : graphService.getAllGraphs()) {
                     TopologyTemplateGrpc topol = GrpcUtils.obtainTopologyTemplate(item);
                     responseObserver.onNext(topol);
                 }
-            }catch(Exception ex){
+            } catch (Exception ex){
                 TopologyTemplateGrpc topolErr = TopologyTemplateGrpc.newBuilder().setErrorMessage(internalError).build();
                 responseObserver.onNext(topolErr);
                 logger.log(Level.WARNING, ex.getMessage());
@@ -108,15 +107,15 @@ public class ToscaService {
         
         @Override
         public void getTopologyTemplate (ToscaRequestID request, StreamObserver<TopologyTemplateGrpc> responseObserver) {
-        	try{
+        	try {
                 Graph graph = graphService.getGraph(request.getIdTopologyTemplate());
                 TopologyTemplateGrpc topol = GrpcUtils.obtainTopologyTemplate(graph);
                 responseObserver.onNext(topol);
-            }catch(ForbiddenException | DataNotFoundException ex){
+            } catch(ForbiddenException | DataNotFoundException ex) {
             	TopologyTemplateGrpc topolError = TopologyTemplateGrpc.newBuilder().setErrorMessage(ex.getMessage()).build();
                 responseObserver.onNext(topolError);
                 logger.log(Level.WARNING, ex.getMessage());
-            }catch(Exception ex){
+            } catch(Exception ex) {
             	TopologyTemplateGrpc topolError = TopologyTemplateGrpc.newBuilder().setErrorMessage(internalError).build();
                 responseObserver.onNext(topolError);
                 logger.log(Level.WARNING, ex.getMessage());
@@ -131,13 +130,14 @@ public class ToscaService {
                  Graph graph = GrpcUtils.deriveGraph(request);
                  Graph newGraph = graphService.addGraph(graph);
                  response.setSuccess(true).setTopologyTemplate(GrpcUtils.obtainTopologyTemplate(newGraph)); 
-             }catch(BadRequestException ex){
+             } catch(BadRequestException ex) {
+            	 ex.printStackTrace();
                  response.setSuccess(false).setErrorMessage(ex.getMessage());
                  logger.log(Level.WARNING, ex.getClass().toString());
                  logger.log(Level.WARNING, ex.getMessage());
-
              }
              catch(Exception ex){
+            	 ex.printStackTrace();
                  response.setSuccess(false).setErrorMessage(internalError);
                  logger.log(Level.WARNING, ex.getClass().toString());
                  logger.log(Level.WARNING, ex.getMessage());
@@ -152,10 +152,10 @@ public class ToscaService {
             try{
                 graphService.removeGraph(request.getIdTopologyTemplate());
                 response.setSuccess(true);
-            }catch(ForbiddenException ex){
+            } catch(ForbiddenException ex) {
                 response.setSuccess(false).setErrorMessage(ex.getMessage());
                 logger.log(Level.WARNING, ex.getMessage());
-            }catch(Exception ex){
+            } catch(Exception ex) {
                 response.setSuccess(false).setErrorMessage(internalError);
                 logger.log(Level.WARNING, ex.getMessage());
             }
@@ -198,11 +198,11 @@ public class ToscaService {
                 Verification ver = verificationService.verify(request.getIdTopologyTemplate(), verify);
                 verification = ToscaVerificationGrpc.newBuilder(GrpcUtils.obtainToscaVerification(ver))
                         .setSuccessOfOperation(true); 
-            }catch(ForbiddenException | DataNotFoundException | BadRequestException ex){
+            } catch(ForbiddenException | DataNotFoundException | BadRequestException ex) {
                 verification = ToscaVerificationGrpc.newBuilder().setSuccessOfOperation(false)
                         .setErrorMessage(ex.getMessage());
                 logger.log(Level.WARNING, ex.getMessage());
-            }catch(Exception ex){
+            } catch(Exception ex) {
                 verification = ToscaVerificationGrpc.newBuilder().setSuccessOfOperation(false)
                         .setErrorMessage(internalError);
                 logger.log(Level.WARNING, ex.getMessage());

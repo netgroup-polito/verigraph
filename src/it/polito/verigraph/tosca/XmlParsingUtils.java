@@ -39,43 +39,19 @@ import it.polito.verigraph.tosca.classes.TTopologyTemplate;
 
 public class XmlParsingUtils {
 	
-	/** Returns the (first) TopologyTemplate found in the TOSCA-compliant XML file */
-	public static TopologyTemplateGrpc obtainTopologyTemplateGrpc (String filepath) throws IOException, JAXBException, DataNotFoundException, ClassCastException{
-		List<TServiceTemplate> serviceTList = obtainServiceTemplates(filepath);
-		TServiceTemplate serviceTemplate = serviceTList.get(0); //obtain only the first ServiceTemplate of the TOSCA compliance file
-
-		//Retrieving of list of NodeTemplate and RelationshipTemplate
-	    List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
-	    List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();	    
-	    for(TNodeTemplate nt : obtainNodeTemplates(serviceTemplate) )
-	    	nodes.add(ToscaClientGrpcUtils.parseNodeTemplate(nt));
-	    for(TRelationshipTemplate rt : obtainRelationshipTemplates(serviceTemplate) )
-	    	relats.add(ToscaClientGrpcUtils.parseRelationshipTemplate(rt));
-	    
-	    //Creating TopologyTemplateGrpc object to be sent to server
-	    return TopologyTemplateGrpc.newBuilder()
-	    		.setId(0) //Setting Id of the new topology template, could be passed as parameter
-	    		.addAllNodeTemplate(nodes)
-	    		.addAllRelationshipTemplate(relats)
-	    		.build();
-	}
-	
 	/** Returns a List of TServiceTemplate JAXB-generated objects, parsed from a TOSCA-compliant XML. */
     public static List<TServiceTemplate> obtainServiceTemplates(String file) throws JAXBException, IOException, ClassCastException, DataNotFoundException {
     	// Create a JAXBContext capable of handling the generated classes
 		JAXBContext jc = JAXBContext.newInstance("it.polito.verigraph.tosca.classes");
         Unmarshaller u = jc.createUnmarshaller();
         
-        // Unmarshal a document into a tree of Java content objects
-        /*Object jaxbElement = u.unmarshal(new FileInputStream(file));
-        JAXBElement<TDefinitions> jaxbRoot = (JAXBElement<TDefinitions>) jaxbElement;
-		TDefinitions definitions = (TDefinitions) jaxbRoot.getValue();*/
+        //Retrieve the TDefinitions object
         Source source = new StreamSource(new FileInputStream(file));
         JAXBElement<TDefinitions> rootElement = u.unmarshal(source, TDefinitions.class);
-        TDefinitions definitions = rootElement.getValue();
-        
+        TDefinitions definitions = rootElement.getValue();       
         List<TExtensibleElements> elements = definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation();
         
+        //Retrieve the list of ServiceTemplate in Definitions
 	    List<TServiceTemplate> serviceTemplates = elements.stream()
 	    		.filter(p -> p instanceof TServiceTemplate)
 	    		.map(obj -> (TServiceTemplate) obj).collect(Collectors.toList());
@@ -141,13 +117,12 @@ public class XmlParsingUtils {
 			configuration.setJSON(jsonNode.getTextContent());
 			return configuration;
 			
-		} catch (JAXBException ex) {
-        	System.err.println("[obtainConfiguration] error: empty Configuration returned");
-    		TConfiguration emptyConf = new TConfiguration();
-    		emptyConf.setConfDescr("");
-    		emptyConf.setConfID("");
-    		emptyConf.setJSON("");
-    		return emptyConf;    		
+		} catch (JAXBException | NullPointerException ex) {
+        	TConfiguration defConf = new TConfiguration();
+    		defConf.setConfDescr(ToscaClientGrpcUtils.defaultDescr);
+    		defConf.setConfID(ToscaClientGrpcUtils.defaultConfID);
+    		defConf.setJSON(ToscaClientGrpcUtils.defaultConfig);
+    		return defConf;    		
 		}
 	}
 }

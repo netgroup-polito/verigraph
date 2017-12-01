@@ -12,12 +12,12 @@
 			<xs:element name="Configuration">
 				<xs:complexType >
 					<xs:sequence>
-						<xs:element name="JSON" type="xsd:string"/>
+						<xs:element name="JSON" type="tJSON"/>
 					</xs:sequence>
 					<xs:attribute name="confID" type="xsd:string"/>
 					<xs:attribute name="confDescr" type="xsd:string"/>
 				</xs:complexType>
-			</xs:element>		
+			</xs:element>
 		</xs:schema>
 	</Types>
 
