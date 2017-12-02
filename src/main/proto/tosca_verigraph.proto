@@ -39,34 +39,26 @@ service ToscaVerigraph {
 }
 
 message ToscaRequestID {
-  int64 idTopologyTemplate = 1;
+  string idTopologyTemplate = 1;
 }
 
-message ToscaPolicy{
-  int64 idTopologyTemplate = 1;
-  string source = 2;
-  string destination = 3;
-  enum PolicyType {
-    reachability = 0;
-    isolation = 1;
-    traversal = 2;
-  }
-  PolicyType type = 4;
-  string middlebox = 5;
+message TopologyTemplateGrpc{
+  string id = 1; 
+  string name = 2;
+  repeated NodeTemplateGrpc nodeTemplate = 3;
+  repeated RelationshipTemplateGrpc relationshipTemplate = 4;
+  string errorMessage = 5;
 }
 
-message ToscaConfigurationGrpc{
-  //int64 idTopologyTemplate = 1;
-  //int64 idNodeTemplate = 2;
-  string description = 3;
-  string configuration = 4;
-  string id = 5;
+message NewTopologyTemplate{
+  bool success = 1;
+  TopologyTemplateGrpc topologyTemplate = 2;
+  string errorMessage = 3;
 }
 
 message NodeTemplateGrpc{
-  //int64 idTopologyTemplate = 1;
+  string id = 1;
   string name = 2;
-  int64 id = 3;//long
   enum Type {
     antispam = 0;
     cache = 1;
@@ -83,38 +75,36 @@ message NodeTemplateGrpc{
     webclient = 12;
     webserver = 13;
   }
-  Type type = 4;
-  ToscaConfigurationGrpc configuration = 6;
-  string errorMessage = 7;
+  Type type = 3;
+  ToscaConfigurationGrpc configuration = 4;
+  string errorMessage = 5;
 }
 
 message RelationshipTemplateGrpc{
-  //int64 idTopologyTemplate = 1;
-  int64 idSourceNodeTemplate = 2;
-  int64 idTargetNodeTemplate = 3;
+  string idSourceNodeTemplate = 1;
+  string idTargetNodeTemplate = 2;
+  string id = 3;
   string name = 4;
-  int64 id = 5; //long
-  string errorMessage = 6;
+  string errorMessage = 5;
 }
 
-message TopologyTemplateGrpc{
-  int64 id = 1; //long That's the same ID as the ServiceTemplate in which is contained
-  repeated NodeTemplateGrpc nodeTemplate = 2;
-  repeated RelationshipTemplateGrpc relationshipTemplate = 3;
-  string errorMessage = 4;
+message ToscaPolicy{
+  string idTopologyTemplate = 1;
+  string source = 2;
+  string destination = 3;
+  enum PolicyType {
+    reachability = 0;
+    isolation = 1;
+    traversal = 2;
+  }
+  PolicyType type = 4;
+  string middlebox = 5;
 }
 
-// Since each ServiceTemplate can contain only one TopologyTemplate, this message is omitted.
-// message ServiceTemplateGrpc{
-//   int64 id = 1;//long
-//   TopologyTemplateGrpc TopologyTemplate = 2;
-//   string errorMessage = 3;
-// }
-
-message NewTopologyTemplate{
-  bool success = 1;
-  TopologyTemplateGrpc topologyTemplate = 2;
-  string errorMessage = 3;
+message ToscaConfigurationGrpc{
+  string id = 1;
+  string description = 2;
+  string configuration = 3;
 }
 
 message ToscaTestGrpc {

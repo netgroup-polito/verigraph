@@ -10,7 +10,6 @@ package it.polito.verigraph.tosca;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,13 +20,12 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.grpc.client.ToscaClientGrpcUtils;
-import it.polito.verigraph.grpc.tosca.*;
 import it.polito.verigraph.tosca.classes.TConfiguration;
 import it.polito.verigraph.tosca.classes.TDefinitions;
 import it.polito.verigraph.tosca.classes.TEntityTemplate;
@@ -103,25 +101,25 @@ public class XmlParsingUtils {
 		try {
 			Object configObject = nodeTemplate.getProperties().getAny();
 			
-			//Retrieving element text content (JSON)
-			Element propertyNode = (Element) configObject;
-			NodeList jsonNodeList = propertyNode.getElementsByTagName("JSON");
-			Element jsonNode = (Element) jsonNodeList.item(0);
-			
 			//Retrieving TConfiguration object without its text content
 			JAXBContext context = JAXBContext.newInstance(TConfiguration.class);
 			Unmarshaller um = context.createUnmarshaller();			
 			JAXBElement<TConfiguration> configNode = um.unmarshal((Node)configObject, TConfiguration.class);
 			TConfiguration configuration = configNode.getValue();
 			
-			configuration.setJSON(jsonNode.getTextContent());
+			//Retrieving element text content (JSON)
+			Element propertyNode = (Element) configObject;
+			NodeList jsonNodeList = propertyNode.getElementsByTagName("JSON");
+			if(jsonNodeList.getLength() != 0)
+				configuration.setJSON(jsonNodeList.item(0).getTextContent());
+			
 			return configuration;
 			
-		} catch (JAXBException | NullPointerException ex) {
+		} catch (JAXBException | NullPointerException | DOMException ex) {
         	TConfiguration defConf = new TConfiguration();
-    		defConf.setConfDescr(ToscaClientGrpcUtils.defaultDescr);
-    		defConf.setConfID(ToscaClientGrpcUtils.defaultConfID);
-    		defConf.setJSON(ToscaClientGrpcUtils.defaultConfig);
+    		defConf.setConfDescr(ToscaGrpcUtils.defaultDescr);
+    		defConf.setConfID(ToscaGrpcUtils.defaultConfID);
+    		defConf.setJSON(ToscaGrpcUtils.defaultConfig);
     		return defConf;    		
 		}
 	}

@@ -17,7 +17,6 @@ import io.grpc.StatusRuntimeException;
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.tosca.*;
 import it.polito.verigraph.grpc.tosca.*;
-import it.polito.verigraph.grpc.client.*;
 import it.polito.verigraph.grpc.*;
 import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
 
@@ -51,42 +50,41 @@ public class ToscaClient {
     	GetRequest request = GetRequest.newBuilder().build();
     	
     	/*Iterates on received topology templates, prints on log file in case of errors*/
-    	Iterator<TopologyTemplateGrpc> receivedTemplates;
-    	
+    	Iterator<TopologyTemplateGrpc> receivedTemplates;   	
     	try {
     		receivedTemplates = blockingStub.getTopologyTemplates(request);
-    		info("[getTopologyTemplates] Receiving TopologyTemplates...");
+    		System.out.println("[getTopologyTemplates] Receiving TopologyTemplates...");
     		while(receivedTemplates.hasNext()) {
     			TopologyTemplateGrpc received = receivedTemplates.next();
     			if(received.getErrorMessage().equals("")) {
-    				info("[getTopologyTemplates] Received TopologyTemplate --> id:" + received.getId());
+    				System.out.println("[getTopologyTemplates] Correctly received TopologyTemplate --> id:" + received.getId());
     				templates.add(received);
     			} else 
-    				info("[getTopologyTemplates] Error receiving TopologyTemplates: " + received.getErrorMessage());	
+    				System.out.println("[getTopologyTemplates] Received a TopologyTemplate with error: " + received.getErrorMessage());	
     		}
     	} catch (StatusRuntimeException ex) {
-    		warning("[getTopologyTemplates] RPC failed : " + ex.getMessage());
+    		warning("[getTopologyTemplates] RPC failed: " + ex.getMessage());
     	}
-    	info("[getTopologyTemplates] All TopologyTemplates received.");
+    	System.out.println("[getTopologyTemplates] All TopologyTemplates received.");
     	return templates;
     }   
     
     
     /** Obtain a TopologyTemplate by ID */
-    public TopologyTemplateGrpc getTopologyTemplate(long id) {
+    public TopologyTemplateGrpc getTopologyTemplate(String id) {
         ToscaRequestID request = ToscaRequestID.newBuilder().setIdTopologyTemplate(id).build();
         try {
-        	TopologyTemplateGrpc response = blockingStub.getTopologyTemplate(request);
-        	info("[getTopologyTemplate] Receiving TopologyTemplate...");
+        	System.out.println("[getTopologyTemplate] Receiving TopologyTemplate...");
+        	TopologyTemplateGrpc response = blockingStub.getTopologyTemplate(request);       	
             if(response.getErrorMessage().equals("")){
-            	info("[getTopologyTemplate] Received TopologyTemplate --> id:" + response.getId());
+            	System.out.println("[getTopologyTemplate] Received TopologyTemplate --> id:" + response.getId());
                 return response;
-            }else{
-            	warning("[getTopologyTemplate] Error receiving TopologyTemplate : " + response.getErrorMessage());
+            } else {
+            	System.out.println("[getTopologyTemplate] Received a TopologyTemplate with error: " + response.getErrorMessage());
                 return response;
             }
         } catch (StatusRuntimeException ex) {
-        	warning("[getTopologyTemplate] RPC failed : " + ex.getStatus());
+        	warning("[getTopologyTemplate] RPC failed: " + ex.getStatus());
             return null;
         }
     }
@@ -96,42 +94,42 @@ public class ToscaClient {
     public NewTopologyTemplate createTopologyTemplate(TopologyTemplateGrpc topol) {
     	try {
     		//Sending new Topology and analyzing response
-	    	info("[createTopologyTemplate] Sending the new TopologyTemplate...");
+    		System.out.println("[createTopologyTemplate] Sending the new TopologyTemplate...");
     		NewTopologyTemplate response = blockingStub.createTopologyTemplate(topol);
     		if(response.getSuccess()) 
-    			info("[createTopologyTemplate] TopologyTemplate successfully created.");
+    			System.out.println("[createTopologyTemplate] TopologyTemplate successfully created.");
     		else
-    			warning("[createTopologyTemplate] RPC failed : " + response.getErrorMessage());    	
+    			System.out.println("[createTopologyTemplate] TopologyTemplate creation failed: " + response.getErrorMessage());    	
     		return response;
     		
     	} catch (StatusRuntimeException ex) {
-    		warning("[createTopologyTemplate] RPC failed : " + ex.getStatus());
+    		warning("[createTopologyTemplate] RPC failed: " + ex.getStatus());
     		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
     	} catch (ClassCastException | DataNotFoundException ex) {
-        	warning("[createTopologyTemplate] RPC failed : ");
+        	warning("[createTopologyTemplate] RPC failed: ");
     		ex.printStackTrace();
     		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         } 
     }    
     
     
-    /** Update a TopologyTemplate, takes in input a tosca compliant filename */   
-    public NewTopologyTemplate updateTopologyTemplate(TopologyTemplateGrpc topol, long id) {
+    /** Update a TopologyTemplate, takes in input a TopologyTemplateGrpc, the ID must be well set inside the TopologyTemplateGrpc */   
+    public NewTopologyTemplate updateTopologyTemplate(TopologyTemplateGrpc topol) {
     	try {
 	    	//Sending updated Topology and analyzing response
-	    	info("[updateTopologyTemplate] Sending the updated TopologyTemplate...");
+    		System.out.println("[updateTopologyTemplate] Sending the updated TopologyTemplate...");
     		NewTopologyTemplate response = blockingStub.updateTopologyTemplate(topol);
     		if(response.getSuccess())
-    			info("[updateTopologyTemplate] TopologyTemplate successfully updated.");
+    			System.out.println("[updateTopologyTemplate] TopologyTemplate successfully updated.");
 	    	else
-	    		warning("[updateTopologyTemplate] RPC failed on updateTopologyTemplate : " + response.getErrorMessage());    	
+	    		System.out.println("[updateTopologyTemplate] TopologyTemplate not updated: " + response.getErrorMessage());    	
     		return response;
     		
     	} catch (StatusRuntimeException ex) {
-    		warning("[updateTopologyTemplate] RPC failed : " + ex.getStatus());
+    		warning("[updateTopologyTemplate] RPC failed: " + ex.getStatus());
     		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
     	} catch (ClassCastException | DataNotFoundException ex) {
-        	warning("[updateTopologyTemplate] RPC failed : ");
+        	warning("[updateTopologyTemplate] RPC failed: ");
     		ex.printStackTrace();
     		return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         } 
@@ -139,19 +137,19 @@ public class ToscaClient {
     
     
     /** Delete a TopologyTemplate by ID */
-    public Status deleteTopologyTemplate(long id) {
+    public Status deleteTopologyTemplate(String id) {
         ToscaRequestID request = ToscaRequestID.newBuilder().setIdTopologyTemplate(id).build();
         try {
-        	info("[deleteTopologyTemplate] Sending delete request...");
+        	System.out.println("[deleteTopologyTemplate] Sending delete request...");
         	Status response = blockingStub.deleteTopologyTemplate(request);
             if(response.getSuccess())
-            	info("[deleteTopologyTemplate] TopologyTemplate successfully deleted.");
+            	System.out.println("[deleteTopologyTemplate] TopologyTemplate successfully deleted.");
             else
-            	warning("[deleteTopologyTemplate] Error deleting TopologyTemplate : " + response.getErrorMessage());           
+            	System.out.println("[deleteTopologyTemplate] Error deleting TopologyTemplate : " + response.getErrorMessage());           
             return response;
             
         } catch (StatusRuntimeException ex) {
-        	warning("[deleteTopologyTemplate] RPC failed : " + ex.getStatus());
+        	warning("[deleteTopologyTemplate] RPC failed: " + ex.getStatus());
             return Status.newBuilder().setSuccess(false).setErrorMessage(ex.getStackTrace().toString()).build();
         }
     }
@@ -161,13 +159,13 @@ public class ToscaClient {
     public ToscaVerificationGrpc verifyPolicy(ToscaPolicy policy){
     	ToscaVerificationGrpc response;
         try {
-        	info("[verifyToscaPolicy] Sending ToscaPolicy...");
+        	System.out.println("[verifyToscaPolicy] Sending ToscaPolicy...");
             response = blockingStub.verifyPolicy(policy);
             if(!response.getErrorMessage().equals("")){
-            	warning("[verifyToscaPolicy] Error in operation: " + response.getErrorMessage());
+            	System.out.println("[verifyToscaPolicy] Error in operation: " + response.getErrorMessage());
             }
-            info("[verifyToscaPolicy] Result : "+response.getResult());
-            info("[verifyToscaPolicy] Comment : "+response.getComment());
+            System.out.println("[verifyToscaPolicy] Result : " + response.getResult());
+            System.out.println("[verifyToscaPolicy] Comment : " + response.getComment());
             /*//uncomment if you want to print the paths
             for(ToscaTestGrpc test : response.getTestList()){
             	System.out.println("Test : "+test.getResult()+". Traversed nodes:");
@@ -184,66 +182,48 @@ public class ToscaClient {
     
     
     public static void main(String args[]){
-    	List<Long> topologyIDList = new ArrayList<Long>(); //list of TopologyTemplate ID
-
         ToscaClient client = new ToscaClient("localhost" , 50051);
+        
         try {        	
-        	//Create a new Topology
-        	ToscaConfigurationGrpc config1 = ToscaClientGrpcUtils.createToscaConfigurationGrpc("01", "blabla", "");
-        	ToscaConfigurationGrpc config2 = ToscaClientGrpcUtils.createToscaConfigurationGrpc("02", "blabla2", "");
+        	/*//Create a new Topology
+        	ToscaConfigurationGrpc config1 = ToscaGrpcUtils.createToscaConfigurationGrpc("01", "blabla", "");
+        	ToscaConfigurationGrpc config2 = ToscaGrpcUtils.createToscaConfigurationGrpc("02", "blabla2", "");
                 	
-        	NodeTemplateGrpc node1 = ToscaClientGrpcUtils.createNodeTemplateGrpc("Node1", 1, "endhost", config1);
-        	NodeTemplateGrpc node2 = ToscaClientGrpcUtils.createNodeTemplateGrpc("Node2", 2, "endpoint", config2);       	
-        	RelationshipTemplateGrpc relat1 = ToscaClientGrpcUtils.createRelationshipTemplateGrpc("nomeacaso", 100, 1, 2);
+        	NodeTemplateGrpc node1 = ToscaGrpcUtils.createNodeTemplateGrpc("host1", "101", "endhost", config1);
+        	NodeTemplateGrpc node2 = ToscaGrpcUtils.createNodeTemplateGrpc("host2", "102", "endpoint", config2);       	
+        	RelationshipTemplateGrpc relat1 = ToscaGrpcUtils.createRelationshipTemplateGrpc("HOST1toHOST2", "901", "101", "102");
         	
             List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
             nodes.add(node1);
             nodes.add(node2);
             List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();
             relats.add(relat1);
-            TopologyTemplateGrpc topol = ToscaClientGrpcUtils.createTopologyTemplateGrpc(10, nodes, relats);
+            TopologyTemplateGrpc topol = ToscaGrpcUtils.createTopologyTemplateGrpc("10", nodes, relats);
             
             NewTopologyTemplate createdTopol = client.createTopologyTemplate(topol);
-            
-            if(createdTopol.getSuccess() == true){
-                topologyIDList.add(createdTopol.getTopologyTemplate().getId());
-                System.out.println("Created graph with id :"+ createdTopol.getTopologyTemplate().getId());
-            }
+            if(createdTopol.getSuccess() == true)
+            	System.out.println("Created graph with id :"+ createdTopol.getTopologyTemplate().getId());
             
             //Print all Topology on server
-            for(TopologyTemplateGrpc g : client.getTopologyTemplates()) {
-                System.out.println("* TopologyTemplate id: " + g.getId());
-                for (NodeTemplateGrpc n: g.getNodeTemplateList())
-                    System.out.println(" \tNodeTemplate id: " + n.getId() + " " + n.getName());
-                for (RelationshipTemplateGrpc rel: g.getRelationshipTemplateList())
-                    System.out.println(" \tRelationshipTemplate id: " + rel.getId() + " " + rel.getName());
-                System.out.println("** Topology ended");
-            }
-            System.out.println("\n* All Topology showed");
-            
+            List<TopologyTemplateGrpc> topolList = client.getTopologyTemplates(); 
+            ToscaGrpcUtils.printTopologyTemplates(topolList);
+          
             //Update a Topology 	(put a firewall between the two nodes)
-            ToscaConfigurationGrpc config3 = ToscaClientGrpcUtils.createToscaConfigurationGrpc("03", "blabla3", "");
-            NodeTemplateGrpc node3 = ToscaClientGrpcUtils.createNodeTemplateGrpc("Node3", 3, "firewall", config3);
-            RelationshipTemplateGrpc relat2 = ToscaClientGrpcUtils.createRelationshipTemplateGrpc("lala", 101, 1, 3);
-            RelationshipTemplateGrpc relat3 = ToscaClientGrpcUtils.createRelationshipTemplateGrpc("lala2", 102, 3, 2);
+            ToscaConfigurationGrpc config3 = ToscaGrpcUtils.createToscaConfigurationGrpc("03", "blabla3", "");
+            NodeTemplateGrpc node3 = ToscaGrpcUtils.createNodeTemplateGrpc("myfirewall", "103", "firewall", config3);
+            RelationshipTemplateGrpc relat2 = ToscaGrpcUtils.createRelationshipTemplateGrpc("newRelat1", "902", "101", "103");
+            RelationshipTemplateGrpc relat3 = ToscaGrpcUtils.createRelationshipTemplateGrpc("newRelat2", "903", "103", "102");
             nodes.add(node3);
             relats.remove(relat1);
             relats.add(relat2);
             relats.add(relat3);
-            TopologyTemplateGrpc topol2 = ToscaClientGrpcUtils.createTopologyTemplateGrpc(createdTopol.getTopologyTemplate().getId(), nodes, relats);
+            TopologyTemplateGrpc topol2 = ToscaGrpcUtils.createTopologyTemplateGrpc(createdTopol.getTopologyTemplate().getId(), nodes, relats);
             
-            NewTopologyTemplate updatedTopol = client.updateTopologyTemplate(topol2, createdTopol.getTopologyTemplate().getId());
+            NewTopologyTemplate updatedTopol = client.updateTopologyTemplate(topol2);
             
             //Print all Topology on server
-            for(TopologyTemplateGrpc g : client.getTopologyTemplates()) {
-                System.out.println("* TopologyTemplate id: " + g.getId());
-                for (NodeTemplateGrpc n: g.getNodeTemplateList())
-                    System.out.println(" \tNodeTemplate id: " + n.getId() + " " + n.getName());
-                for (RelationshipTemplateGrpc rel: g.getRelationshipTemplateList())
-                    System.out.println(" \tRelationshipTemplate id: " + rel.getId() + " " + rel.getName());
-                System.out.println("** Topology ended");
-            }
-            System.out.println("\n* All Topology showed");
+            topolList = client.getTopologyTemplates(); 
+            ToscaGrpcUtils.printTopologyTemplates(topolList);
             
             //Delete a Topology
             Status result = client.deleteTopologyTemplate(updatedTopol.getTopologyTemplate().getId());
@@ -252,38 +232,23 @@ public class ToscaClient {
             List<TopologyTemplateGrpc> topols = client.getTopologyTemplates();
             if(topols.isEmpty())
             		System.out.println("Ok");
-        	
-            //In the following there is a file.xml parsing, error on RelationshipTemplate ref element
+        	*/
             
-        	/*//Print all Topology on server
-            for(TopologyTemplateGrpc g : client.getTopologyTemplates()) {
-                System.out.println("* TopologyTemplate id: " + g.getId());
-                for (NodeTemplateGrpc n: g.getNodeTemplateList())
-                    System.out.println(" \tNodeTemplate id: " + n.getId() + " " + n.getName());
-                for (RelationshipTemplateGrpc rel: g.getRelationshipTemplateList())
-                    System.out.println(" \tRelationshipTemplate id: " + rel.getId() + " " + rel.getName());
-                System.out.println("** Topology ended");
-            }
-            System.out.println("\n* All Topology showed");
+        	//Print all Topology on server
+        	List<TopologyTemplateGrpc> topol = client.getTopologyTemplates();
+        	ToscaGrpcUtils.printTopologyTemplates(topol);           
             
-            TopologyTemplateGrpc fileTopology = ToscaClientGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_support\\DummyServiceTemplate.xml");
+            TopologyTemplateGrpc fileTopology = ToscaGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_support\\DummyServiceTemplate.xml");
         	client.createTopologyTemplate(fileTopology);
         	
-        	//Print all Topology on server
-            for(TopologyTemplateGrpc g : client.getTopologyTemplates()) {
-                System.out.println("* TopologyTemplate id: " + g.getId());
-                for (NodeTemplateGrpc n: g.getNodeTemplateList())
-                    System.out.println(" \tNodeTemplate id: " + n.getId() + " " + n.getName());
-                for (RelationshipTemplateGrpc rel: g.getRelationshipTemplateList())
-                    System.out.println(" \tRelationshipTemplate id: " + rel.getId() + " " + rel.getName());
-                System.out.println("** Topology ended");
-            }
-            System.out.println("\n* All Topology showed");*/
+        	topol = client.getTopologyTemplates();
+        	ToscaGrpcUtils.printTopologyTemplates(topol);   
         	
         } catch(Exception ex){
             System.out.println("Error: "); 
-            ex.getMessage();
             ex.printStackTrace();
+            ex.getMessage();
+            System.out.println("Closing client...");
         } finally {
             try {
 				client.shutdown();
@@ -310,9 +275,9 @@ public class ToscaClient {
     	}  
     }
     
-    private void info(String msg) {
+    /*private void info(String msg) {
         logger.log(Level.INFO, msg);  
-    }
+    }*/
 
     private void warning(String msg) {
         logger.log(Level.WARNING, msg);

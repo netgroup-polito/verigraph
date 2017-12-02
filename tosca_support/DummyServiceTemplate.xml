@@ -16,59 +16,155 @@
 		location="../ToscaVerigraph_compliance/ToscaVerigraphDefinitions.xml" />
 
 
-	<ServiceTemplate id="0" name="dummyTemplate">
+	<ServiceTemplate id="0" name="verigraph-req3-success">
 
 		<TopologyTemplate id="10" name="dummyTopology">
-			<NodeTemplate id="100" name="User1" type="EndhostType">
+			<NodeTemplate id="100" name="fw" type="FirewallType">
 				<Properties>
-					<Configuration confid="1000" confDescr="amazingDescription" >
-						<JSON>
+					<Configuration> 
+						<JSON> 
+						[
 							{
-							"body": "sex",
-							"protocol": "HTTP_REQUEST",
-							"destination": "webserver"
+							   "webserver":"nat"
 							}
+						]
 						</JSON>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="101" name="NAT" type="NatType">
+			<NodeTemplate id="101" name="webeserver1" type="WebserverType" />
+
+			<NodeTemplate id="102" name="nat" type="NatType">
 				<Properties>
 					<Configuration>
-						<JSON>
-							"user1"
+						<JSON> 
+						[
+							"host1",
+							"host2"
+						]
 						</JSON>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="102" name="DPI" type="DpiType">
+			<NodeTemplate id="103" name="dpi" type="DpiType" >
 				<Properties>
 					<Configuration>
-						<JSON>
-							"sex", "droga"
+						<JSON> 
+						[
+							"sex"
+						]
+						</JSON>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+			
+			<NodeTemplate id="104" name="host2" type="EndhostType" >
+				<Properties>
+					<Configuration>
+						<JSON> 
+						[
+							{
+							   "url":"www.facebook.com",
+							   "body":"candy",
+							   "destination":"webserver1",
+							   "protocol":"HTTP_REQUEST"
+							}
+						]
+						</JSON>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+			
+			<NodeTemplate id="105" name="host1" type="EndhostType" >
+				<Properties>
+					<Configuration>
+						<JSON> 
+						[
+							{
+							   "url":"www.facebook.com",
+							   "body":"cats",
+							   "destination":"webserver1",
+							   "protocol":"HTTP_REQUEST"
+							}
+						]
+						</JSON>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+			
+			<NodeTemplate id="106" name="host3" type="EndhostType" >
+				<Properties>
+					<Configuration>
+						<JSON> 
+						[
+							{
+							   "url":"www.facebook.com",
+							   "body":"cats",
+							   "destination":"webserver1",
+							   "protocol":"HTTP_REQUEST"
+							}
+						]
 						</JSON>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="103" name="Endpoint" type="EndpointType" />
 
-
-			<RelationshipTemplate id="104" name="user1ToNat" type="linkedTo">
+			<RelationshipTemplate id="1001" name="fwToServ1" type="linkedTo">
 				<SourceElement ref="100" />
 				<TargetElement ref="101" />
 			</RelationshipTemplate>
-
-			<RelationshipTemplate id="105" name="natToDpi" type="linkedTo">
-				<SourceElement ref="101" />
+			
+			<RelationshipTemplate id="1002" name="fwToNat" type="linkedTo">
+				<SourceElement ref="100" />
 				<TargetElement ref="102" />
 			</RelationshipTemplate>
+			
+			<RelationshipTemplate id="1003" name="serv1ToHost3" type="linkedTo">
+				<SourceElement ref="101" />
+				<TargetElement ref="106" />
+			</RelationshipTemplate>
+			
+			<RelationshipTemplate id="1004" name="serv1Tofw" type="linkedTo">
+				<SourceElement ref="101" />
+				<TargetElement ref="100" />
+			</RelationshipTemplate>			
 
-			<RelationshipTemplate id="106" name="dpiToWebserver" type="linkedTo">
+			<RelationshipTemplate id="1005" name="natToHost1" type="linkedTo">
+				<SourceElement ref="102" />
+				<TargetElement ref="105" />
+			</RelationshipTemplate>
+			
+			<RelationshipTemplate id="1006" name="natToDpi" type="linkedTo">
 				<SourceElement ref="102" />
 				<TargetElement ref="103" />
+			</RelationshipTemplate>
+			
+			<RelationshipTemplate id="1007" name="natTofw" type="linkedTo">
+				<SourceElement ref="102" />
+				<TargetElement ref="100" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="1008" name="dpiToHost2" type="linkedTo">
+				<SourceElement ref="103" />
+				<TargetElement ref="104" />
+			</RelationshipTemplate>
+			
+			<RelationshipTemplate id="1009" name="Host2ToNat" type="linkedTo">
+				<SourceElement ref="104" />
+				<TargetElement ref="102" />
+			</RelationshipTemplate>
+			
+			<RelationshipTemplate id="1010" name="Host1ToNat" type="linkedTo">
+				<SourceElement ref="105" />
+				<TargetElement ref="102" />
+			</RelationshipTemplate>
+			
+			<RelationshipTemplate id="1011" name="Host3ToWebs1" type="linkedTo">
+				<SourceElement ref="106" />
+				<TargetElement ref="101" />
 			</RelationshipTemplate>
 
 		</TopologyTemplate>
