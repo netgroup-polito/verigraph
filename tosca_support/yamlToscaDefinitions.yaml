@@ -15,7 +15,7 @@ node_types:
         entry_schema:
           type: string
   
-  verigrapg.types.Cache:
+  verigraph.types.Cache:
     derived_from: tosca.nodes.Root
     description: verigraph Cache node
     properties:
@@ -24,7 +24,7 @@ node_types:
         entry_schema:
           type: string
             
-  verigrapg.types.Dpi:
+  verigraph.types.Dpi:
     derived_from: tosca.nodes.Root
     description: verigraph Dpi node
     properties:
@@ -33,173 +33,119 @@ node_types:
         entry_schema:
           type: string
 
-    verigrapg.types.Endhost:
-      derived_from: tosca.nodes.Root
-      description: verigraph endhost node
-      attributes:
-        body:
-          type: string
-        sequence:
-          type: integer
-        protocol:
-          type: string
-          constraints:
-            - valid_values: [ HTTP_REQUEST, HTTP_RESPONSE, POP3_REQUEST, POP3_RESOPONSE ]
-        email_from:
-          type: string
-        url:
-          type: string
-        options:
-          type: string
-        destination:
+  verigraph.types.Endhost:
+    derived_from: tosca.nodes.Root
+    description: verigraph endhost node
+    attributes:
+      body:
+        type: string
+      sequence:
+        type: integer
+      protocol:
+        type: string
+        constraints:
+          - valid_values: [ HTTP_REQUEST, HTTP_RESPONSE, POP3_REQUEST, POP3_RESOPONSE ]
+      email_from:
+        type: string
+      url:
+        type: string
+      options:
+        type: string
+      destination:
+        type: string
+
+  verigraph.types.Endpoint:
+    derived_from: tosca.nodes.Root
+    description: verigraph Endpoint node
+    properties:
+      names:
+        type: list
+        entry_schema:
           type: string
 
-    verigrapg.types.Endpoint:
-      derived_from: tosca.nodes.Root
-      description: verigraph Endpoint node
-      properties:
-        names:
-          type: list
-          entry_schema:
-            type: string
-
-    verigrapg.types.FieldModifier:
-      derived_from: tosca.nodes.Root
-      description: verigraph Field Modifier node
-      properties:
-        names:
-          type: list
-          entry_schema:
-            type: string
-            
-    verigraph.types.Firewall:
-      derived_from: tosca.nodes.Root
-      description: verigraph Firewall node
-      properties:
-        elements:
-          type: map
-          entry_schema:
-            description: source-destination mapping of firewall
-            type: string
-            
-    verigrapg.types.MailClient:
-      derived_from: tosca.nodes.Root
-      description: verigraph Mail Client node
-      attributes:
-        mailserver:
+  verigraph.types.FieldModifier:
+    derived_from: tosca.nodes.Root
+    description: verigraph Field Modifier node
+    properties:
+      names:
+        type: list
+        entry_schema:
           type: string
+            
+  verigraph.types.Firewall:
+    derived_from: tosca.nodes.Root
+    description: verigraph Firewall node
+    properties:
+      elements:
+        type: map
+        entry_schema:
+          description: source-destination mapping of firewall
+          type: string
+            
+  verigraph.types.MailClient:
+    derived_from: tosca.nodes.Root
+    description: verigraph Mail Client node
+    attributes:
+      mailserver:
+        type: string
           
-    verigraph.types.MailServer:
-      deriver_from: tosca.nodes.Root
-      descrtiption: verigraph Mail Server node
-      properties:
-        names:
-          type: list
-          entry_schema:
-            type: string
-
-    verigraph.types.Nat:
-      deriver_from: tosca.nodes.Root
-      descrtiption: verigraph Nat node
-      properties:
-        sources:
-          type: list
-          entry_schema:
-            type: string
-
-    verigraph.types.VpnAccess:
-      deriver_from: tosca.nodes.Root
-      descrtiption: verigraph Vpn Access node
-      attributes:
-        vpnexit:
+  verigraph.types.MailServer:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph Mail Server node
+    properties:
+      names:
+        type: list
+        entry_schema:
           type: string
 
-    verigraph.types.VpnExit:
-      deriver_from: tosca.nodes.Root
-      descrtiption: verigraph Vpn Exit node
-      attributes:
-        vpnaccess:
-          type: string   
-
-    verigraph.types.WebClient:
-      deriver_from: tosca.nodes.Root
-      descrtiption: verigraph web Client node
-      attributes:
-        nameWebServer:
+  verigraph.types.Nat:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph Nat node
+    properties:
+      sources:
+        type: list
+        entry_schema:
           type: string
 
-    verigraph.types.WebServer:
-      deriver_from: tosca.nodes.Root
-      descrtiption: verigraph web Server node
-      properties:
-        names:
-          type: list
-          entry_schema:
-            type: string
+  verigraph.types.VpnAccess:
+    deriver_from: tosca.nodes.Root
+    descrtiption: verigraph Vpn Access node
+    attributes:
+      vpnexit:
+        type: string
 
+  verigraph.types.VpnExit:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph Vpn Exit node
+    attributes:
+      vpnaccess:
+        type: string   
 
+  verigraph.types.WebClient:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph web Client node
+    attributes:
+      nameWebServer:
+        type: string
 
-
-
-
-
-
-
-
-
-
-
+  verigraph.types.WebServer:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph web Server node
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string
 
 
 #import syntax
-imports:
-  - file: <fileURI>
-    namespace_uri:
-    namespace_prefix:
+#imports:
+#  - file: <fileURI>
+#    namespace_uri:
+#    namespace_prefix:
     
-#properties definitions can be associated with NodeType, RelType
-properties:
-  configurationJson:
-    type: tosca:string
-    description: the Json describing the configuration
-    default: 
-    required: true
-    constraints: 
-    entry_schema:
-    
-#attributes definition
-attributes:
-  configId:
-    type: tosca:string
-    description: identifies a configuration
-    default:
-    entry_schema:
+
     
     
     
-#data type definitions
-mytype.verigraphEndHost:
-  description: verigraph endhost node type
-  derived_from: tosca.nodes.Root
-  properties:
-    confId:
-      type: tosca:string
-    confDescr:
-      type: tosca:string
-    confJson:
-      type: tosca:string
-      
-
-
-
-
-
-#node template example definitions
-node_templates:
-  mysql:
-    type: tosca.nodes.DBMS.MySQL
-    properties:
-      root_password: { get_input: my_mysql_rootpw }
-      port: { get_input: my_mysql_port }
-      
-  
+ 
