@@ -21,15 +21,7 @@
 		<TopologyTemplate id="10" name="dummyTopology">
 			<NodeTemplate id="100" name="fw" type="FirewallType">
 				<Properties>
-					<Configuration> 
-						<JSON> 
-						[
-							{
-							   "webserver":"nat"
-							}
-						]
-						</JSON>
-					</Configuration>
+					<Configuration confID="401" confDescr="superDescription2" /> 
 				</Properties>
 			</NodeTemplate>
 
@@ -37,7 +29,7 @@
 
 			<NodeTemplate id="102" name="nat" type="NatType">
 				<Properties>
-					<Configuration>
+					<Configuration confID="400" confDescr="superDescription" >
 						<JSON> 
 						[
 							"host1",

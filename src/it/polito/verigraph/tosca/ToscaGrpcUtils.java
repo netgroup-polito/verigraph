@@ -75,7 +75,9 @@ public class ToscaGrpcUtils {
     	//Name can be null
     	try {
     		nodegrpc.setName(nodeTempl.getName());
-    	} catch (NullPointerException ex) {}
+    	} catch (NullPointerException ex) {
+    		nodegrpc.setName("");
+    	}
     	
     	//Type cannot be null but it can be invalid
     	try {
