@@ -43,17 +43,21 @@ import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.resources.beans.VerificationBean;
 import it.polito.verigraph.service.GraphService;
+import it.polito.verigraph.service.TopologyTemplateService;
 import it.polito.verigraph.service.VerificationService;
+import it.polito.verigraph.tosca.classes.Definitions;
 
 @Path("/graphs")
 @Api(value = "/graphs", description = "Manage graphs")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
+@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class GraphResource {
+	TopologyTemplateService topologyTemplatesService = new TopologyTemplateService();
     GraphService graphService= new GraphService();
     VerificationService verificationService= new VerificationService();
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(httpMethod = "GET",
     value = "Returns all graphs",
     notes = "Returns an array of graphs",
@@ -66,6 +70,22 @@ public class GraphResource {
             @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
     public List<Graph> getGraphs() throws JsonProcessingException, MyNotFoundException {
         return graphService.getAllGraphs();
+    }
+    
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    @ApiOperation(httpMethod = "GET",
+    value = "Returns all topology templates",
+    notes = "Returns an array of topology templates",
+    response = Definitions.class,
+    responseContainer = "List")
+    @ApiResponses(value = { @ApiResponse(code = 200,
+    message = "All the topology templates have been returned in the message body",
+    response = Definitions.class,
+    responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
+    public List<Definitions> getTopologyTemplates() throws JsonProcessingException, MyNotFoundException {
+        return topologyTemplatesService.getAllTopologyTemplates();
     }
 
     @POST
