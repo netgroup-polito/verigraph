@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Definitions id="exampleDefinition"
+	name="Example of service described with modified Tosca" xmlns="http://docs.oasis-open.org/tosca/ns/2011/12"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://www.example.com/servicetemplates/ExampleService"
+	xs:schemaLocation="http://docs.oasis-open.org/tosca/TOSCA/v1.0/os/schemas/TOSCA-v1.0.xsd">
+
+	<Extensions>
+		<Extension
+			namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinitions"
+			mustUnderstand="yes" />
+	</Extensions>
+
+	<Import importType=" http://docs.oasis-open.org/tosca/ns/2011/12"
+		namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
+		location="../ToscaVerigraph_compliance/ToscaVerigraphDefinitions.xml" />
+
+
+	<ServiceTemplate id="0" name="SimpleGraph">
+
+		<TopologyTemplate id="10" name="SimpleTopology">
+			<NodeTemplate id="100" name="endpoint" type="EndpointType">
+				<Properties>
+					<Configuration confID="401" confDescr="superDescription" /> 
+				</Properties>
+			</NodeTemplate>
+
+			<NodeTemplate id="101" name="nat" type="NatType">
+				<Properties>
+					<Configuration confID="400" confDescr="superDescription" >
+						<JSON> 
+						[
+							"host1",
+							"host2"
+						]
+						</JSON>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+
+
+			<RelationshipTemplate id="1001" name="endpointToFw" type="linkedTo">
+				<SourceElement ref="100" />
+				<TargetElement ref="101" />
+			</RelationshipTemplate>
+
+		</TopologyTemplate>
+
+	</ServiceTemplate>
+
+</Definitions>

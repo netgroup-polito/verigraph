@@ -4,12 +4,14 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TConfiguration;
 import it.polito.verigraph.tosca.classes.TNodeTemplate;
 import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
 import it.polito.verigraph.tosca.classes.TRelationshipTemplate.SourceElement;
@@ -32,7 +34,7 @@ public class MappingUtils {
 			Map<Long,Neighbour> neighMap = node.getNeighbours();
 			for (Map.Entry<Long, Neighbour> myentry : neighMap.entrySet()) {
 				Neighbour neigh = myentry.getValue();
-				TRelationshipTemplate relat = mapRelationship(neigh, node);
+				TRelationshipTemplate relat = mapRelationship(graph, node, neigh);
 				topologyTemplate.getNodeTemplateOrRelationshipTemplate().add(relat);
 			}
 		}
@@ -51,13 +53,13 @@ public class MappingUtils {
 		nodeTemplate.setId(String.valueOf(node.getId()));
 		nodeTemplate.setName(node.getName());
 		
-		QName type = new QName("http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition",
-		//QName type = new QName("http://docs.oasis-open.org/tosca/ns/2011/12",
+		//QName type = new QName("http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition",
+		QName type = new QName("http://docs.oasis-open.org/tosca/ns/2011/12",
 				node.getFunctional_type().substring(0, 1).toUpperCase() + node.
 				getFunctional_type().substring(1) + "Type");
 		nodeTemplate.setType(type);
 
-		TConfiguration config = mapConfiguration(node.getConfiguration());
+		it.polito.verigraph.tosca.classes.Configuration config = mapConfiguration(node.getConfiguration());
 		nodeTemplate.getAny().add(config);
 
 		return nodeTemplate;
@@ -66,13 +68,18 @@ public class MappingUtils {
 	// Secondo me bisogna settare gli oggetti giusti nei ref al posto di settare semplicemente delle stringhe
 	
 
-	public static TRelationshipTemplate mapRelationship(Neighbour neigh, Node sourceNode) {
+	public static TRelationshipTemplate mapRelationship(Graph graph, Node sourceNode, Neighbour neigh) {
 		TRelationshipTemplate relationship = new TRelationshipTemplate();
-		
 		SourceElement source = new SourceElement();
-		source.setRef(sourceNode.getId());
 		TargetElement target = new TargetElement();
-		target.setRef(neigh.getId());
+		
+		Node targetNode = graph.getNodes().get(neigh.getId());
+		
+		TNodeTemplate sourceNT = mapNode(sourceNode);
+		TNodeTemplate targetNT = mapNode(targetNode);
+		
+		source.setRef(sourceNT);
+		target.setRef(targetNT);
 		
 		relationship.setId(String.valueOf(sourceNode.getId())); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is set to sourceNodeID
 		relationship.setSourceElement(source);
@@ -83,13 +90,23 @@ public class MappingUtils {
 	}
 	
 	
-    public static TConfiguration mapConfiguration(Configuration conf) {
-    		TConfiguration configuration = new TConfiguration();
+    public static it.polito.verigraph.tosca.classes.Configuration mapConfiguration(Configuration conf) {
+    		it.polito.verigraph.tosca.classes.Configuration configuration = new it.polito.verigraph.tosca.classes.Configuration();
     		
     		configuration.setConfID(conf.getId());
     		configuration.setConfDescr(conf.getDescription());
-    		configuration.setJSON(conf.getConfiguration().asText());
+    		configuration.setJSON(prettyPrintJsonString(conf.getConfiguration()));
     		
     		return configuration;
+    }
+    
+    public static String prettyPrintJsonString(JsonNode jsonNode) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Object json = mapper.readValue(jsonNode.toString(), Object.class);
+            return System.getProperty("line.separator") + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json) + System.getProperty("line.separator");
+        } catch (Exception e) {
+        		return "Sorry, pretty print didn't work";
+        }
     }
 }

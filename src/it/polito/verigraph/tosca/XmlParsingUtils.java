@@ -26,7 +26,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.tosca.classes.TConfiguration;
 import it.polito.verigraph.tosca.classes.TDefinitions;
 import it.polito.verigraph.tosca.classes.TEntityTemplate;
 import it.polito.verigraph.tosca.classes.TExtensibleElements;
@@ -96,16 +95,16 @@ public class XmlParsingUtils {
 	}
 	
 	
-	/** Returns the TConfiguration JAXB-generated TOSCA object of a TOSCA NodeTemplate. */
-	public static TConfiguration obtainConfiguration(TNodeTemplate nodeTemplate) {
+	/** Returns the it.polito.verigraph.tosca.classes.Configuration JAXB-generated TOSCA object of a TOSCA NodeTemplate. */
+	public static it.polito.verigraph.tosca.classes.Configuration obtainConfiguration(TNodeTemplate nodeTemplate) {
 		try {
 			Object configObject = nodeTemplate.getProperties().getAny();
 			
-			//Retrieving TConfiguration object without its text content
-			JAXBContext context = JAXBContext.newInstance(TConfiguration.class);
+			//Retrieving it.polito.verigraph.tosca.classes.Configuration object without its text content
+			JAXBContext context = JAXBContext.newInstance(it.polito.verigraph.tosca.classes.Configuration.class);
 			Unmarshaller um = context.createUnmarshaller();			
-			JAXBElement<TConfiguration> configNode = um.unmarshal((Node)configObject, TConfiguration.class);
-			TConfiguration configuration = configNode.getValue();
+			JAXBElement<it.polito.verigraph.tosca.classes.Configuration> configNode = um.unmarshal((Node)configObject, it.polito.verigraph.tosca.classes.Configuration.class);
+			it.polito.verigraph.tosca.classes.Configuration configuration = configNode.getValue();
 			
 			//Retrieving element text content (JSON)
 			Element propertyNode = (Element) configObject;
@@ -116,7 +115,7 @@ public class XmlParsingUtils {
 			return configuration;
 			
 		} catch (JAXBException | NullPointerException | DOMException ex) {
-        	TConfiguration defConf = new TConfiguration();
+        	it.polito.verigraph.tosca.classes.Configuration defConf = new it.polito.verigraph.tosca.classes.Configuration();
     		defConf.setConfDescr(ToscaGrpcUtils.defaultDescr);
     		defConf.setConfID(ToscaGrpcUtils.defaultConfID);
     		defConf.setJSON(ToscaGrpcUtils.defaultConfig);

@@ -4,22 +4,14 @@
 			targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"> 
 
 	<!-- Generic Configuration type, JSON string common to all FunctionalTypes -->
-	<xsd:complexType name="tConfiguration">
-		<xsd:sequence>
-			<xsd:element name="JSON" type="xsd:string"/>
-		</xsd:sequence>
-		<xsd:attribute name="confID" type="xsd:string"/>
-		<xsd:attribute name="confDescr" type="xsd:string"/>
-	</xsd:complexType>
-	
-	<xsd:element name="Configuration" type="tConfiguration" />
-	
-	<!-- <xsd:complexType name="tJSON">
-		<xsd:sequence>
-			<xsd:element name="JSON" type="xsd:string"/>
-		</xsd:sequence>
-	</xsd:complexType> -->	
-	
-	<!-- <xsd:element name="JSON" type="tJSON" /> -->
+	<xsd:element name="Configuration">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="JSON" type="xsd:string"/>
+			</xsd:sequence>
+			<xsd:attribute name="confID" type="xsd:string"/>
+			<xsd:attribute name="confDescr" type="xsd:string"/>
+		</xsd:complexType>
+	</xsd:element>
 	
 </xsd:schema>
