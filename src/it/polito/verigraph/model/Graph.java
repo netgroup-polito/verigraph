@@ -33,7 +33,7 @@ public class Graph {
     private long id;
 
     @ApiModelProperty(name = "nodes", notes = "Nodes", dataType = "List[it.polito.verigraph.model.Node]")
-    private Map<Long, Node>nodes= new HashMap<Long, Node>();
+    protected Map<Long, Node>nodes= new HashMap<Long, Node>();
 
     @ApiModelProperty(required = false, hidden = true)
     @XmlTransient
