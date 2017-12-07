@@ -1,0 +1,45 @@
+
+tosca_definitions_version: http://docs.oasis-open.org/tosca/ns/simple/yaml/1.0
+
+metadata:
+  template_name: MyDummyService
+  template_author: Dummy   
+  template_version: Dummy1.0
+
+description: sample of Tosca yaml service template exploiting verigraph
+
+repositories:
+  verigraph_repository:
+    url: https://github.com/netgroup-polito/verigraph
+
+imports:
+  - file: yamlToscaDefinitions.yaml
+    repository: verigraph_repository
+    namespace_uri: #tobe defined
+    namespace_prefix: vt
+
+topology_template:
+  node_templates:
+    100:
+      type: verigraph.nodeTypes.Firewall
+      properties:
+        elements:
+          ciao: ciao
+          bella: bella
+            
+    101:
+      type: verigraph.nodeTypes.Antispam
+      properties:
+        sources:
+          - Ciao
+          - Ciao2
+   
+    102:
+  
+  relationship_templates:
+    100to101:
+      type: verigraph.relationshipType.generic
+      properties:
+        relationship_id: 100101
+        source: 100
+        target: 101

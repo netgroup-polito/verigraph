@@ -1,0 +1,143 @@
+
+#Tosca definitions for Verigraph extension in Tosca Yaml simple profile
+
+tosca_definitions_version: http://docs.oasis-open.org/tosca/ns/simple/yaml/1.0
+
+description: node type and data type definitions exetending tosca types for support to Verigraph verification system
+
+node_types:
+
+  verigraph.nodeTypes.Antispam:
+    derived_from: tosca.nodes.Root
+    properties:
+      sources:
+        type: list
+        entry_schema:
+          type: string
+          
+  verigraph.nodeTypes.Cache:
+    derived_from: tosca.nodes.Root
+    properties:
+      resources:
+        type: list
+        entry_schema:
+          type: string
+          
+  verigraph.nodeTypes.Dpi:
+    derived_from: tosca.nodes.Root
+    properties:
+      notAllowedList:
+        type: list
+        entry_schema:
+          type: string
+          
+  verigraph.nodeTypes.Endhost:
+    derived_from: tosca.nodes.Root
+    properties:
+      body:
+        type: string
+      sequence:
+        type: integer
+      protocol:
+        type: string
+        constraints:
+          - valid_values: [ HTTP_REQUEST, HTTP_RESPONSE, POP3_REQUEST, POP3_RESOPONSE ]
+      email_from:
+        type: string
+      url:
+        type: string
+      options:
+        type: string
+      destination:
+        type: string
+        
+  verigraph.nodeTypes.Endpoint:
+    derived_from: tosca.nodes.Root
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string
+          
+  verigraph.nodeTypes.FieldModifier:
+    derived_from: tosca.nodes.Root
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string
+          
+  verigraph.nodeTypes.Firewall:
+    derived_from: tosca.nodes.Root
+    properties:
+      elements:
+        type: map
+        entry_schema:
+          description: source-destination mapping of firewall
+          type: string
+          
+  verigraph.nodeTypes.MailClient:
+    derived_from: tosca.nodes.Root
+    properties:
+      mailserver:
+        type: string
+        
+  verigraph.nodeTypes.MailServer:
+    derived_from: tosca.nodes.Root
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string
+          
+  verigraph.nodeTypes.Nat:
+    derived_from: tosca.nodes.Root
+    properties:
+      sources:
+        type: list
+        entry_schema:
+          type: string
+              
+  verigraph.nodeTypes.VpnAccess:
+    derived_from: tosca.nodes.Root 
+    properties:
+      vpnexit:
+        type: string
+        
+  verigraph.nodeTypes.VpnExit:
+    derived_from: tosca.nodes.Root 
+    properties:
+      vpnaccess:
+        type: string 
+        
+  verigraph.nodeTypes.WebServer:
+    derived_from: tosca.nodes.Root
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string 
+    
+  verigraph.nodeTypes.WebClient:
+    derived_from: tosca.nodes.Root 
+    properties:
+      nameWebServer:
+        type: string     
+ 
+
+relationship_types:
+  verigraph.relationshipType.generic:
+    derived_from: tosca.relationships.Root
+    properties: 
+      relationship_id:
+        type: string
+      sourceNode:
+        type: string
+      targetNode:
+        type: string
+    
+
+    
+    
+    
+ 
