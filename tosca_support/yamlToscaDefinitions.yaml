@@ -137,15 +137,15 @@ node_types:
         entry_schema:
           type: string
 
-
-#import syntax
-#imports:
-#  - file: <fileURI>
-#    namespace_uri:
-#    namespace_prefix:
-    
-
-    
-    
-    
+relationship_types:
+  verigraph.relationshipType.generic:
+    derived_from: tosca.relationships.Root
+    properties: 
+      relationship_id:
+        type: string
+      sourceNode:
+        type: string
+      targetNode:
+        type: string
+        
  
