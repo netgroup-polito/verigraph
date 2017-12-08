@@ -5,27 +5,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.namespace.QName;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.polito.verigraph.tosca.XmlParsingUtils;
-import it.polito.verigraph.tosca.classes.*;
 import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.grpc.*;
-import it.polito.verigraph.grpc.tosca.*;
+import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
 import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
+import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaPolicy;
+import it.polito.verigraph.grpc.tosca.ToscaTestGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
 import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Test;
 import it.polito.verigraph.model.Verification;
+import it.polito.verigraph.tosca.classes.TNodeTemplate;
+import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
+import it.polito.verigraph.tosca.classes.TServiceTemplate;
 
 public class ToscaGrpcUtils {
 
@@ -101,12 +106,12 @@ public class ToscaGrpcUtils {
 			try {
 				grpcConfig.setId(nodeConfig.getConfID());        		
 			} catch(NullPointerException ex) {
-				grpcConfig.setConfiguration(defaultConfID);
+				grpcConfig.setId(defaultConfID);
 			}
 			try {
 				grpcConfig.setDescription(nodeConfig.getConfDescr());
 			} catch(NullPointerException ex) {
-				grpcConfig.setConfiguration(defaultDescr);
+				grpcConfig.setDescription(defaultDescr);
 			}
 			try {
 				grpcConfig.setConfiguration(nodeConfig.getJSON());
@@ -256,11 +261,6 @@ public class ToscaGrpcUtils {
 		else{
 			throw new IllegalArgumentException("Please insert a valid type field");
 		}
-		if(middlebox != null)
-			policy.setMiddlebox(middlebox);
-		else{
-			throw new IllegalArgumentException("Please insert a valid middlebox field");
-		}
 		return policy.build();
 	}
 
@@ -367,50 +367,60 @@ public class ToscaGrpcUtils {
 
 
 	/** Mapping method --> from grpc TopologyTemplateGrpc to model Graph */
-	public static Graph deriveGraph(TopologyTemplateGrpc request) throws BadRequestException {
+	public static Graph deriveGraph(TopologyTemplateGrpc request) throws BadRequestException, JsonProcessingException, IOException {
 		Graph graph = new Graph();
 		Map<Long, Node> nodes = new HashMap<>();
 
-		//Create a list of Node without Neighbour
-		for(NodeTemplateGrpc nodetempl : request.getNodeTemplateList()){
-			Node node = deriveNode(nodetempl);
-			if(nodes.containsKey(node.getId())) //It necessary to check uniqueness here otherwise a .put with the same key will overwrite the old node
-				throw new BadRequestException("The NodeTemplate ID must be unique."); 
-			else 
-				nodes.put(node.getId(), node);
-		}
-
-		//Add Neighbour to the Node of the list
-		List<RelationshipTemplateGrpc> relatList = request.getRelationshipTemplateList();
-		nodes = deriveNeighboursNode(nodes, relatList);
-
-		//Add Node and ID to the graph
-		graph.setNodes(nodes);
 		try {
-			graph.setId(Long.valueOf(request.getId()));
-		} catch(NumberFormatException ex) {
-			throw new BadRequestException("If you want to store your TopologyTemplate on this server, the TopologyTemplate ID must be a number.");
+			//Create a list of Node without Neighbour
+			for(NodeTemplateGrpc nodetempl : request.getNodeTemplateList()){
+				Node node = deriveNode(nodetempl);
+				if(nodes.containsKey(node.getId())) //It necessary to check uniqueness here otherwise a .put with the same key will overwrite the old node
+					throw new BadRequestException("The NodeTemplate ID must be unique."); 
+				else 
+					nodes.put(node.getId(), node);
+			}
+
+			//Add Neighbour to the Node of the list
+			List<RelationshipTemplateGrpc> relatList = request.getRelationshipTemplateList();
+			nodes = deriveNeighboursNode(nodes, relatList);
+
+			//Add Node and ID to the graph
+			graph.setNodes(nodes);
+			try {
+				graph.setId(Long.valueOf(request.getId()));
+			} catch(NumberFormatException ex) {
+				throw new BadRequestException("If you want to store your TopologyTemplate on this server, the TopologyTemplate ID must be a number.");
+			}
+
+			return graph;
+
+		} catch (NullPointerException e) {
+			throw new BadRequestException("The TopologyTemplate received has invalid fields."); 
 		}
-		return graph;
+
 	}
 
 
-	/** Mapping method --> from grpc NodeTemplate to model Node (with no Neighbour)*/
-	public static Node deriveNode(NodeTemplateGrpc nodegrpc) throws BadRequestException {
+	/** Mapping method --> from grpc NodeTemplate to model Node (with no Neighbour) */
+	public static Node deriveNode(NodeTemplateGrpc nodegrpc) throws BadRequestException, JsonProcessingException, IOException {
 		Node node = new Node();
 		try {
-			node.setId(Long.valueOf(nodegrpc.getId()));
-		} catch(NumberFormatException ex) {
-			throw new BadRequestException("The NodeTemplate ID must be a number.");
-		}
-		try {
+			try {
+				node.setId(Long.valueOf(nodegrpc.getId()));
+			} catch(NumberFormatException ex) {
+				throw new BadRequestException("The NodeTemplate ID must be a number.");
+			}
+
 			node.setName(nodegrpc.getName());
 			Configuration conf = deriveConfiguration(nodegrpc.getConfiguration());
 			node.setConfiguration(conf);
 			node.setFunctional_type(nodegrpc.getType().toString());
+
 		} catch(NullPointerException ex) {
-			throw new BadRequestException("The NodeTemplate id:"+node.getId()+" has wrong fields representation.");
+			throw new BadRequestException("A NodeTemplate has wrong fields representation.");
 		}    	
+
 		return node;
 	}
 
@@ -446,20 +456,27 @@ public class ToscaGrpcUtils {
 	}
 
 	/** Mapping method --> from ToscaConfiguration to model Configuration */
-	public static Configuration deriveConfiguration(ToscaConfigurationGrpc request) throws BadRequestException {
+	public static Configuration deriveConfiguration(ToscaConfigurationGrpc request) throws BadRequestException, JsonProcessingException, IOException {
 		Configuration conf = new Configuration();
+		ObjectMapper mapper = new ObjectMapper();
 		JsonNode rootNode = null;
+
 		try {
 			conf.setId(request.getId());
+		} catch (NullPointerException e) {}
+
+		try {
 			conf.setDescription(request.getDescription());
-			ObjectMapper mapper = new ObjectMapper();	        
+		} catch (NullPointerException e) {}
+
+		try {    
 			if ("".equals(request.getConfiguration()))
 				rootNode=mapper.readTree("[]");
 			else
 				rootNode = mapper.readTree(request.getConfiguration());
-		} catch (IOException | NullPointerException e) {
-			throw new BadRequestException("NodeTemplate configuration is invalid.");
-		}
+		} catch (NullPointerException e) {
+			rootNode=mapper.readTree("[]");
+		}	
 		conf.setConfiguration(rootNode);
 		return conf;
 	}

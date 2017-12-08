@@ -1,24 +1,29 @@
 package it.polito.verigraph.grpc.client;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
 
-import java.io.IOException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-
-import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.tosca.*;
-import it.polito.verigraph.grpc.tosca.*;
-import it.polito.verigraph.grpc.*;
+import it.polito.verigraph.grpc.GetRequest;
+import it.polito.verigraph.grpc.Status;
+import it.polito.verigraph.grpc.tosca.NewTopologyTemplate;
+import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaPolicy;
+import it.polito.verigraph.grpc.tosca.ToscaRequestID;
+import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc;
 import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
+import it.polito.verigraph.tosca.ToscaGrpcUtils;
+import it.polito.verigraph.tosca.YamlGrpcUtils;
 
 
 public class ToscaClient {
@@ -259,22 +264,33 @@ public class ToscaClient {
 			if(topols.isEmpty())
 				System.out.println("Ok"); */
 
+		/*	//XML PARSING
+			TopologyTemplateGrpc fileTopology = ToscaGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_support\\DummyServiceTemplate.xml");*/
+		
+			//YAML PARSING
+			TopologyTemplateGrpc fileTopology = YamlGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_examples\\DummyServiceTemplate.yaml");
+
 		/*	//DELETE TESTING
 			Status response = client.deleteTopologyTemplate("270");*/
 
 			//CREATE TESTING
-			TopologyTemplateGrpc fileTopology = ToscaGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_support\\DummyServiceTemplate.xml");
 			NewTopologyTemplate created = client.createTopologyTemplate(fileTopology);
 
 		/*	//UPDATE TESTING
-			TopologyTemplateGrpc fileTopology2 = ToscaGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_support\\DummyServiceTemplate2.xml");
+			TopologyTemplateGrpc fileTopology2 = ToscaGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_examples\\DummyServiceTemplate2.xml");
 			client.updateTopologyTemplate(fileTopology2, created.getTopologyTemplate().getId()); */
 
-			//GET TESTING
-			TopologyTemplateGrpc received = client.getTopologyTemplate(created.getTopologyTemplate().getId());
+		/*	//GET TESTING
+			TopologyTemplateGrpc received = client.getTopologyTemplate(created.getTopologyTemplate().getId());*/
+
+		/*	//POLICY TESTING
+			ToscaPolicy mypolicy = ToscaGrpcUtils.createToscaPolicy("host1", "host2", "reachability", null, created.getTopologyTemplate().getId());
+			ToscaVerificationGrpc myverify = client.verifyPolicy(mypolicy);
+			client.deleteTopologyTemplate(created.getTopologyTemplate().getId());*/
 
 			//Print all Topology on server
-			ToscaGrpcUtils.printTopologyTemplates(client.getTopologyTemplates());   
+			ToscaGrpcUtils.printTopologyTemplates(client.getTopologyTemplates());
+			client.deleteTopologyTemplate(created.getTopologyTemplate().getId());
 
 		} catch(Exception ex){
 			System.out.println("Error: ");

@@ -6,13 +6,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TopologyTemplateYaml {
 	private Map<String, NodeTemplateYaml> node_templates;
-	private Map<String, RelationshipTemplate> relationship_templates;
+	private Map<String, RelationshipTemplateYaml> relationship_templates;
 	
-	public Map<String, RelationshipTemplate> getRelationship_templates() {
+	public Map<String, RelationshipTemplateYaml> getRelationship_templates() {
 		return relationship_templates;
 	}
 
-	public void setRelationship_templates(Map<String, RelationshipTemplate> relationship_templates) {
+	public void setRelationship_templates(Map<String, RelationshipTemplateYaml> relationship_templates) {
 		this.relationship_templates = relationship_templates;
 	}
 

@@ -14,7 +14,7 @@ node_types:
         type: list
         entry_schema:
           type: string
-  
+
   verigraph.types.Cache:
     derived_from: tosca.nodes.Root
     description: verigraph Cache node
@@ -23,7 +23,7 @@ node_types:
         type: list
         entry_schema:
           type: string
-            
+
   verigraph.types.Dpi:
     derived_from: tosca.nodes.Root
     description: verigraph Dpi node
@@ -71,7 +71,7 @@ node_types:
         type: list
         entry_schema:
           type: string
-            
+
   verigraph.types.Firewall:
     derived_from: tosca.nodes.Root
     description: verigraph Firewall node
@@ -79,16 +79,16 @@ node_types:
       elements:
         type: map
         entry_schema:
-          description: source-destination mapping of firewall
+          description: "source : destination" firewall mapping
           type: string
-            
+
   verigraph.types.MailClient:
     derived_from: tosca.nodes.Root
     description: verigraph Mail Client node
     attributes:
       mailserver:
         type: string
-          
+
   verigraph.types.MailServer:
     derived_from: tosca.nodes.Root
     descrtiption: verigraph Mail Server node
@@ -119,7 +119,7 @@ node_types:
     descrtiption: verigraph Vpn Exit node
     attributes:
       vpnaccess:
-        type: string   
+        type: string
 
   verigraph.types.WebClient:
     derived_from: tosca.nodes.Root
@@ -140,12 +140,10 @@ node_types:
 relationship_types:
   verigraph.relationshipType.generic:
     derived_from: tosca.relationships.Root
-    properties: 
-      relationship_id:
+    properties:
+      name:
         type: string
-      sourceNode:
+      source_id:
         type: string
-      targetNode:
+      target_id:
         type: string
-        
- 

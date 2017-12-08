@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RelationshipTemplate {
+public class RelationshipTemplateYaml {
 	private String type;
 	private Map<String, String> properties;
 	public String getType() {

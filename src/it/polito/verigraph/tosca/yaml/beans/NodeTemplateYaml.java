@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.*;
 	@JsonSubTypes.Type(value = AntispamNode.class, name="verigraph.nodeTypes.Antispam"),
 	@JsonSubTypes.Type(value = CacheNode.class, name="verigraph.nodeTypes.Cache"),
 	@JsonSubTypes.Type(value = DpiNode.class, name="verigraph.nodeTypes.Dpi"),
-	@JsonSubTypes.Type(value = EndhostNode.class, name="verigraph.nodeTypes.endhost"),
+	@JsonSubTypes.Type(value = EndhostNode.class, name="verigraph.nodeTypes.Endhost"),
 	@JsonSubTypes.Type(value = EndpointNode.class, name="verigraph.nodeTypes.Endpoint"),
 	@JsonSubTypes.Type(value = FieldModifierNode.class, name="verigraph.nodeTypes.FieldModifier"),
 	@JsonSubTypes.Type(value = FirewallNode.class, name="verigraph.nodeTypes.Firewall"),
@@ -22,9 +22,15 @@ import com.fasterxml.jackson.annotation.*;
 	@JsonSubTypes.Type(value = WebServerNode.class, name="verigraph.nodeTypes.WebServer")
 })
 public class NodeTemplateYaml {
+	private String name;
 	private String type;
-	//private ConfigurationYaml properties;
 	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 	public String getType() {
 		return type;
 	}

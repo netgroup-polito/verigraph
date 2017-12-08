@@ -3,7 +3,7 @@ tosca_definitions_version: http://docs.oasis-open.org/tosca/ns/simple/yaml/1.0
 
 metadata:
   template_name: MyDummyService
-  template_author: Dummy   
+  template_author: Dummy
   template_version: Dummy1.0
 
 description: sample of Tosca yaml service template exploiting verigraph
@@ -13,7 +13,7 @@ repositories:
     url: https://github.com/netgroup-polito/verigraph
 
 imports:
-  - file: yamlToscaDefinitions.yaml
+  - file: ..\tosca_support\yamlToscaDefinitions.yaml
     repository: verigraph_repository
     namespace_uri: #tobe defined
     namespace_prefix: vt
@@ -21,25 +21,46 @@ imports:
 topology_template:
   node_templates:
     100:
-      type: verigraph.nodeTypes.Firewall
+      name : host1
+      type: verigraph.nodeTypes.Endhost
       properties:
-        elements:
-          ciao: ciao
-          bella: bella
-            
+        body: ciao
+        protocol : HTTP_REQUEST
+        destination: webserver
+
     101:
+      name : host2
+      type: verigraph.nodeTypes.Endpoint
+      properties:
+        names: prova di lista
+
+    102:
+      name : antispammino
       type: verigraph.nodeTypes.Antispam
       properties:
         sources:
-          - Ciao
-          - Ciao2
-   
-    102:
-  
+          altra
+          bellissima
+          prova
+
+    103:
+      name : magicFirewall3.0
+      type: verigraph.nodeTypes.Firewall
+      properties:
+        elements:
+          superkey1 : supervalue1
+          ciao : amico
+
+    104:
+      name : myMail
+      type: verigraph.nodeTypes.MailClient
+      properties:
+        mailserver : mail.polito.it
+
   relationship_templates:
-    100to101:
+    900:
       type: verigraph.relationshipType.generic
       properties:
-        relationship_id: 100101
-        source: 100
-        target: 101
+        name: 100to101
+        source_id: 100
+        target_id: 101

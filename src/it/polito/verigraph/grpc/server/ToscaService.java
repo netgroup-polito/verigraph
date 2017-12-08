@@ -6,30 +6,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import javax.ws.rs.NotFoundException;
-
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
-
 import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.exception.ForbiddenException;
+import it.polito.verigraph.grpc.GetRequest;
+import it.polito.verigraph.grpc.Status;
+import it.polito.verigraph.grpc.tosca.NewTopologyTemplate;
+import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaPolicy;
+import it.polito.verigraph.grpc.tosca.ToscaRequestID;
+import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
+import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.resources.beans.VerificationBean;
 import it.polito.verigraph.service.GraphService;
 import it.polito.verigraph.service.VerificationService;
-
-import it.polito.verigraph.grpc.GetRequest;
-import it.polito.verigraph.grpc.Status;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.NewTopologyTemplate;
-import it.polito.verigraph.grpc.tosca.ToscaRequestID;
-import it.polito.verigraph.grpc.tosca.ToscaPolicy;
-import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc;
-import it.polito.verigraph.tosca.*;
+import it.polito.verigraph.tosca.ToscaGrpcUtils;
 
 public class ToscaService {
 	/** Port on which the server should run. */
