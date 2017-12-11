@@ -11,6 +11,9 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
@@ -89,9 +92,9 @@ class RandomGenerator {
             File file = new File("./examples/graph_"+g.getId()+".json");
             try {
                 // Serialize Java object info JSON file under the examples folders
-                //mapper.writeValue(file, g);
-                String str =mapper.writeValueAsString(g);
-                System.out.println(str);
+                mapper.writeValue(file, g);
+//                String str =mapper.writeValueAsString(g);
+//                System.out.println(str);
             } catch (IOException e) {
                 e.printStackTrace();
                 return;
@@ -101,26 +104,28 @@ class RandomGenerator {
 
     public void pringGraph(Graph g){
         if(g instanceof GraphGen){
-        System.out.println("Graph ID: "+ g.getId());
-        for(Node node: g.getNodes().values()){
-            System.out.println("Node ID: "+ node.getId());
-            System.out.println("Node NAME: "+ node.getName());
-            System.out.println("Node TYPE: "+ node.getFunctional_type().toString());
-//            System.out.println("Node CONF: "+ node.getConfiguration().getConfiguration().toString()); not set yet
-//            System.out.println("Node CONF_DESC: "+ node.getConfiguration().getDescription());
-            System.out.println("Node NEIGHBOUR: ");
-            if(node.getNeighbours() != null)
-            for(Neighbour n : node.getNeighbours().values()){
-                System.out.println("----"+n.getId()+"----> "+n.getName());
+            System.out.println("Graph ID: "+ g.getId());
+            for(Node node: g.getNodes().values()){
+                System.out.println("Node ID: "+ node.getId());
+                System.out.println("Node NAME: "+ node.getName());
+                System.out.println("Node TYPE: "+ node.getFunctional_type().toString());
+                if(node.getConfiguration().getConfiguration()!=null)
+                    System.out.println("Node CONF: "+ node.getConfiguration().getConfiguration().toString());
+                System.out.println("Node CONF_DESC: "+ node.getConfiguration().getDescription());
+                System.out.println("Node NEIGHBOUR: ");
+                if(node.getNeighbours() != null)
+                    for(Neighbour n : node.getNeighbours().values()){
+                        System.out.println("----"+n.getId()+"----> "+n.getName());
+                    }
             }
+            System.out.println("----------------------");
+            for(PolicyGen policy : ((GraphGen) g).getPolicies().values()){
+                System.out.println("Policiy NAME: "+ policy.getName());
+                System.out.println("Policiy NODE_SRC: "+ policy.getNodesrc().getName());
+                System.out.println("Policiy NODE_DST: "+ policy.getNodedst().getName());
+                System.out.println("Policiy TYPE: "+ policy.getPolicyType());
+            }
+
         }
-        System.out.println("----------------------");
-        for(PolicyGen policy : ((GraphGen) g).getPolicies().values()){
-            System.out.println("Policiy NAME: "+ policy.getName());
-            System.out.println("Policiy NODE_SRC: "+ policy.getNodesrc().getName());
-            System.out.println("Policiy NODE_DST: "+ policy.getNodedst().getName());
-        }
-        
-    }
     }
 }

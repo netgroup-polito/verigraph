@@ -5,7 +5,13 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Vector;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import it.polito.neo4j.jaxb.FunctionalTypes;
+import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
@@ -84,7 +90,7 @@ class GraphGen extends Graph {
                 }
             }
             nodes.get(client.getId()).setNeighbours(neighbourfromnode);
-            
+
         }
 
         //create links for each server
@@ -181,7 +187,8 @@ class GraphGen extends Graph {
             if(types.length==1)
                 type= types[0];
             else type = chooseType(types,random);
-            nodeSubset[i] = new Node(existingnode+i,(type.toString().replace("_", ""))+i,type.toString(), null); //No configuration yet
+            Configuration conf = createConfiguration("",type.toString(), random.nextBoolean()); //TODO
+            nodeSubset[i] = new Node(existingnode+i,(type.toString().replace("_", ""))+i,type.toString().toLowerCase(), conf); //No configuration yet
             nodes.put(nodeSubset[i].getId(), nodeSubset[i]);
         }
         return nodeSubset;
@@ -197,5 +204,68 @@ class GraphGen extends Graph {
             return null;
         else
             return nodes.get(name);
+    }
+
+    private Configuration createConfiguration (String nodename, String functype, boolean nextBoolean) { //TODO complete configurations
+
+        Configuration conf;
+        JsonNodeFactory nodeFactory = JsonNodeFactory.instance;
+        ObjectNode conf_node = nodeFactory.objectNode();
+        ArrayNode conf_array = nodeFactory.arrayNode();
+        switch(functype){
+        case "ENDHOST":
+            if(!nextBoolean){
+                conf_node.put("url", "www.facebook.com");
+                conf_node.put("body", "weapons");
+                conf_node.put("email_from", "spam@polito.it");
+            } else{
+                conf_node.put("url", "www.deepweb.com");
+                conf_node.put("body", "cats");
+                conf_node.put("email_from", "verigraph@polito.it");
+            }
+            conf_array.add(conf_node);
+            conf = new Configuration(nodename, "Endhost configuration", conf_array);
+            break;
+        case "MAILSERVER":
+            conf = new Configuration(nodename, "Mail Server configuration", conf_array);
+            break;
+        case "WEBSERVER":
+            conf = new Configuration(nodename, "Web Sever configuration", conf_array);
+            break;
+        case "ANTISPAM":
+            if(!nextBoolean){
+                conf_array.add("spam@polito.it");
+            } else{
+                conf_array.add("verigraph@polito.it");
+            }
+            conf = new Configuration(nodename, "Antispam configuration", conf_array);
+            break;
+        case "CACHE":
+            conf = new Configuration(nodename, "Web Cache configuration", conf_array);
+            break;
+        case "DPI":
+            conf_array.add("weapons");
+            conf = new Configuration(nodename, "DPI configuration", conf_array);
+            break;
+        case "FIELDMODIFIER":
+            conf = new Configuration(nodename, "FieldModifier configuration", conf_array);
+            break;
+        case "FIREWALL":
+            conf = new Configuration(nodename, "Firewall configuration", conf_array);
+            break;
+        case "NAT" :
+            conf = new Configuration(nodename, "NAT configuration", conf_array);
+            break;
+        case "VPNACCESS":
+            conf = new Configuration(nodename, "VPN Access gateway configuration", conf_array);
+            break;
+        case "VPNEXIT":
+            conf = new Configuration(nodename, "VPN Exit gateway configuration", conf_array);
+            break;
+        default:
+            return null;
+        }
+
+        return conf;
     }
 }

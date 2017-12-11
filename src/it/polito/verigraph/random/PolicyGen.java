@@ -11,12 +11,13 @@ class PolicyGen {
     private Node nodesrc;
     private Node nodedst;
     private boolean result;
-    
+
     public enum PolicyType {
         REACHABILITY,
         ISOLATION,
         TRAVERSAL
     }
+    private PolicyType type;
 
     private static int count=0;
 
@@ -24,13 +25,14 @@ class PolicyGen {
         count=0;
     }
 
-    PolicyGen(GraphGen graph, Random random, Node src, Node dst, PolicyType type) {
+    PolicyGen(GraphGen graph, Random random, Node src, Node dst, PolicyType policytype) {
         setName("Policy"+count);
         count++;
 
         this.graph = graph;
         nodesrc=src;
         nodedst=dst;
+        type=policytype;
     }
 
     public GraphGen getGraph() {
@@ -63,6 +65,14 @@ class PolicyGen {
 
     public void setNodedst (Node nodedst) {
         this.nodedst = nodedst;
+    }
+
+    public PolicyType getPolicyType () {
+        return type;
+    }
+
+    public void setPolicyType (PolicyType type) {
+        this.type = type;
     }
 
 }
