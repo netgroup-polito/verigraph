@@ -44,6 +44,18 @@ public class TopologyTemplateService {
         }
         return result;
     }
+    
+
+    public Definitions addTopologyTemplate(Definitions topologyTemplate) throws JAXBException, IOException, MyInvalidIdException {
+    		Graph graph = MappingUtils.mapTopologyTemplate(topologyTemplate);
+	    	validateGraph(graph);
+	    	
+	    	Graph newGraph = manager.addGraph(graph);
+	    	validateGraph(newGraph);
+	    	Definitions newTopologyTemplate = MappingUtils.mapGraph(newGraph);
+	    	
+	    	return newTopologyTemplate;
+    }
 
 //    public TTopologyTemplate getTopologyTemplate(long id) throws JsonParseException, JsonMappingException, JAXBException, IOException {
 //        if (id < 0) {

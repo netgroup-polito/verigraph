@@ -46,13 +46,14 @@ import it.polito.verigraph.service.GraphService;
 import it.polito.verigraph.service.TopologyTemplateService;
 import it.polito.verigraph.service.VerificationService;
 import it.polito.verigraph.tosca.classes.Definitions;
+import it.polito.verigraph.tosca.classes.TServiceTemplate;
 
 @Path("/graphs")
 @Api(value = "/graphs", description = "Manage graphs")
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
+@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
 public class GraphResource {
-	TopologyTemplateService topologyTemplatesService = new TopologyTemplateService();
+	TopologyTemplateService topologyTemplateService = new TopologyTemplateService();
     GraphService graphService= new GraphService();
     VerificationService verificationService= new VerificationService();
 
@@ -85,10 +86,12 @@ public class GraphResource {
     responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
     public List<Definitions> getTopologyTemplates() throws JsonProcessingException, MyNotFoundException {
-        return topologyTemplatesService.getAllTopologyTemplates();
+        return topologyTemplateService.getAllTopologyTemplates();
     }
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(httpMethod = "POST",
     value = "Creates a graph",
     notes = "Creates a signle graph",
@@ -102,6 +105,24 @@ public class GraphResource {
         String newId = String.valueOf(newGraph.getId());
         URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
         return Response.created(uri).entity(newGraph).build();
+    }
+    
+    @POST
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
+    @ApiOperation(httpMethod = "POST",
+    value = "Creates a topology template",
+    notes = "Creates a single topology template",
+    response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Invalid topology template supplied", response = ErrorMessage.class),
+            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
+            @ApiResponse(code = 201, message = "Topology template successfully created", response = Definitions.class) })
+    public Response addTopologyTemplate(@ApiParam(value = "New topology template object", required = true) Definitions topologyTemplate,
+            @Context UriInfo uriInfo) throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
+        Definitions newTopologyTemplate = topologyTemplateService.addTopologyTemplate(topologyTemplate);
+        String newId = ((TServiceTemplate) newTopologyTemplate.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().get(0)).getId();
+        URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+        return Response.created(uri).entity(newTopologyTemplate).build();
     }
 
     @GET
