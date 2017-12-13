@@ -1,0 +1,76 @@
+{
+    "nodes": [
+        {
+            "name": "user1",
+            "functional_type": "endhost",
+            "neighbours": [
+                {
+                    "name": "antispam1"
+                }
+            ],
+            "configuration": [
+                {
+                    "email_from": "email@gmail.com",
+                    "destination": "mailserver1"
+                }
+            ]
+        },
+        {
+            "name": "user2",
+            "functional_type": "endhost",
+            "neighbours": [
+                {
+                    "name": "antispam1"
+                }
+            ],
+            "configuration": [
+                {
+                    "email_from": "user2@polito.it",
+                    "destination": "mailserver1"
+                }
+            ]
+        },
+        {
+            "name": "antispam1",
+            "functional_type": "antispam",
+            "neighbours": [
+                {
+                    "name": "antispam2"
+                },
+                {
+                    "name": "user1"
+                },
+                {
+                    "name": "user2"
+                }
+            ],
+            "configuration": [
+                "email@gmail.com"
+            ]
+        },
+        {
+            "name": "antispam2",
+            "functional_type": "antispam1",
+            "neighbours": [
+                {
+                    "name": "mailserver"
+                },
+                {
+                    "name": "antispam"
+                }
+            ],
+            "configuration": [
+                "email@gmail.com"
+            ]
+        },
+        {
+            "name": "mailserver",
+            "functional_type": "mailserver",
+            "neighbours": [
+                {
+                    "name": "antispam2"
+                }
+            ]
+        }
+    ]
+}
