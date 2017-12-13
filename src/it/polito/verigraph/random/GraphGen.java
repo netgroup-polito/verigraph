@@ -27,7 +27,7 @@ class GraphGen extends Graph {
 
     private FunctionalTypes clientTypes[]={FunctionalTypes.ENDHOST};
     private FunctionalTypes serverTypes[]={FunctionalTypes.MAILSERVER,FunctionalTypes.WEBSERVER};
-    private FunctionalTypes middleTypes[]={FunctionalTypes.ANTISPAM,FunctionalTypes.CACHE,FunctionalTypes.DPI, FunctionalTypes.FIELDMODIFIER, FunctionalTypes.FIREWALL,FunctionalTypes.NAT,FunctionalTypes.VPNACCESS,FunctionalTypes.VPNEXIT};
+    private FunctionalTypes middleTypes[]={FunctionalTypes.ANTISPAM,FunctionalTypes.CACHE,FunctionalTypes.DPI, FunctionalTypes.FIELDMODIFIER, FunctionalTypes.FIREWALL,FunctionalTypes.NAT};
 
     private PolicyGen.PolicyType types[]={PolicyType.REACHABILITY, PolicyType.ISOLATION,PolicyType.TRAVERSAL};
 
@@ -57,113 +57,6 @@ class GraphGen extends Graph {
 
     }
 
-    private void createLinks(Random random) {
-        int m ;
-        //HashMap<Long, LinkGen> possibleLinks = new HashMap<Long,LinkGen>();
-
-        HashMap<Long, Neighbour> neighbourfromnode;
-        HashMap<Long, Neighbour> neighbourfromneighbour;
-        Neighbour node;
-        // create links for each client
-        for (Node client: clientNodes) {
-            neighbourfromnode= new HashMap<Long,Neighbour>();
-            neighbourfromneighbour= new HashMap<Long,Neighbour>();
-
-            // connect the client via a bidirectional link to a randomly chosen middlebox
-            m = random.nextInt(middleNodes.length);
-            node = new Neighbour(middleNodes[m].getId(), middleNodes[m].getName());
-            neighbourfromnode.put(node.getId(), node);
-
-            neighbourfromneighbour.put(client.getId(), new Neighbour(client.getId(), client.getName()));
-            middleNodes.clone()[m].setNeighbours(neighbourfromneighbour);
-
-            // create the other possible links for this client
-            int maxNumLinks = middleNodes.length/3;
-            for (int i=0; i<maxNumLinks; i++) {
-                int j = random.nextInt(maxNumLinks);
-                if (j != m) {
-                    node = new Neighbour(middleNodes[j].getId(), middleNodes[j].getName());
-                    neighbourfromnode.put(node.getId(), node);
-                    neighbourfromneighbour= new HashMap<Long,Neighbour>();
-                    neighbourfromneighbour.put(client.getId(), new Neighbour(client.getId(), client.getName()));
-                    middleNodes.clone()[j].setNeighbours(neighbourfromneighbour);
-                }
-            }
-            nodes.get(client.getId()).setNeighbours(neighbourfromnode);
-
-        }
-
-        //create links for each server
-        for (Node server: serverNodes) {
-            neighbourfromnode= new HashMap<Long,Neighbour>();
-            neighbourfromneighbour= new HashMap<Long,Neighbour>();
-            // connect the server via a bidirectional link to a randomly chosen middlebox
-            m = random.nextInt(middleNodes.length);
-            node = new Neighbour(middleNodes[m].getId(), middleNodes[m].getName());
-            neighbourfromnode.put(middleNodes[m].getId(), node);
-
-            neighbourfromneighbour.put(server.getId(), new Neighbour(server.getId(), server.getName()));
-            middleNodes.clone()[m].setNeighbours(neighbourfromneighbour);
-
-            // create the other possible links for this server
-            int maxNumLinks = middleNodes.length/3;
-            for (int i=0; i<maxNumLinks; i++) {
-                int j = random.nextInt(maxNumLinks);
-                if (j != m) {
-                    node = new Neighbour(middleNodes[j].getId(), middleNodes[j].getName());
-                    neighbourfromnode.put(node.getId(), node);
-                    neighbourfromneighbour= new HashMap<Long,Neighbour>();
-                    neighbourfromneighbour.put(server.getId(), new Neighbour(server.getId(), server.getName()));
-                    middleNodes.clone()[j].setNeighbours(neighbourfromneighbour);
-                }
-            }
-            nodes.get(server.getId()).setNeighbours(neighbourfromnode);
-        }
-
-        // create possible links for middleboxes
-        for (int i=0; i<middleNodes.length; i++) {
-            neighbourfromnode= new HashMap<Long,Neighbour>();
-            for (int j=0; j<middleNodes.length; j++) {
-                if (i != j){
-                    node = new Neighbour(middleNodes[j].getId(), middleNodes[j].getName());
-                    neighbourfromnode.put(middleNodes[j].getId(), node);
-                }
-                middleNodes.clone()[i].setNeighbours(neighbourfromnode);
-            }
-        }
-
-        return ;
-    }
-
-    private void createPolicies(Random random) {
-        PolicyGen policy;
-
-        // create policies with client as source
-        for (int i=0; i<clientNodes.length; i++) {
-            // create vector of possible destinations
-            Vector<Node> possibleDestinations = new Vector<Node>(Arrays.asList(serverNodes));
-            // choose number of destinations
-            int m = random.nextInt(serverNodes.length)+1;
-            // for each destination to be used
-            for (int j=0; j<m; j++) {
-                // choose index of destination to be selected
-                int serverIndex = random.nextInt(possibleDestinations.size());
-                // TODO choose type of policy
-                // create reachability policy
-                PolicyType type = types[random.nextInt(types.length)];
-                policy = new PolicyGen(this, random, clientNodes[i], serverNodes[serverIndex],type);
-                // add created policy to Hashmap
-                policies.put(policy.getName(), policy);
-                // remove selected destination from Vector
-                possibleDestinations.remove(serverIndex);
-            } // for each destination
-        } // for each client
-    }
-
-    HashMap<String, PolicyGen> getPolicies() {
-        return policies;
-    }
-
     /**
      * Creates a random set of new nodes with types taken from a specified list of types
      * The new nodes are added to the instance nodes set
@@ -178,32 +71,49 @@ class GraphGen extends Graph {
         if (types == null || types.length == 0)
             return new Node[0];
 
-        int numNodes = random.nextInt(maxNum)+1; // at least 1 node
+        int numNodes = random.nextInt(maxNum); // at least 1 node
+        if((numNodes%2)==0)
+            numNodes +=2;
+        else numNodes +=1;
         int existingnode = nodes.size();
-        Node nodeSubset[] = new Node[numNodes];
+        Vector<Node> nodeSubset = new Vector<Node>();
+
         for (int i=0; i<numNodes; i++) {
             // create and store single node
             FunctionalTypes type;
-            if(types.length==1)
+            if(types.length==1 || numNodes == 1)
                 type= types[0];
             else type = chooseType(types,random);
-            Configuration conf = createConfiguration("",type.toString(), random.nextBoolean()); //TODO
-            nodeSubset[i] = new Node(existingnode+i,(type.toString().replace("_", ""))+i,type.toString().toLowerCase(), conf); //No configuration yet
-            nodes.put(nodeSubset[i].getId(), nodeSubset[i]);
+            String name =(type.toString().replace("_", ""))+i;
+
+            Configuration conf = createConfiguration(name,type.toString(), random.nextBoolean()); //TODO
+            nodeSubset.add(i, new Node(existingnode+i,name,type.toString().toLowerCase(), conf)); //No configuration yet
+            nodes.put(nodeSubset.get(i).getId(), nodeSubset.get(i));
+
+            if(type == FunctionalTypes.VPNACCESS){
+                i++;
+                name = (FunctionalTypes.VPNEXIT.toString().replace("_", ""))+i;
+                conf= createConfiguration(name, FunctionalTypes.VPNEXIT.toString(), true);
+                nodeSubset.add(i, new Node(i,name,FunctionalTypes.VPNEXIT.toString().toLowerCase(), conf));
+                nodes.put(nodeSubset.get(i).getId(), nodeSubset.get(i));
+                //numNodes -=1;
+            } else if (type == FunctionalTypes.VPNEXIT) {
+                i++;
+                name = (FunctionalTypes.VPNACCESS.toString().replace("_", ""))+i;
+                conf= createConfiguration(name, FunctionalTypes.VPNACCESS.toString(), true);
+                nodeSubset.add(i,new Node(i,name,FunctionalTypes.VPNACCESS.toString().toLowerCase(), conf));
+                nodes.put(nodeSubset.get(i).getId(), nodeSubset.get(i));
+                numNodes-=1;
+            }
+
         }
-        return nodeSubset;
+        Node[] nodes = new Node[nodeSubset.size()];
+        return nodeSubset.toArray(nodes);
     }
 
     private FunctionalTypes chooseType(FunctionalTypes[] array, Random random) {
         // choose node type randomly
         return array[random.nextInt(array.length)];
-    }
-
-    public Node getNode(String name) {
-        if (name == null || nodes == null)
-            return null;
-        else
-            return nodes.get(name);
     }
 
     private Configuration createConfiguration (String nodename, String functype, boolean nextBoolean) { //TODO complete configurations
@@ -241,6 +151,8 @@ class GraphGen extends Graph {
             conf = new Configuration(nodename, "Antispam configuration", conf_array);
             break;
         case "CACHE":
+            for(Node n : clientNodes)
+                conf_array.add(n.getName());
             conf = new Configuration(nodename, "Web Cache configuration", conf_array);
             break;
         case "DPI":
@@ -251,15 +163,24 @@ class GraphGen extends Graph {
             conf = new Configuration(nodename, "FieldModifier configuration", conf_array);
             break;
         case "FIREWALL":
+            if(!nextBoolean){
+
+            }
             conf = new Configuration(nodename, "Firewall configuration", conf_array);
             break;
         case "NAT" :
+            for(Node n : clientNodes)
+                conf_array.add(n.getName());
             conf = new Configuration(nodename, "NAT configuration", conf_array);
             break;
         case "VPNACCESS":
+            conf_node.put("vpnexit", "VPNEXIT"+(Integer.parseInt(nodename.substring(9))+1)); //"vpnaccess"-> 9 char
+            conf_array.add(conf_node);
             conf = new Configuration(nodename, "VPN Access gateway configuration", conf_array);
             break;
         case "VPNEXIT":
+            conf_node.put("vpnaccess", "VPNACCESS"+(Integer.parseInt(nodename.substring(7))+1)); //"vpnexit"-> 7 char nodename.replaceFirst("VPNEXIT", "VPNACCESS")
+            conf_array.add(conf_node);
             conf = new Configuration(nodename, "VPN Exit gateway configuration", conf_array);
             break;
         default:
@@ -267,5 +188,112 @@ class GraphGen extends Graph {
         }
 
         return conf;
+    }
+
+    private void createLinks(Random random) {
+        int m ;
+        //HashMap<Long, LinkGen> possibleLinks = new HashMap<Long,LinkGen>();
+
+        HashMap<Long, Neighbour> neighbourfromnode;
+        HashMap<Long, Neighbour> neighbourfromneighbour;
+        Neighbour node;
+        // create links for each client
+        for (Node client: clientNodes) {
+            neighbourfromnode= new HashMap<Long,Neighbour>();
+
+            // connect the client via a bidirectional link to a randomly chosen middlebox
+            m = random.nextInt(middleNodes.length);
+            node = new Neighbour(middleNodes[m].getId(), middleNodes[m].getName());
+            neighbourfromnode.put(node.getId(), node);
+
+            // create the other possible links for this client
+            int maxNumLinks = (middleNodes.length%4)+1;
+            for (int i=0; i<maxNumLinks; i++) {
+                int j = random.nextInt(maxNumLinks);
+                if (j != m) {
+                    node = new Neighbour(middleNodes[j].getId(), middleNodes[j].getName());
+                    neighbourfromnode.put(node.getId(), node);
+                }
+            }
+            nodes.get(client.getId()).setNeighbours(neighbourfromnode);
+
+        }
+
+        //create links for each server
+        for (Node server: serverNodes) {
+            neighbourfromnode= new HashMap<Long,Neighbour>();
+            neighbourfromneighbour= new HashMap<Long,Neighbour>();
+            // connect the server via a bidirectional link to a randomly chosen middlebox
+            m = random.nextInt(middleNodes.length);
+            node = new Neighbour(middleNodes[m].getId(), middleNodes[m].getName());
+            neighbourfromnode.put(middleNodes[m].getId(), node);
+
+            // create the other possible links for this server
+            int maxNumLinks = (middleNodes.length%4)+1;
+            for (int i=0; i<maxNumLinks; i++) {
+                int j = random.nextInt(maxNumLinks);
+                if (j != m) {
+                    node = new Neighbour(middleNodes[j].getId(), middleNodes[j].getName());
+                    neighbourfromnode.put(node.getId(), node);
+                }
+            }
+            nodes.get(server.getId()).setNeighbours(neighbourfromnode);
+        }
+
+        // create possible links for middleboxes
+        for (int i=0; i<middleNodes.length; i++) {
+            neighbourfromnode= new HashMap<Long,Neighbour>();
+            for (int j=0; j<middleNodes.length/4; j++) {
+                if (i != j){
+                    node = new Neighbour(middleNodes[j].getId(), middleNodes[j].getName());
+                    neighbourfromnode.put(middleNodes[j].getId(), node);
+                }
+            }
+            int h= random.nextInt(clientNodes.length);
+            node = new Neighbour(clientNodes[h].getId(),clientNodes[h].getName());
+            neighbourfromnode.put(clientNodes[h].getId(), node);
+            int k = random.nextInt(serverNodes.length);
+            node = new Neighbour(serverNodes[k].getId(),serverNodes[k].getName());
+            neighbourfromnode.put(serverNodes[k].getId(), node);
+            middleNodes.clone()[i].setNeighbours(neighbourfromnode);
+        }
+
+        return ;
+    }
+
+    private void createPolicies(Random random) {
+        PolicyGen policy;
+
+        // create policies with client as source
+        for (int i=0; i<clientNodes.length; i++) {
+            // create vector of possible destinations
+            Vector<Node> possibleDestinations = new Vector<Node>(Arrays.asList(serverNodes));
+            // choose number of destinations
+            int m = random.nextInt(serverNodes.length)+1;
+            // for each destination to be used
+            for (int j=0; j<m; j++) {
+                // choose index of destination to be selected
+                int serverIndex = random.nextInt(possibleDestinations.size());
+                // TODO choose type of policy
+                // create reachability policy
+                PolicyType type = types[random.nextInt(types.length)];
+                policy = new PolicyGen(this, random, clientNodes[i], serverNodes[serverIndex],type);
+                // add created policy to Hashmap
+                policies.put(policy.getName(), policy);
+                // remove selected destination from Vector
+                possibleDestinations.remove(serverIndex);
+            } // for each destination
+        } // for each client
+    }
+
+    HashMap<String, PolicyGen> getPolicies() {
+        return policies;
+    }
+
+    public Node getNode(String name) {
+        if (name == null || nodes == null)
+            return null;
+        else
+            return nodes.get(name);
     }
 }
