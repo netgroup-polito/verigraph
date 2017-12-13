@@ -115,16 +115,16 @@ public class Network extends Core{
         //IntExpr t_0 = ctx.mkIntConst(node+"_saneSend_t_0");
         // Constant: node
         //Constraint send(node, n_0, p, t_0) -> !nodeHasAddr(node, p.dest) & !nodeHasAddr(n_0, p.src) & p.src!=null & p.dst!=null
-      //timeless
+        //timeless
         constraints.add(
                 ctx.mkForall(new Expr[]{n_0, p_0},
-                    ctx.mkImplies((BoolExpr)nctx.send.apply(node.getZ3Node(),n_0, p_0),
-                    		ctx.mkAnd(ctx.mkNot((BoolExpr)nctx.nodeHasAddr.apply( node.getZ3Node(),
-                    				nctx.pf.get("dest").apply(p_0))), ctx.mkNot((BoolExpr)nctx.nodeHasAddr.apply( n_0,
-                                            nctx.pf.get("src").apply(p_0))), 
-                    		        ctx.mkNot(ctx.mkEq(this.nctx.pf.get("src").apply(p_0), this.nctx.am.get("null"))),
-                    		        ctx.mkNot(ctx.mkEq(this.nctx.pf.get("dest").apply(p_0), this.nctx.am.get("null"))) 
-                    		        )),1,null,null,null,null));
+                        ctx.mkImplies((BoolExpr)nctx.send.apply(node.getZ3Node(),n_0, p_0),
+                                ctx.mkAnd(ctx.mkNot((BoolExpr)nctx.nodeHasAddr.apply( node.getZ3Node(),
+                                        nctx.pf.get("dest").apply(p_0))), ctx.mkNot((BoolExpr)nctx.nodeHasAddr.apply( n_0,
+                                                nctx.pf.get("src").apply(p_0))), 
+                                        ctx.mkNot(ctx.mkEq(this.nctx.pf.get("src").apply(p_0), this.nctx.am.get("null"))),
+                                        ctx.mkNot(ctx.mkEq(this.nctx.pf.get("dest").apply(p_0), this.nctx.am.get("null"))) 
+                                        )),1,null,null,null,null));
     }
 
     /**
