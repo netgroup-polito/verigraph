@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import com.microsoft.z3.BoolExpr;
@@ -276,13 +277,47 @@ public class GeneratorSolver{
                 if(list!=null){
                     PolitoAntispam antispam=(PolitoAntispam)cd.getValue();
                     int[] blackList=listToIntArguments(list);
-                    ((PolitoAntispam)cd.getValue()).installAntispam(blackList);
+                    ((PolitoAntispam)cd.getValue()).addBlackList(blackList);
                 }
                 else{
                     vlogger.logger.info("Antispam "+name+" empty");
                 }
             }else if(model instanceof PolitoFieldModifier){
-                ((PolitoFieldModifier)cd.getValue()).installFieldModifier();
+                Map<String, String> packet=scenario.config_obj.get(name);
+                if(packet!=null){
+                    PacketModel pModel = new PacketModel();
+                    if(packet.get("body")!=null){
+                        pModel.setBody(String.valueOf(packet.get("body")).hashCode());
+                    }
+                    if(packet.get("destination")!=null){
+                        pModel.setIp_dest(nctx.am.get(packet.get("destination")));
+                    }
+                    if(packet.get("sequence")!=null){
+                        pModel.setSeq(String.valueOf(packet.get("sequence")).hashCode());
+                    }
+                    if(packet.get("email_from")!=null){
+                        pModel.setEmailFrom(String.valueOf(packet.get("email_from")).hashCode());
+                    }
+                    if(packet.get("url")!=null){
+                        pModel.setUrl(String.valueOf(packet.get("url")).hashCode());
+                    }
+                    if(packet.get("options")!=null){
+                        pModel.setOptions(String.valueOf(packet.get("options")).hashCode());
+                    }
+                    if(packet.get("protocol")!=null){
+                        String proto=packet.get("protocol");
+                        if(proto.compareTo("HTTP_REQUEST")==0)
+                            pModel.setProto(nctx.HTTP_REQUEST);
+                        else if(proto.compareTo("HTTP_RESPONSE")==0)
+                            pModel.setProto(nctx.HTTP_RESPONSE);
+                        else if(proto.compareTo("POP3_REQUEST")==0)
+                            pModel.setProto(nctx.POP3_REQUEST);
+                        else if(proto.compareTo("POP3_RESPONSE")==0)
+                            pModel.setProto(nctx.POP3_RESPONSE);
+                    }
+                    ((PolitoFieldModifier)cd.getValue()).installFieldModifier(Optional.of(pModel));
+                }else
+                    ((PolitoFieldModifier)cd.getValue()).installFieldModifier(Optional.empty());
             }else if(model instanceof PolitoMailClient){
                 //the rules are inserted in the init method
                 continue;

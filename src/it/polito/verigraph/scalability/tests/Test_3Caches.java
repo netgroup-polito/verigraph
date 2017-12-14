@@ -22,28 +22,29 @@ import it.polito.verigraph.mcnet.components.Network;
 import it.polito.verigraph.mcnet.components.NetworkObject;
 import it.polito.verigraph.mcnet.components.Tuple;
 import it.polito.verigraph.mcnet.netobjs.PolitoEndHost;
+import it.polito.verigraph.mcnet.netobjs.PolitoWebServer;
 import it.polito.verigraph.mcnet.netobjs.PolitoCache;
 
-public class Test4Caches {
+public class Test_3Caches {
 
     public Checker check;
     public Context ctx;
-    public PolitoEndHost a,b;
-    public PolitoCache cache1, cache2, cache3,cache4;
+    public PolitoEndHost a;
+    public PolitoWebServer b;
+    public PolitoCache cache1, cache2, cache3;
 
-    public  Test4Caches(){
+    public  Test_3Caches(){
         ctx = new Context();
 
-        NetContext nctx = new NetContext (ctx,new String[]{"a", "b", "cache1","cache2","cache3", "cache4"},
-                                                new String[]{"ip_a", "ip_b", "ip_cache1","ip_cache2","ip_cache3", "ip_cache4"});
+        NetContext nctx = new NetContext (ctx,new String[]{"a", "b", "cache1","cache2","cache3"},
+                                                new String[]{"ip_a", "ip_b", "ip_cache1","ip_cache2","ip_cache3"});
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         cache1 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache1"), net, nctx});
         cache2 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache2"), net, nctx});
         cache3 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache3"), net, nctx});
-        cache4 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache4"), net, nctx});
 
         ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>> adm = new ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>>();
         ArrayList<DatatypeExpr> al1 = new ArrayList<DatatypeExpr>();
@@ -51,36 +52,31 @@ public class Test4Caches {
         ArrayList<DatatypeExpr> al3 = new ArrayList<DatatypeExpr>();
         ArrayList<DatatypeExpr> al4 = new ArrayList<DatatypeExpr>();
         ArrayList<DatatypeExpr> al5 = new ArrayList<DatatypeExpr>();
-        ArrayList<DatatypeExpr> al6 = new ArrayList<DatatypeExpr>();
         al1.add(nctx.am.get("ip_a"));
         al2.add(nctx.am.get("ip_b"));
         al3.add(nctx.am.get("ip_cache1"));
         al4.add(nctx.am.get("ip_cache2"));
         al5.add(nctx.am.get("ip_cache3"));
-        al6.add(nctx.am.get("ip_cache4"));
         adm.add(new Tuple<>(a, al1));
         adm.add(new Tuple<>(b, al2));
         adm.add(new Tuple<>(cache1, al3));
         adm.add(new Tuple<>(cache2, al4));
         adm.add(new Tuple<>(cache3, al5));
-        adm.add(new Tuple<>(cache4, al6));
         net.setAddressMappings(adm);
 
         ArrayList<Tuple<DatatypeExpr,NetworkObject>> rt1 = new ArrayList<Tuple<DatatypeExpr,NetworkObject>>();
         rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache1"), cache1));
         rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache2"), cache1));
         rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache3"), cache1));
-        rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache4"), cache1));
         rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"), cache1));
 
         net.routingTable(a, rt1);
 
         ArrayList<Tuple<DatatypeExpr,NetworkObject>> rt2 = new ArrayList<Tuple<DatatypeExpr,NetworkObject>>();
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"), cache4));
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache1"), cache4));
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache2"), cache4));
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache3"), cache4));
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache4"), cache4));
+        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"), cache3));
+        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache1"), cache3));
+        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache2"), cache3));
+        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache3"), cache3));
 
         net.routingTable(b, rt2);
 
@@ -88,7 +84,6 @@ public class Test4Caches {
         rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"),a));
         rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache2"),cache2));
         rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache3"),cache2));
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache4"), cache2));
         rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),cache2));
 
         net.routingTable(cache1, rt3);
@@ -97,7 +92,6 @@ public class Test4Caches {
         rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"),cache1));
         rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache1"),cache1));
         rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache3"),cache3));
-        rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache4"), cache3));
         rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),cache3));
 
         net.routingTable(cache2, rt4);
@@ -106,27 +100,16 @@ public class Test4Caches {
         rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"),cache2));
         rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache1"),cache2));
         rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache2"),cache2));
-        rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache4"), cache4));
-        rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),cache4));
+        rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),b));
 
         net.routingTable(cache3, rt5);
-        
-        ArrayList<Tuple<DatatypeExpr,NetworkObject>> rt6 = new ArrayList<Tuple<DatatypeExpr,NetworkObject>>();
-        rt6.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"),cache3));
-        rt6.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache1"),cache3));
-        rt6.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache2"),cache3));
-        rt6.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_cache3"), cache3));
-        rt6.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),b));
 
-        net.routingTable(cache4, rt6);
-
-        net.attach(a, b, cache1, cache2, cache3, cache4);
+        net.attach(a, b, cache1, cache2, cache3);
 
         //Configuring middleboxes
         cache1.installCache(new NetworkObject[]{nctx.nm.get("a")});
         cache2.installCache(new NetworkObject[]{nctx.nm.get("cache1")});
         cache3.installCache(new NetworkObject[]{nctx.nm.get("cache2")});
-        cache4.installCache(new NetworkObject[]{nctx.nm.get("cache3")});
 
         check = new Checker(ctx,nctx,net);
 }
@@ -158,7 +141,7 @@ public class Test4Caches {
 
     public static void main(String[] args) throws Z3Exception
     {
-        Test4Caches model = new Test4Caches();
+        Test_3Caches model = new Test_3Caches();
         model.resetZ3();
         
         IsolationResult ret =model.check.checkIsolationProperty(model.a,model.b);

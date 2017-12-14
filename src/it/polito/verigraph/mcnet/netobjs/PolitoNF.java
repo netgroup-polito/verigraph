@@ -70,8 +70,8 @@ public class PolitoNF extends NetworkObject{
                 ctx.mkImplies((BoolExpr)nctx.send.apply(politoNF, n_0, p_0),
                         ctx.mkExists(new Expr[]{n_1},
                                 ctx.mkAnd((BoolExpr)nctx.recv.apply(n_1, politoNF, p_0),
-                                        
-                                        (BoolExpr)myFunction.apply(nctx.pf.get("src").apply(p_0), nctx.pf.get("dest").apply(p_0))),1,null,null,null,null)),1,null,null,null,null);
+                                        (BoolExpr)myFunction.apply(nctx.pf.get("src").apply(p_0), nctx.pf.get("dest").apply(p_0)))
+                                ,1,null,null,null,null)),1,null,null,null,null);
 
         BoolExpr funcConstraint = ctx.mkOr(ctx.mkAnd(ctx.mkEq(a_0, ipA), ctx.mkEq(a_1, ipB)), ctx.mkAnd(ctx.mkEq(a_0,ipB), ctx.mkEq(a_1,ipA)));
 

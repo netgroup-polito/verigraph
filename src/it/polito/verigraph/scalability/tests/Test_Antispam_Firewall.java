@@ -2,7 +2,7 @@ package it.polito.verigraph.scalability.tests;
 
 /**
  * <p/>  Custom test  <p/>
- *  | A | <------> | FM1 | <------> | FM2 | <------> | FM2 |<------> | B |
+ *  | A | <------> | CACHE |<------> | B |
  */
 
 import java.util.ArrayList;
@@ -22,92 +22,91 @@ import it.polito.verigraph.mcnet.components.Network;
 import it.polito.verigraph.mcnet.components.NetworkObject;
 import it.polito.verigraph.mcnet.components.Tuple;
 import it.polito.verigraph.mcnet.netobjs.PolitoEndHost;
-import it.polito.verigraph.mcnet.netobjs.PolitoFieldModifier;
+import it.polito.verigraph.mcnet.netobjs.PolitoMailServer;
+import it.polito.verigraph.mcnet.netobjs.PolitoNat;
+import it.polito.verigraph.mcnet.netobjs.AclFirewall;
+import it.polito.verigraph.mcnet.netobjs.PacketModel;
+import it.polito.verigraph.mcnet.netobjs.PolitoAntispam;
 
-public class Test3FieldModifiers {
+public class Test_Antispam_Firewall {
 
     public Checker check;
     public Context ctx;
-    public PolitoEndHost a,b;
-    public PolitoFieldModifier fm1, fm2, fm3;
+    public PolitoEndHost a;
+    public PolitoMailServer b;
+    public PolitoAntispam antispam1;
+    public AclFirewall fw;
 
-    public  Test3FieldModifiers(){
+    public  Test_Antispam_Firewall(){
         ctx = new Context();
 
-        NetContext nctx = new NetContext (ctx,new String[]{"a", "b", "fm1","fm2","fm3"},
-                                                new String[]{"ip_a", "ip_b", "ip_fm1","ip_fm2","ip_fm3"});
+        NetContext nctx = new NetContext (ctx,new String[]{"a", "b", "antispam1", "fw"},
+                                                new String[]{"ip_a", "ip_b", "ip_antispam1", "ip_fw"});
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
-        fm1 = new PolitoFieldModifier(ctx, new Object[]{nctx.nm.get("fm1"), net, nctx});
-        fm2 = new PolitoFieldModifier(ctx, new Object[]{nctx.nm.get("fm2"), net, nctx});
-        fm3 = new PolitoFieldModifier(ctx, new Object[]{nctx.nm.get("fm3"), net, nctx});
+        b = new PolitoMailServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        antispam1 = new PolitoAntispam(ctx, new Object[]{nctx.nm.get("antispam1"), net, nctx});
+        fw = new AclFirewall(ctx, new Object[]{nctx.nm.get("fw"), net, nctx});
 
         ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>> adm = new ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>>();
         ArrayList<DatatypeExpr> al1 = new ArrayList<DatatypeExpr>();
         ArrayList<DatatypeExpr> al2 = new ArrayList<DatatypeExpr>();
         ArrayList<DatatypeExpr> al3 = new ArrayList<DatatypeExpr>();
         ArrayList<DatatypeExpr> al4 = new ArrayList<DatatypeExpr>();
-        ArrayList<DatatypeExpr> al5 = new ArrayList<DatatypeExpr>();
         al1.add(nctx.am.get("ip_a"));
         al2.add(nctx.am.get("ip_b"));
-        al3.add(nctx.am.get("ip_fm1"));
-        al4.add(nctx.am.get("ip_fm2"));
-        al5.add(nctx.am.get("ip_fm3"));
+        al3.add(nctx.am.get("ip_antispam1"));
+        al4.add(nctx.am.get("ip_fw"));
         adm.add(new Tuple<>(a, al1));
         adm.add(new Tuple<>(b, al2));
-        adm.add(new Tuple<>(fm1, al3));
-        adm.add(new Tuple<>(fm2, al4));
-        adm.add(new Tuple<>(fm3, al5));
+        adm.add(new Tuple<>(antispam1, al3));
+        adm.add(new Tuple<>(fw, al4));
         net.setAddressMappings(adm);
 
         ArrayList<Tuple<DatatypeExpr,NetworkObject>> rt1 = new ArrayList<Tuple<DatatypeExpr,NetworkObject>>();
-        rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm1"), fm1));
-        rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm2"), fm1));
-        rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm3"), fm1));
-        rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"), fm1));
+        rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_antispam1"), antispam1));
+        rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"), antispam1));
+        rt1.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fw"), antispam1));
 
         net.routingTable(a, rt1);
 
         ArrayList<Tuple<DatatypeExpr,NetworkObject>> rt2 = new ArrayList<Tuple<DatatypeExpr,NetworkObject>>();
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"), fm3));
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm1"), fm3));
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm2"), fm3));
-        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm3"), fm3));
+        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"), fw));
+        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_antispam1"), fw));
+        rt2.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fw"), fw));
 
         net.routingTable(b, rt2);
 
         ArrayList<Tuple<DatatypeExpr,NetworkObject>> rt3 = new ArrayList<Tuple<DatatypeExpr,NetworkObject>>();
         rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"),a));
-        rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm2"),fm2));
-        rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm3"),fm2));
-        rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),fm2));
+        rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),fw));
+        rt3.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fw"),fw));
 
-        net.routingTable(fm1, rt3);
-
+        net.routingTable(antispam1, rt3);
+        
         ArrayList<Tuple<DatatypeExpr,NetworkObject>> rt4 = new ArrayList<Tuple<DatatypeExpr,NetworkObject>>();
-        rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"),fm1));
-        rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm1"),fm1));
-        rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm3"),fm3));
-        rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),fm3));
+        rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"),antispam1));
+        rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),b));
+        rt4.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_antispam1"),antispam1));
 
-        net.routingTable(fm2, rt4);
+        net.routingTable(fw, rt4);
 
-        ArrayList<Tuple<DatatypeExpr,NetworkObject>> rt5 = new ArrayList<Tuple<DatatypeExpr,NetworkObject>>();
-        rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_a"),fm2));
-        rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm1"),fm2));
-        rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_fm2"),fm2));
-        rt5.add(new Tuple<DatatypeExpr,NetworkObject>(nctx.am.get("ip_b"),b));
-
-        net.routingTable(fm3, rt5);
-
-        net.attach(a, b, fm1, fm2, fm3);
+        net.attach(a, b, antispam1,fw);
 
         //Configuring middleboxes
-        fm1.installFieldModifier();
-        fm2.installFieldModifier();
-        fm3.installFieldModifier();
+        int[] s = { 1,2,3} ;
+        antispam1.addBlackList(s);
+
+        ArrayList<Tuple<DatatypeExpr,DatatypeExpr>> acl = new ArrayList<Tuple<DatatypeExpr,DatatypeExpr>>();
+        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_a"),nctx.am.get("ip_b")));
+        fw.addAcls(acl);
+
+        PacketModel packet = new PacketModel();
+        packet.setEmailFrom(3);
+        packet.setProto(nctx.POP3_REQUEST);
+        packet.setIp_dest(nctx.am.get("ip_b"));
+        a.installEndHost(packet);
 
         check = new Checker(ctx,nctx,net);
 }
@@ -139,13 +138,22 @@ public class Test3FieldModifiers {
 
     public static void main(String[] args) throws Z3Exception
     {
-        Test3FieldModifiers model = new Test3FieldModifiers();
+        Test_Antispam_Firewall model = new Test_Antispam_Firewall();
         model.resetZ3();
         
         IsolationResult ret =model.check.checkIsolationProperty(model.a,model.b);
         model.printVector(ret.assertions);
+        System.out.println("--------------------------------------------");
         if (ret.result == Status.UNSATISFIABLE){
            System.out.println("UNSAT"); // Nodes a and b are isolated
+           
+           
+           /*solver.getProof().simplify());
+           System.out.println("core: ");
+           for (Expr c : solver.getUnsatCore())
+           {
+               System.out.println(c);
+           }*/
         }else{
             System.out.println("SAT ");
             System.out.println(ret.model);

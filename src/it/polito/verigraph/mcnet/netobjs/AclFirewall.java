@@ -115,7 +115,7 @@ public class AclFirewall extends NetworkObject{
             Tuple<DatatypeExpr,DatatypeExpr> tp = acls.get(y);
             acl_map[y] = ctx.mkOr(ctx.mkAnd(ctx.mkEq(a_0,tp._1),ctx.mkEq(a_1,tp._2)), ctx.mkAnd(ctx.mkEq(a_0,tp._2),ctx.mkEq(a_1,tp._1)));
         }
-        //Constraint2		acl_func(a_0,a_1) == or(foreach ip1,ip2 in acl_map ((a_0 == ip1 && a_1 == ip2)||(a_0 == ip2 && a_1 == ip1)))
+        //Constraint2 acl_func(a_0,a_1) == or(foreach ip1,ip2 in acl_map ((a_0 == ip1 && a_1 == ip2)||(a_0 == ip2 && a_1 == ip1)))
         solver.add(ctx.mkForall(new Expr[]{a_0, a_1},
                 ctx.mkEq( 
                         acl_func.apply(a_0, a_1),
