@@ -14,7 +14,7 @@ public class VpnExitNode extends NodeTemplateYaml {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public class VpnExitConfigurationYaml {
+	public class VpnExitConfigurationYaml implements ConfigurationYaml {
 		private String vpnaccess;
 
 		public String getVpnaccess() {

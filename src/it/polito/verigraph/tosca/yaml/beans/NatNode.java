@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml.ConfigurationYaml;
+
 public class NatNode extends NodeTemplateYaml {
 	private NatConfigurationYaml properties;
 
@@ -16,7 +18,7 @@ public class NatNode extends NodeTemplateYaml {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public class NatConfigurationYaml {
+	public class NatConfigurationYaml implements ConfigurationYaml{
 		private List<String> sources;
 
 		public List<String> getSources() {

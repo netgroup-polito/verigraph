@@ -2,6 +2,8 @@ package it.polito.verigraph.tosca.yaml.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml.ConfigurationYaml;
+
 public class EndhostNode extends NodeTemplateYaml{
 	private EndhostConfigurationYaml properties;
 
@@ -14,7 +16,7 @@ public class EndhostNode extends NodeTemplateYaml{
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true) 
-	public class EndhostConfigurationYaml {
+	public class EndhostConfigurationYaml implements ConfigurationYaml {
 		private String body;
 		private int sequence;
 		private String protocol;

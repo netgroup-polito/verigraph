@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml.ConfigurationYaml;
+
 public class EndpointNode extends NodeTemplateYaml {
 	private EndpointConfigurationYaml properties;
 
@@ -16,7 +18,7 @@ public class EndpointNode extends NodeTemplateYaml {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public class EndpointConfigurationYaml {
+	public class EndpointConfigurationYaml implements ConfigurationYaml {
 		private List<String> names;
 
 		public List<String> getNames() {

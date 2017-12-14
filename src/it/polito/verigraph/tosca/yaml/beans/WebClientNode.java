@@ -14,7 +14,7 @@ public class WebClientNode extends NodeTemplateYaml {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public class WebClientConfigurationYaml {
+	public class WebClientConfigurationYaml implements ConfigurationYaml {
 		private String nameWebServer;
 
 		public String getNameWebServer() {

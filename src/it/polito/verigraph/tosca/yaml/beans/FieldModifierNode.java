@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml.ConfigurationYaml;
+
 public class FieldModifierNode extends NodeTemplateYaml {
 	private FieldModifierConfigurationYaml properties;
 
@@ -16,7 +18,7 @@ public class FieldModifierNode extends NodeTemplateYaml {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public class FieldModifierConfigurationYaml {
+	public class FieldModifierConfigurationYaml implements ConfigurationYaml {
 		private List<String> names;
 
 		public List<String> getNames() {

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-public class DpiNode {
+public class DpiNode extends NodeTemplateYaml {
 	private DpiConfigurationYaml properties;
 
 	public DpiConfigurationYaml getProperties() {
@@ -16,7 +16,7 @@ public class DpiNode {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true) 
-	public class DpiConfigurationYaml {
+	public class DpiConfigurationYaml implements ConfigurationYaml {
 		private List<String> notAllowedList;
 
 		public List<String> getNotAllowedList() {

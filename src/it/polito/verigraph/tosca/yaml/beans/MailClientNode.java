@@ -2,6 +2,8 @@ package it.polito.verigraph.tosca.yaml.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml.ConfigurationYaml;
+
 public class MailClientNode extends NodeTemplateYaml {
 	private MailClientConfigurationYaml properties;
 
@@ -14,7 +16,7 @@ public class MailClientNode extends NodeTemplateYaml {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public class MailClientConfigurationYaml {
+	public class MailClientConfigurationYaml implements ConfigurationYaml{
 		private String mailserver;
 
 		public String getMailserver() {

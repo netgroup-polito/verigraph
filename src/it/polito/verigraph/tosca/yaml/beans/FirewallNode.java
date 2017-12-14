@@ -2,6 +2,8 @@ package it.polito.verigraph.tosca.yaml.beans;
 
 import java.util.Map;
 
+import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml.ConfigurationYaml;
+
 public class FirewallNode extends NodeTemplateYaml {
 	private FirewallConfigurationYaml properties;
 
@@ -13,7 +15,7 @@ public class FirewallNode extends NodeTemplateYaml {
 		this.properties = properties;
 	}
 
-	public class FirewallConfigurationYaml {
+	public class FirewallConfigurationYaml implements ConfigurationYaml{
 		private Map<String, String> elements;
 
 		public Map<String, String> getElements() {

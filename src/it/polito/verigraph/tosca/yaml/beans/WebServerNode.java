@@ -13,7 +13,7 @@ public class WebServerNode extends NodeTemplateYaml {
 		this.properties = properties;
 	}
 
-	public class WebServerConfigurationYaml {
+	public class WebServerConfigurationYaml implements ConfigurationYaml {
 		public List<String> names;
 
 		public List<String> getNames() {

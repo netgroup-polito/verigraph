@@ -37,5 +37,9 @@ public class NodeTemplateYaml {
 	public void setType(String type) {
 		this.type = type;
 	}
+	
+	//Generic YamlNode configuration to be extended in single nodes
+	public interface ConfigurationYaml {
+	}
 
 }
