@@ -50,13 +50,13 @@
         },
         {
             "name": "antispam2",
-            "functional_type": "antispam1",
+            "functional_type": "antispam",
             "neighbours": [
                 {
                     "name": "mailserver"
                 },
                 {
-                    "name": "antispam"
+                    "name": "antispam1"
                 }
             ],
             "configuration": [

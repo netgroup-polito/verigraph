@@ -2,7 +2,7 @@
     "nodes": [
         {
             "name": "user1",
-            "functional_type": "endpoint",
+            "functional_type": "endhost",
             "neighbours": [
                 {
                     "name": "nat"
@@ -42,7 +42,7 @@
         },
         {
             "name": "webserver",
-            "functional_type": "endpoint",
+            "functional_type": "webserver",
             "neighbours": [
                 {
                     "name": "firewall"
@@ -51,7 +51,7 @@
         },
         {
             "name": "user2",
-            "functional_type": "endpoint",
+            "functional_type": "endhost",
             "neighbours": [
                 {
                     "name": "dpi"
@@ -60,7 +60,7 @@
         },
         {
             "name": "dpi",
-            "functional_type": "nat",
+            "functional_type": "dpi",
             "neighbours": [
                 {
                     "name": "firewall"
