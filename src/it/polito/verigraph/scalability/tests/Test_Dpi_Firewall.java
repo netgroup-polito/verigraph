@@ -107,7 +107,7 @@ public class Test_Dpi_Firewall {
         fw.addAcls(acl);
         
         PacketModel packet = new PacketModel();
-        packet.setEmailFrom(4);
+        packet.setEmailFrom(3);
         packet.setBody(5);
         packet.setProto(nctx.HTTP_REQUEST);
         packet.setIp_dest(nctx.am.get("ip_b"));

@@ -103,7 +103,7 @@ public class Test_Antispam_Firewall {
         fw.addAcls(acl);
 
         PacketModel packet = new PacketModel();
-        packet.setEmailFrom(3);
+        packet.setEmailFrom(4);
         packet.setProto(nctx.POP3_REQUEST);
         packet.setIp_dest(nctx.am.get("ip_b"));
         a.installEndHost(packet);

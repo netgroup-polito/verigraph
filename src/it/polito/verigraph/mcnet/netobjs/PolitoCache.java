@@ -132,7 +132,7 @@ public class PolitoCache extends NetworkObject{
                                                 ctx.mkEq(nctx.pf.get("url").apply(p_1), u_0),
                                                 ctx.mkEq(nctx.pf.get("url").apply(p_2), u_0)),1,null,null,null,null)),1,null,null,null,null));
         //    //Always in cache
-        //    constraints.add(ctx.mkForall(new Expr[]{u_0, t_0},ctx.mkEq(isInCache.apply(u_0,t_0),ctx.mkBool(true)),1,null,null,null,null));
+        //    constraints.add(ctx.mkForall(new Expr[]{u_0},ctx.mkEq(isInCache.apply(u_0),ctx.mkBool(true)),1,null,null,null,null));
 
         //Constraint3 Modeling the behavior of the cache
         //send(politoCache, n_0, p, t_0) && !isInternalNode(n_0) ->

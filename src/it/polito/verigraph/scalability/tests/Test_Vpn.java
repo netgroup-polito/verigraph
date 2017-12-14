@@ -22,14 +22,10 @@ import it.polito.verigraph.mcnet.components.Network;
 import it.polito.verigraph.mcnet.components.NetworkObject;
 import it.polito.verigraph.mcnet.components.Tuple;
 import it.polito.verigraph.mcnet.netobjs.PolitoEndHost;
-import it.polito.verigraph.mcnet.netobjs.PolitoMailServer;
-import it.polito.verigraph.mcnet.netobjs.PolitoNat;
 import it.polito.verigraph.mcnet.netobjs.PolitoVpnAccess;
 import it.polito.verigraph.mcnet.netobjs.PolitoVpnExit;
 import it.polito.verigraph.mcnet.netobjs.PolitoWebServer;
-import it.polito.verigraph.mcnet.netobjs.AclFirewall;
 import it.polito.verigraph.mcnet.netobjs.PacketModel;
-import it.polito.verigraph.mcnet.netobjs.PolitoAntispam;
 
 public class Test_Vpn {
 
@@ -52,8 +48,6 @@ public class Test_Vpn {
         access = new PolitoVpnAccess(ctx, new Object[]{nctx.nm.get("access"), net, nctx});
         exit = new PolitoVpnExit(ctx, new Object[]{nctx.nm.get("exit"), net, nctx});
 
-        //exit = new PolitoNat(ctx, new Object[]{nctx.nm.get("exit"), net, nctx});
-        
         ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>> adm = new ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>>();
         ArrayList<DatatypeExpr> al1 = new ArrayList<DatatypeExpr>();
         ArrayList<DatatypeExpr> al2 = new ArrayList<DatatypeExpr>();
