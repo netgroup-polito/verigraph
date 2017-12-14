@@ -32,16 +32,20 @@ topology_template:
       name : host2
       type: verigraph.nodeTypes.Endpoint
       properties:
-        names: prova di lista
-
+        names:
+          - ciao
+          - questa
+          - è
+          - una
+          - lista
     102:
       name : antispammino
       type: verigraph.nodeTypes.Antispam
       properties:
         sources:
-          altra
-          bellissima
-          prova
+          - altra
+          - bellissima
+          - lista
 
     103:
       name : magicFirewall3.0
@@ -64,3 +68,10 @@ topology_template:
         name: 100to101
         source_id: 100
         target_id: 101
+
+    901:
+      type: verigraph.relationshipType.generic
+      properties:
+        name: 102to103
+        source_id: 102
+        target_id: 103
