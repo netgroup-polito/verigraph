@@ -45,6 +45,7 @@ public class GraphResource extends ResourceConfig{
     GraphService graphService= new GraphService();
     VerificationService verificationService= new VerificationService();
 
+    // TODO Solve Swagger issues (when generating documentation an exception is thrown)
     public GraphResource() {
         register(DefinitionsProvider.class); // I'm registering a resolver for TOSCA XML
     }
@@ -54,7 +55,7 @@ public class GraphResource extends ResourceConfig{
     @ApiOperation(httpMethod = "GET",
         value = "Returns all graphs",
         notes = "Returns an array of graphs",
-        //response = Graph.class,
+        response = Response.class,
         responseContainer = "List")
     @ApiResponses(value =
     {
@@ -84,6 +85,7 @@ public class GraphResource extends ResourceConfig{
         }
     }
 
+
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -95,9 +97,14 @@ public class GraphResource extends ResourceConfig{
             @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
             @ApiResponse(code = 201, message = "Graph successfully created", response = Graph.class),
             @ApiResponse(code = 201, message = "Graph successfully created", response = Definitions.class) })
-    public Response addGraph(@Context HttpHeaders headers, @ApiParam(value = "New graph object", required = true) Object graph,
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "name", value = "User's name", required = true, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "email", value = "User's email", required = false, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "id", value = "User ID", required = true, dataType = "long", paramType = "query")
+    })
+    public Response addGraph(@Context HttpHeaders headers, @ApiParam(value = "New graph object", required = true) Graph graph,
             @Context UriInfo uriInfo) throws JAXBException, IOException, MyInvalidIdException {
-            MediaType test = headers.getMediaType();
+
         if (headers.getMediaType().equals(MediaType.APPLICATION_XML_TYPE)) {
             Graph newGraph = graphService.addGraph((Graph) graph);
             Definitions newTopologyTemplate = MappingUtils.mapGraph(newGraph);
@@ -118,45 +125,29 @@ public class GraphResource extends ResourceConfig{
 
     @GET
     @Path("/{graphId}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @ApiOperation(httpMethod = "GET",
     value = "Returns a graph",
     notes = "Returns a single graph",
-    response = Graph.class)
+    response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Invalid graph id", response = ErrorMessage.class),
             @ApiResponse(code = 404, message = "Graph not found", response = ErrorMessage.class),
             @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
-            @ApiResponse(code = 200,
-            message = "The requested graph has been returned in the message body",
-            response = Graph.class) })
-    public Graph getGraph(@ApiParam(value = "Graph id", required = true) @PathParam("graphId") long graphId,
-            @Context UriInfo uriInfo) throws JsonParseException, JsonMappingException, JAXBException, IOException {
-        Graph graph = graphService.getGraph(graphId);
-        graph.addLink(getUriForSelf(uriInfo, graph), "self");
-        graph.addLink(getUriForNodes(uriInfo, graph), "nodes");
-        return graph;
+            @ApiResponse(code = 200, message = "The requested graph has been returned in the message body", response = Graph.class),
+            @ApiResponse(code = 200, message = "The requested graph has been returned in the message body", response = Definitions.class)})
+    public Response getGraph(@Context HttpHeaders headers, @ApiParam(value = "Graph id", required = true) @PathParam("graphId") long graphId,
+            @Context UriInfo uriInfo) throws JAXBException, IOException {
+        if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
+            Definitions topologyTemplate = topologyTemplateService.getTopologyTemplate(graphId);
+            GenericEntity<Definitions> entity = new GenericEntity<Definitions>(topologyTemplate) {}; // Anonymous class
+            return Response.ok().entity(entity).build();
+        }
+        else {
+            return Response.ok().entity(graphService.getGraph(graphId)).build();
+        }
+//        graph.addLink(getUriForSelf(uriInfo, graph), "self");
+//        graph.addLink(getUriForNodes(uriInfo, graph), "nodes");
     }
-
-//    @GET
-//    @Path("/{topologyTemplateId}")
-//    @Produces(MediaType.APPLICATION_XML)
-//    @ApiOperation(httpMethod = "GET",
-//            value = "Returns a topology template",
-//            notes = "Returns a single topology template",
-//            response = Graph.class)
-//    @ApiResponses(value = {@ApiResponse(code = 403, message = "Invalid topology template id", response = ErrorMessage.class),
-//            @ApiResponse(code = 404, message = "Topology template not found", response = ErrorMessage.class),
-//            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
-//            @ApiResponse(code = 200,
-//                    message = "The requested topology template has been returned in the message body",
-//                    response = Definitions.class) })
-//    public Definitions getTopologyTemplate(@ApiParam(value = "Topology template id", required = true) @PathParam("topologyTemplateId") long topologyTemplateId,
-//                          @Context UriInfo uriInfo) throws JsonParseException, JsonMappingException, JAXBException, IOException {
-//        Definitions topologyTemplate = topologyTemplateService.getTopologyTemplate(topologyTemplateId);
-//        /*topologyTemplate.addLink(getUriForSelf(uriInfo, graph), "self"); // ???
-//        topologyTemplate.addLink(getUriForNodes(uriInfo, graph), "nodes");*/
-//        return topologyTemplate;
-//    }
 
     @PUT
     @Path("/{graphId}")
@@ -166,10 +157,25 @@ public class GraphResource extends ResourceConfig{
             @ApiResponse(code = 404, message = "Graph not found", response = ErrorMessage.class),
             @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
             @ApiResponse(code = 200, message = "Graph edited successfully", response = Graph.class) })
-    public Graph updateGraph(@ApiParam(value = "Graph id", required = true) @PathParam("graphId") long id,
+    public Response updateGraph(@Context HttpHeaders headers, @ApiParam(value = "Graph id", required = true) @PathParam("graphId") long id,
             @ApiParam(value = "Updated graph object", required = true) Graph graph) throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
-        graph.setId(id);
-        return graphService.updateGraph(graph);
+
+        if (headers.getMediaType().equals(MediaType.APPLICATION_XML_TYPE)) {
+            graph.setId(id);
+            Graph newGraph = graphService.updateGraph(graph);
+            Definitions newTopologyTemplate = MappingUtils.mapGraph(newGraph);
+            String newId = String.valueOf(newGraph.getId());
+            GenericEntity<Definitions> entity = new GenericEntity<Definitions>(newTopologyTemplate) {}; // Anonymous class
+            return Response.ok().type(MediaType.APPLICATION_XML_TYPE).entity(entity).build();
+        }
+        else {
+            ObjectMapper mapper = new ObjectMapper();
+            Graph customGraph = mapper.convertValue(graph, Graph.class);
+            customGraph.setId(id);
+            Graph newGraph = graphService.updateGraph(customGraph);
+            String newId = String.valueOf(newGraph.getId());
+            return Response.ok().entity(newGraph).build();
+        }
     }
 
     @DELETE
@@ -229,6 +235,7 @@ public class GraphResource extends ResourceConfig{
 
         return verificationService.getPaths(graphId, srcName, dstName);
     }
+
 
     private String getUriForNodes(UriInfo uriInfo, Graph graph) {
         String uri = uriInfo.getBaseUriBuilder()
