@@ -57,15 +57,16 @@ public class TopologyTemplateService {
 	    	return newTopologyTemplate;
     }
 
-//    public TTopologyTemplate getTopologyTemplate(long id) throws JsonParseException, JsonMappingException, JAXBException, IOException {
-//        if (id < 0) {
-//            throw new ForbiddenException("Illegal graph id: " + id);
-//        }
-//        TTopologyTemplate localTopologyTemplate=manager.getTopologyTemplate(id);
-//        validateTopologyTemplate(localTopologyTemplate);
-//        return localTopologyTemplate;
-//    }
-//
+
+    public Definitions getTopologyTemplate(long id) throws JsonParseException, JsonMappingException, JAXBException, IOException {
+        if (id < 0) {
+            throw new ForbiddenException("Illegal topology template id: " + id);
+        }
+        Graph localGraph = manager.getGraph(id);
+        validateGraph(localGraph);
+        return MappingUtils.mapGraph(localGraph);
+    }
+
 //    public TopologyTemplate updateTopologyTemplate(TTopologyTemplate graph) throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
 //        if (graph.getId() < 0) {
 //            throw new ForbiddenException("Illegal graph id: " + graph.getId());
