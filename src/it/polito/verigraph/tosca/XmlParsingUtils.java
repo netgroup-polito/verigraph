@@ -44,7 +44,7 @@ public class XmlParsingUtils {
 
 		//Retrieve the TDefinitions object
 		Source source = new StreamSource(new FileInputStream(file));
-		JAXBElement<TDefinitions> rootElement = (JAXBElement<TDefinitions>) u.unmarshal(source);//, TDefinitions.class);
+		JAXBElement<TDefinitions> rootElement = (JAXBElement<TDefinitions>) u.unmarshal(source, TDefinitions.class);
 		TDefinitions definitions = rootElement.getValue();       
 		List<TExtensibleElements> elements = definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation();
 

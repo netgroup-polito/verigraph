@@ -5,6 +5,7 @@ metadata:
   template_name: MyDummyService
   template_author: Dummy
   template_version: Dummy1.0
+  template_id: 99
 
 description: sample of Tosca yaml service template exploiting verigraph
 

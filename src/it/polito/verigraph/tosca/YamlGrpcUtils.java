@@ -26,11 +26,11 @@ public class YamlGrpcUtils {
 	/** Returns the (first) TopologyTemplate found in the TOSCA-compliant yaml file */
 	public static TopologyTemplateGrpc obtainTopologyTemplateGrpc (String filepath) throws IOException, JAXBException, DataNotFoundException, ClassCastException, BadRequestException{
 		ServiceTemplateYaml serviceTemplate = YamlParsingUtils.obtainServiceTemplate(filepath);
-		
+
 		//Retrieving of list of NodeTemplate and RelationshipTemplate
 		List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
 		List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();	    
-		
+
 		try {
 			for(Map.Entry<String, NodeTemplateYaml> node : YamlParsingUtils.obtainNodeTemplates(serviceTemplate).entrySet()) {
 				for(NodeTemplateGrpc alreadyAddedNode : nodes)
@@ -41,7 +41,7 @@ public class YamlGrpcUtils {
 		} catch (NullPointerException e) {
 			throw new BadRequestException("There is not any NodeTemplate in the ServiceTemplate provided.");
 		}
-		
+
 		try {
 			for(Map.Entry<String, RelationshipTemplateYaml> rel : YamlParsingUtils.obtainRelationshipTemplates(serviceTemplate).entrySet()) {
 				relats.add(parseRelationshipTemplate(rel, nodes));
@@ -63,7 +63,7 @@ public class YamlGrpcUtils {
 		String source, target;
 		boolean valid_source = false;
 		boolean valid_target = false;
-		
+
 		//RelationshipTemplateGrpc building
 		RelationshipTemplateGrpc.Builder relatgrpc = RelationshipTemplateGrpc.newBuilder();  	
 
@@ -88,29 +88,29 @@ public class YamlGrpcUtils {
 		}
 		if(!(valid_source && valid_target))
 			throw new BadRequestException("Invalid NodeTemplate reference in RelationshipTemplate:" + rel.getKey());
-		
+
 		return relatgrpc.setIdSourceNodeTemplate(source).setIdTargetNodeTemplate(target).build();    
 
 	}
-	
+
 	/** Parsing method: NodeTemplateYaml(tosca) --> NodeTemplateGrpc */
-	private static NodeTemplateGrpc parseNodeTemplate(Entry<String, NodeTemplateYaml> node) throws ClassCastException, NullPointerException {   	
+	private static NodeTemplateGrpc parseNodeTemplate(Entry<String, NodeTemplateYaml> node) throws ClassCastException, NullPointerException, BadRequestException {   	
 		Boolean isVerigraphCompl = true;
 		Type type;
 
 		//NodeTemplateGrpc building
 		NodeTemplateGrpc.Builder nodegrpc = NodeTemplateGrpc.newBuilder()
 				.setId(node.getKey());	
-		
+
 		try {
 			nodegrpc.setName(node.getValue().getName());
 		} catch (NullPointerException ex) {
-			nodegrpc.setName("");
+			throw new BadRequestException("Invalid name in a NodeTemplate.");
 		}
 
 		//Type cannot be null but it can be invalid
 		try {
-			type = Type.valueOf(node.getValue().getType());
+			type = Type.valueOf(node.getValue().getType().replace("verigraph.nodeTypes.", "").toLowerCase());
 		} catch (IllegalArgumentException | NullPointerException ex) {
 			//in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be an endhost node
 			type = Type.endhost;
@@ -121,8 +121,8 @@ public class YamlGrpcUtils {
 		if(isVerigraphCompl) {
 			String jsonConfig = YamlParsingUtils.obtainConfiguration(node.getValue());
 			grpcConfig = ToscaConfigurationGrpc.newBuilder()
-					.setId(ToscaGrpcUtils.defaultConfID)
-					.setDescription(ToscaGrpcUtils.defaultDescr)
+					.setId("")
+					.setDescription("")
 					.setConfiguration(jsonConfig);
 		}
 		else {
@@ -134,5 +134,5 @@ public class YamlGrpcUtils {
 		nodegrpc.setConfiguration(grpcConfig.build());
 		return nodegrpc.build();   
 	}
-	
+
 }
