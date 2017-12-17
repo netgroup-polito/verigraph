@@ -13,7 +13,7 @@
 
 	<Import importType=" http://docs.oasis-open.org/tosca/ns/2011/12"
 		namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
-		location="../ToscaVerigraph_compliance/ToscaVerigraphDefinitions.xml" />
+		location="../tosca_support/ToscaVerigraphDefinitions.xml" />
 
 
 	<ServiceTemplate id="0" name="prova">
@@ -21,22 +21,31 @@
 		<TopologyTemplate id="10" name="dummyTopology">
 			<NodeTemplate id="100" name="fw" type="FirewallType">
 				<Properties>
-					<Configuration confID="401" confDescr="superDescription2" /> 
+					<Configuration confID="100" confDescr="ciao">
+						 <firewallConfiguration>
+							<elements>
+								<source>casa</source>
+								<destination>polito</destination>
+							</elements>
+						</firewallConfiguration>
+					</Configuration>
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="101" name="webeserver1" type="WebserverType" />
-
+			<NodeTemplate id="101" name="webeserver1" type="WebserverType">
+				<Properties>
+					<Configuration confID="101" confDescr="Configurazione Server">
+						<webServerConfiguration>
+							<name>My web Server 1</name>
+						</webServerConfiguration>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
 			
 			<NodeTemplate id="102" name="host2" type="EndhostType" >
 				<Properties>
 					<Configuration>
-						<Endhost>
-							<url> www.facebook.com </url>
-							<body> candy </body>
-							<destination> webserver1 </destination>
-							<protocol> HTTP_REQUEST </protocol>
-						</Endhost>
+						<endhostConfiguration url="www.facebook.com" protocol="HTTP_REQUEST"/>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
@@ -44,12 +53,18 @@
 			<NodeTemplate id="103" name="host1" type="EndhostType" >
 				<Properties>
 					<Configuration>
-						<Endhost>
-							<url> www.facebook.com </url>
-							<body> cat </body>
-							<destination> webserver1 </destination>
-							<protocol> HTTP_REQUEST </protocol>
-						</Endhost>
+						<endhostConfiguration url="www.google.com" destination="server1" protocol="HTTP_WRONG"/>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+			
+			<NodeTemplate id="104" name="antispamNode1" type="AntispamType">
+				<Properties>
+					<Configuration>
+						<antispamConfiguration>
+							<source>Ciao</source>
+							<source>Bello</source>
+						</antispamConfiguration>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>

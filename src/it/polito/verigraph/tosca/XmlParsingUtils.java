@@ -20,31 +20,25 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+
+
+import com.sun.research.ws.wadl.ObjectFactory;
 
 import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.tosca.classes.TDefinitions;
-import it.polito.verigraph.tosca.classes.TEntityTemplate;
-import it.polito.verigraph.tosca.classes.TExtensibleElements;
-import it.polito.verigraph.tosca.classes.TNodeTemplate;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
-import it.polito.verigraph.tosca.classes.TServiceTemplate;
-import it.polito.verigraph.tosca.classes.TTopologyTemplate;
+import it.polito.verigraph.tosca.classes.*;
+
 
 public class XmlParsingUtils {
 
 	/** Returns a List of TServiceTemplate JAXB-generated objects, parsed from a TOSCA-compliant XML. */
 	public static List<TServiceTemplate> obtainServiceTemplates(String file) throws JAXBException, IOException, ClassCastException, DataNotFoundException {
 		// Create a JAXBContext capable of handling the generated classes
-		JAXBContext jc = JAXBContext.newInstance("it.polito.verigraph.tosca.classes");
+		JAXBContext jc = JAXBContext.newInstance(ObjectFactory.class, TDefinitions.class, Configuration.class);
 		Unmarshaller u = jc.createUnmarshaller();
 
 		//Retrieve the TDefinitions object
 		Source source = new StreamSource(new FileInputStream(file));
-		JAXBElement<TDefinitions> rootElement = (JAXBElement<TDefinitions>) u.unmarshal(source);//, TDefinitions.class);
+		JAXBElement<TDefinitions> rootElement = (JAXBElement<TDefinitions>)u.unmarshal(source, TDefinitions.class);//, TDefinitions.class);
 		TDefinitions definitions = rootElement.getValue();       
 		List<TExtensibleElements> elements = definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation();
 
@@ -96,29 +90,27 @@ public class XmlParsingUtils {
 
 
 	/** Returns the it.polito.verigraph.tosca.classes.Configuration JAXB-generated TOSCA object of a TOSCA NodeTemplate. */
-	public static it.polito.verigraph.tosca.classes.Configuration obtainConfiguration(TNodeTemplate nodeTemplate) {
+	public static Configuration obtainConfiguration(TNodeTemplate nodeTemplate) {
 		try {
-			Object configObject = nodeTemplate.getProperties().getAny();
-
-			//Retrieving it.polito.verigraph.tosca.classes.Configuration object without its text content
-			JAXBContext context = JAXBContext.newInstance(it.polito.verigraph.tosca.classes.Configuration.class);
-			Unmarshaller um = context.createUnmarshaller();			
-			JAXBElement<it.polito.verigraph.tosca.classes.Configuration> configNode = um.unmarshal((Node)configObject, it.polito.verigraph.tosca.classes.Configuration.class);
-			it.polito.verigraph.tosca.classes.Configuration configuration = configNode.getValue();
-
-			//Retrieving element text content (JSON)
-			Element propertyNode = (Element) configObject;
-			NodeList jsonNodeList = propertyNode.getElementsByTagName("JSON");
-			if(jsonNodeList.getLength() != 0)
-				configuration.setJSON(jsonNodeList.item(0).getTextContent());
-
+			Configuration configuration = (Configuration)nodeTemplate.getProperties().getAny();
+			
+			//This could be eventually used to cross check node type and configuration type
+			//String typename = nodeTemplate.getType().getLocalPart().toLowerCase();
 			return configuration;
 
-		} catch (JAXBException | NullPointerException | DOMException ex) {
-			it.polito.verigraph.tosca.classes.Configuration defConf = new it.polito.verigraph.tosca.classes.Configuration();
+			
+		} catch (NullPointerException | ClassCastException ex) {
+			//To be eventually defined a mechanism to distinguish hostnode from forwarder
+			System.out.println("[Warning] Node " + nodeTemplate.getId().toString() 
+					+ ": missing or invalid configuration, the node will be configured as a forwarder!" );
+			Configuration defConf = new Configuration();
 			defConf.setConfDescr(ToscaGrpcUtils.defaultDescr);
 			defConf.setConfID(ToscaGrpcUtils.defaultConfID);
-			defConf.setJSON(ToscaGrpcUtils.defaultConfig);
+			
+			Configuration.FieldmodifierConfiguration defaultForward = new Configuration.FieldmodifierConfiguration();
+			defaultForward.setName("DefaultForwarder");
+			
+			defConf.setFieldmodifierConfiguration(defaultForward);
 			return defConf;    		
 		}
 	}

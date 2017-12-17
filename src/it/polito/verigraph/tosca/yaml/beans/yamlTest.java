@@ -13,9 +13,10 @@ public class yamlTest {
     public static void main(String[] args) {
         
         try {
-            ServiceTemplateYaml service = YamlParsingUtils.obtainServiceTemplate("D:\\GIT_repository\\verigraph\\tosca_examples\\DummyServiceTemplate.yaml");
+            ServiceTemplateYaml service = YamlParsingUtils.obtainServiceTemplate("./tosca_examples/SimpleTemplate.yaml");
             
             Map<String,NodeTemplateYaml> nodes = YamlParsingUtils.obtainNodeTemplates(service);
+            YamlParsingUtils.obtainConfiguration(nodes.get("100"));
             System.out.println("boom");
         } catch (Exception e) {
             // TODO Auto-generated catch block

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -121,6 +122,7 @@ public class YamlParsingUtils {
 				throw new DataNotFoundException("The provided node is of unknown type, unable to retrieve the node configuration");
 			}
 			
+			mapper.setSerializationInclusion(Include.NON_NULL);
 			jsonConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(yamlConfiguration);
 			System.out.println(jsonConfiguration);
 

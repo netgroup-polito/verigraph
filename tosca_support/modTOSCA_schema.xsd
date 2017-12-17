@@ -6,12 +6,17 @@
 	Copyright (c) OASIS Open 2013. All rights reserved.
 	Source: http://docs.oasis-open.org/tosca/TOSCA/v1.0/os/schemas/
 -->
-<xs:schema targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns="http://docs.oasis-open.org/tosca/ns/2011/12" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema 	targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12" 
+			elementFormDefault="qualified" 
+			attributeFormDefault="unqualified" 
+			xmlns="http://docs.oasis-open.org/tosca/ns/2011/12" 
+			xmlns:xs="http://www.w3.org/2001/XMLSchema"
+			xmlns:vns="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition">
  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
  
 	<!-- INIZIO MODIFICHE AL TOSCA.xsd -->
-	 <xs:import namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition" schemaLocation="./ToscaTypes.xsd" />
-	<!-- FINE MODIFICHE AL TOSCA.xsd -->
+	<!--<xs:import namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition" schemaLocation="./ToscaTypes_XMLconfig.xsd" />
+	 FINE MODIFICHE AL TOSCA.xsd -->
   
  <xs:element name="documentation" type="tDocumentation"/>
  <xs:complexType name="tDocumentation" mixed="true">
@@ -113,6 +118,7 @@
    <xs:element name="Properties" minOccurs="0">
     <xs:complexType>
      <xs:sequence>
+      <!--  <xs:element ref="vns:Configuration" minOccurs="0"/>-->
       <xs:any namespace="##other"/>
       <xs:element name="PropertyMappings" minOccurs="0">
        <xs:complexType>
