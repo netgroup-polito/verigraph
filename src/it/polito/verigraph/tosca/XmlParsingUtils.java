@@ -38,7 +38,11 @@ public class XmlParsingUtils {
 
 		//Retrieve the TDefinitions object
 		Source source = new StreamSource(new FileInputStream(file));
+<<<<<<< HEAD
 		JAXBElement<TDefinitions> rootElement = (JAXBElement<TDefinitions>)u.unmarshal(source, TDefinitions.class);//, TDefinitions.class);
+=======
+		JAXBElement<TDefinitions> rootElement = (JAXBElement<TDefinitions>) u.unmarshal(source, TDefinitions.class);
+>>>>>>> branch 'tosca-support' of https://github.com/netgroup-polito/verigraph.git
 		TDefinitions definitions = rootElement.getValue();       
 		List<TExtensibleElements> elements = definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation();
 
