@@ -227,7 +227,7 @@ public class MappingUtils {
 
 	private static Configuration mapToscaConfiguration(it.polito.verigraph.tosca.classes.Configuration configuration) {
 		Configuration conf = new Configuration();
-
+		
 		JsonNode rootNode = null;
 		try {
 			if (configuration.getConfID() != null)
@@ -291,12 +291,12 @@ public class MappingUtils {
 
 
 	private static NodeTemplateYaml mapNodeYaml(Node node) throws JsonParseException, JsonMappingException, IOException {
-		
+
 		//TODO 
 		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 		JsonNode configNode = node.getConfiguration().getConfiguration();
 		//configNode.findValue(fieldName)
-		
+
 
 		FunctionalTypes nodeType = FunctionalTypes.valueOf(node.getFunctional_type().toUpperCase());
 		switch(nodeType) {
@@ -304,29 +304,29 @@ public class MappingUtils {
 			AntispamNode antispamNode = new AntispamNode();
 			antispamNode.setName(node.getName());
 			antispamNode.setType("verigraph.nodeTypes." + 
-				node.getFunctional_type().substring(0, 1).toUpperCase() + 
-				node.getFunctional_type().substring(1));
+					node.getFunctional_type().substring(0, 1).toUpperCase() + 
+					node.getFunctional_type().substring(1));
 			AntispamNode.AntispamConfigurationYaml asConfig = null;
 			asConfig = mapper.convertValue(configNode, AntispamNode.AntispamConfigurationYaml.class);
 			antispamNode.setProperties(asConfig);
 			return antispamNode;
-			
+
 		case ENDHOST:
 			EndhostNode endhostNode = new EndhostNode();
 			endhostNode.setName(node.getName());
 			endhostNode.setType("verigraph.nodeTypes." + 
-				node.getFunctional_type().substring(0, 1).toUpperCase() + 
-				node.getFunctional_type().substring(1));
+					node.getFunctional_type().substring(0, 1).toUpperCase() + 
+					node.getFunctional_type().substring(1));
 			EndhostNode.EndhostConfigurationYaml ehConfig = null;
 			ehConfig = mapper.readValue(configNode.asText(), EndhostNode.EndhostConfigurationYaml.class);
 			endhostNode.setProperties(ehConfig);
 			return endhostNode;
-			
+
 		default:
 			System.out.println("boomboom");
 			return null;
 		}
-		
+
 		/*FIREWALL,
 	    ENDHOST,
 	    ENDPOINT,
@@ -420,7 +420,7 @@ public class MappingUtils {
 				String target = yamlRelationshipTemplate.getValue().getProperties().get("target_id");
 				String source = yamlRelationshipTemplate.getValue().getProperties().get("source_id");
 				String name = yamlRelationshipTemplate.getValue().getProperties().get("name");
-				
+
 				Neighbour neigh = new Neighbour();
 				neigh.setName(name);
 				neigh.setId(Long.valueOf(target));
@@ -436,7 +436,7 @@ public class MappingUtils {
 
 				//Update the Node list
 				graphNodes.put(Long.valueOf(source), sourceNode);
-				
+
 			} catch(NullPointerException | NumberFormatException ex) {
 				throw new BadRequestException("A RelationshipTemplate has wrong fields representation.");
 			}
@@ -485,17 +485,17 @@ public class MappingUtils {
 			}else {
 				throw new BadRequestException("The provided node is of unknown type, unable to retrieve the node configuration");
 			}
-			
+
 			String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(yamlConfiguration);
 			jsonConfiguration = mapper.readTree(stringConfiguration); 
 			config.setConfiguration(jsonConfiguration);
 			config.setDescription("");
 			config.setId("");
-			
+
 		} catch (NullPointerException | IOException e) {
 			throw new BadRequestException("Not able to retrieve a valid configuration");
 		} 
-		
+
 		return config;
 	}
 

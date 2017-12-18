@@ -14,7 +14,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -142,7 +141,6 @@ public class YamlParsingUtils {
 			}
 
 			mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-			mapper.setSerializationInclusion(Include.NON_NULL);
 			jsonConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(yamlConfiguration);
 
 			/*
