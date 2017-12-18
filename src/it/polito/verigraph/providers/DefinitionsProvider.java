@@ -20,7 +20,6 @@ import java.lang.reflect.Type;
 
 @Provider
 @Consumes(MediaType.APPLICATION_XML)
-@Produces(MediaType.APPLICATION_XML)
 public class DefinitionsProvider implements MessageBodyReader<Graph> {
 
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {

@@ -23,8 +23,7 @@ import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 @Provider
 @Consumes("application/x-yaml")
-@Produces("application/x-yaml")
-public class ServiceTemplateYamlProvider implements MessageBodyReader<Object> {
+public class YamlReaderProvider implements MessageBodyReader<Object> {
 
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return Object.class == type;

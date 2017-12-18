@@ -21,7 +21,8 @@ import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.providers.DefinitionsProvider;
-import it.polito.verigraph.providers.ServiceTemplateYamlProvider;
+import it.polito.verigraph.providers.YamlReaderProvider;
+import it.polito.verigraph.providers.YamlWriterProvider;
 import it.polito.verigraph.resources.beans.VerificationBean;
 import it.polito.verigraph.service.GraphService;
 import it.polito.verigraph.service.TopologyTemplateService;
@@ -51,7 +52,8 @@ public class GraphResource extends ResourceConfig{
     // TODO Solve Swagger issues (when generating documentation an exception is thrown)
     public GraphResource() {
         register(DefinitionsProvider.class); // registering a resolver for TOSCA XML
-        register(ServiceTemplateYamlProvider.class); // registering a resolver for TOSCA YAML
+        register(YamlReaderProvider.class); // registering a resolver for TOSCA YAML
+        register(YamlWriterProvider.class);
     }
 
     @GET
@@ -89,7 +91,7 @@ public class GraphResource extends ResourceConfig{
             GenericEntity<List<Definitions>> entity = new GenericEntity<List<Definitions>>(definitions) {}; // Anonymous class
             return Response.ok().entity(entity).build();
         }
-        else if (headers.getAcceptableMediaTypes().contains("application/x-yaml")) { // TODO Controllare
+        else if (headers.getAcceptableMediaTypes().contains(new MediaType("application", "x-yaml"))) { // TODO Controllare
             List<ServiceTemplateYaml> yamlServiceList = topologyTemplateService.getAllTopologyTemplatesYaml();
             GenericEntity<List<ServiceTemplateYaml>> entity = new GenericEntity<List<ServiceTemplateYaml>>(yamlServiceList) {};
             return Response.ok().entity(entity).build();
@@ -130,7 +132,7 @@ public class GraphResource extends ResourceConfig{
             return Response.created(uri).type(MediaType.APPLICATION_XML_TYPE).entity(entity).build();
 
         }
-        else if (headers.getMediaType().equals("application/x-yaml")) {
+        else if (headers.getMediaType().equals(new MediaType("application", "x-yaml"))) {
             Graph newGraph = graphService.addGraph((Graph) graph);
             ServiceTemplateYaml yamlServiceTemplate = MappingUtils.mapGraphYaml(newGraph);
             String newId = String.valueOf(newGraph.getId());
