@@ -21,13 +21,13 @@ import java.lang.reflect.Type;
 @Provider
 @Consumes(MediaType.APPLICATION_XML)
 @Produces(MediaType.APPLICATION_XML)
-public class DefinitionsProvider implements MessageBodyReader<Object> {
+public class DefinitionsProvider implements MessageBodyReader<Graph> {
 
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return Object.class == type;
+        return Graph.class == type;
     }
 
-    public Graph readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
+    public Graph readFrom(Class<Graph> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
                           InputStream entityStream) throws WebApplicationException {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(Definitions.class);
