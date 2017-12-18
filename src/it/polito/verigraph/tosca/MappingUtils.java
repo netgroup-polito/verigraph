@@ -126,7 +126,8 @@ public class MappingUtils {
 
 		configuration.setConfID(conf.getId());
 		configuration.setConfDescr(conf.getDescription());
-		configuration.setJSON(prettyPrintJsonString(conf.getConfiguration()));
+		// TODO Missing configuration
+		//configuration.setJSON(prettyPrintJsonString(conf.getConfiguration()));
 
 		return configuration;
 	}
@@ -241,10 +242,11 @@ public class MappingUtils {
 
 			ObjectMapper mapper = new ObjectMapper();	        
 			try {
-				if ("".equals(configuration.getJSON()))
-					rootNode = mapper.readTree("[]");
-				else
-					rootNode = mapper.readTree(configuration.getJSON());
+                // TODO Missing configuration
+//				if ("".equals(configuration.getJSON()))
+//					rootNode = mapper.readTree("[]");
+//				else
+//					rootNode = mapper.readTree(configuration.getJSON());
 			} catch (NullPointerException e) {
 				conf.setConfiguration(mapper.readTree("[]"));
 				return conf; // Controllare mapping Angelo

@@ -114,16 +114,20 @@ public class ToscaGrpcUtils {
 				grpcConfig.setDescription(defaultDescr);
 			}
 			try {
-				grpcConfig.setConfiguration(nodeConfig.getJSON());
+				// TODO Missing configuration
+				//grpcConfig.setConfiguration(nodeConfig.getJSON());
 			} catch(NullPointerException ex) {
-				grpcConfig.setConfiguration(defaultConfig);
+				//grpcConfig.setConfiguration(defaultConfig);
+				// TODO Missing configuration
 			}
 		}
 		else {
 			grpcConfig = ToscaConfigurationGrpc.newBuilder()
 					.setId(defaultConfID)
 					.setDescription(defaultDescr)
-					.setConfiguration(defaultConfig);
+					.setConfiguration(null);
+					// TODO Missing configuration
+					//.setConfiguration(defaultConfig);
 		}   			
 		nodegrpc.setConfiguration(grpcConfig.build());
 		return nodegrpc.build();   

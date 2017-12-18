@@ -129,7 +129,9 @@ public class YamlGrpcUtils {
 			grpcConfig = ToscaConfigurationGrpc.newBuilder()
 					.setId(ToscaGrpcUtils.defaultConfID)
 					.setDescription(ToscaGrpcUtils.defaultDescr)
-					.setConfiguration(ToscaGrpcUtils.defaultConfig);
+					.setConfiguration(null);
+					// TODO Missing configuration
+					//.setConfiguration(ToscaGrpcUtils.defaultConfig);
 		}   			
 		nodegrpc.setConfiguration(grpcConfig.build());
 		return nodegrpc.build();   
