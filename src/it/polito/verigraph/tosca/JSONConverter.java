@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import it.polito.verigraph.tosca.classes.Configuration;
+import it.polito.verigraph.tosca.serializer.XmlConfigSerializer;
 
 public class JSONConverter {
 
@@ -19,7 +20,7 @@ public class JSONConverter {
 		try {
 			
 			SimpleModule module = new SimpleModule();
-			module.addSerializer(Configuration.class, new ConfigSerializer());
+			module.addSerializer(Configuration.class, new XmlConfigSerializer());
 			mapper.registerModule(module);
 			
 			//Convert object to JSON string and pretty print
