@@ -35,9 +35,9 @@
 			<NodeTemplate id="101" name="webeserver1" type="WebserverType">
 				<Properties>
 					<Configuration confID="101" confDescr="Configurazione Server">
-						<webServerConfiguration>
+						<webserverConfiguration>
 							<name>My web Server 1</name>
-						</webServerConfiguration>
+						</webserverConfiguration>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
