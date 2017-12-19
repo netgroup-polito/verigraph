@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import it.polito.verigraph.exception.BadRequestException;
@@ -126,7 +127,28 @@ public class MappingUtils {
 
 		configuration.setConfID(conf.getId());
 		configuration.setConfDescr(conf.getDescription());
-		configuration.setJSON(prettyPrintJsonString(conf.getConfiguration()));
+		
+		ObjectMapper mapper = new ObjectMapper();
+		SimpleModule module = new SimpleModule();
+		module.addDeserializer(it.polito.verigraph.tosca.classes.Configuration.class, new XmlAntispamDeserializer());
+		mapper.registerModule(module);
+		
+		
+		try {
+			configuration = mapper.readValue(conf.getConfiguration().asText(), it.polito.verigraph.tosca.classes.Configuration.class);
+			configuration.setConfID(conf.getId());
+			configuration.setConfDescr(conf.getDescription());
+			
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		return configuration;
 	}
