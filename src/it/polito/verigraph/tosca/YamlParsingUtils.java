@@ -12,17 +12,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.exception.InvalidServiceTemplateException;
+import it.polito.verigraph.tosca.serializer.YamlConfigSerializer;
 import it.polito.verigraph.tosca.yaml.beans.AntispamNode;
 import it.polito.verigraph.tosca.yaml.beans.CacheNode;
 import it.polito.verigraph.tosca.yaml.beans.DpiNode;
@@ -101,9 +102,11 @@ public class YamlParsingUtils {
 
 
 	public static String obtainConfiguration(NodeTemplateYaml node) throws BadRequestException {
+		NodeTemplateYaml.ConfigurationYaml yamlConfiguration = null;		
 		ObjectMapper mapper = new ObjectMapper();
-		NodeTemplateYaml.ConfigurationYaml yamlConfiguration = null;
-		String jsonConfiguration = null;
+		SimpleModule module = new SimpleModule();
+		module.addSerializer(NodeTemplateYaml.ConfigurationYaml.class, new YamlConfigSerializer());
+		mapper.registerModule(module);
 
 		// Find out node type, retrieve the corresponding configuration and convert it properly
 		try {
@@ -137,23 +140,17 @@ public class YamlParsingUtils {
 				yamlConfiguration = ((WebServerNode)node).getProperties();
 			}else {
 				throw new BadRequestException("The provided node is of unknown type, unable to retrieve the node configuration");
-				//shall we return a default configuration?
 			}
 
-			mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-			jsonConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(yamlConfiguration);
-
-			/*
-			//TODO to be checked, lots of bugs
-
-			if(node instanceof EndhostNode)
-				jsonConfiguration = "[" + jsonConfiguration + "]";*/
+			String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(yamlConfiguration);
+			if (!stringConfiguration.equals("null"))
+				return stringConfiguration;
+			else 
+				return "[]";
 
 		} catch (JsonProcessingException | NullPointerException e) {
 			throw new BadRequestException("Not able to retrieve a valid configuration");
 		} 
-
-		return jsonConfiguration;
 	}	
 
 }

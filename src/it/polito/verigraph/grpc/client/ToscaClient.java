@@ -117,7 +117,7 @@ public class ToscaClient {
 
 		} catch (StatusRuntimeException ex) {
 			warning("[createTopologyTemplate] RPC failed: " + ex.getStatus());
-			return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStatus().getDescription()).build();
+			return NewTopologyTemplate.newBuilder().setSuccess(false).setErrorMessage(ex.getStatus().getDescription()).build(); //getDescription potrebbe essere vuoto
 		} 
 	}    
 
@@ -264,11 +264,11 @@ public class ToscaClient {
 			if(topols.isEmpty())
 				System.out.println("Ok"); */
 
-		/*	//XML PARSING
-			TopologyTemplateGrpc fileTopology = ToscaGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_support\\DummyServiceTemplate.xml");*/
+			//XML PARSING
+			TopologyTemplateGrpc fileTopology = ToscaGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph/tosca_examples/DummyServiceTemplate.xml");
 		
-			//YAML PARSING
-			TopologyTemplateGrpc fileTopology = YamlGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph\\tosca_examples\\DummyServiceTemplate.yaml");
+		/*	//YAML PARSING
+			TopologyTemplateGrpc fileTopology = YamlGrpcUtils.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph/tosca_examples/DummyServiceTemplate.yaml");
 
 		/*	//DELETE TESTING
 			Status response = client.deleteTopologyTemplate("270");*/
@@ -284,9 +284,8 @@ public class ToscaClient {
 			TopologyTemplateGrpc received = client.getTopologyTemplate(created.getTopologyTemplate().getId());*/
 
 		/*	//POLICY TESTING
-			ToscaPolicy mypolicy = ToscaGrpcUtils.createToscaPolicy("host1", "host2", "reachability", null, created.getTopologyTemplate().getId());
-			ToscaVerificationGrpc myverify = client.verifyPolicy(mypolicy);
-			client.deleteTopologyTemplate(created.getTopologyTemplate().getId());*/
+			ToscaPolicy mypolicy = ToscaGrpcUtils.createToscaPolicy("host1", "host2", "reachability", null, "33");
+			ToscaVerificationGrpc myverify = client.verifyPolicy(mypolicy);*/
 
 			//Print all Topology on server
 			ToscaGrpcUtils.printTopologyTemplates(client.getTopologyTemplates());

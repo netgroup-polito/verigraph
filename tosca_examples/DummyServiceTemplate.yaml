@@ -5,6 +5,7 @@ metadata:
   template_name: MyDummyService
   template_author: Dummy
   template_version: Dummy1.0
+  template_id: 99
 
 description: sample of Tosca yaml service template exploiting verigraph
 
@@ -31,35 +32,31 @@ topology_template:
     101:
       name : host2
       type: verigraph.nodeTypes.Endpoint
-      properties:
-        names:
-          - ciao
-          - questa
-          - è
-          - una
-          - lista
+
     102:
       name : antispammino
       type: verigraph.nodeTypes.Antispam
       properties:
         sources:
-          - altra
-          - bellissima
-          - lista
+          - host1
+          - host2
 
     103:
       name : magicFirewall3.0
       type: verigraph.nodeTypes.Firewall
       properties:
         elements:
-          superkey1 : supervalue1
-          ciao : amico
+          "host1" : "host2"
 
     104:
       name : myMail
       type: verigraph.nodeTypes.MailClient
       properties:
         mailserver : mail.polito.it
+
+    105:
+      name : mail.polito.it
+      type: verigraph.nodeTypes.MailServer
 
   relationship_templates:
     900:

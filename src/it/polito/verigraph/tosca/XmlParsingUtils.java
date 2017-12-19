@@ -20,12 +20,21 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.sun.research.ws.wadl.ObjectFactory;
 
 import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.tosca.classes.*;
+import it.polito.verigraph.tosca.classes.Configuration;
+import it.polito.verigraph.tosca.classes.TDefinitions;
+import it.polito.verigraph.tosca.classes.TEntityTemplate;
+import it.polito.verigraph.tosca.classes.TExtensibleElements;
+import it.polito.verigraph.tosca.classes.TNodeTemplate;
+import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
+import it.polito.verigraph.tosca.classes.TServiceTemplate;
+import it.polito.verigraph.tosca.classes.TTopologyTemplate;
+import it.polito.verigraph.tosca.serializer.XmlConfigSerializer;
 
 
 public class XmlParsingUtils {
@@ -94,12 +103,12 @@ public class XmlParsingUtils {
 	public static Configuration obtainConfiguration(TNodeTemplate nodeTemplate) {
 		try {
 			Configuration configuration = (Configuration)nodeTemplate.getProperties().getAny();
-			
+
 			//This could be eventually used to cross check node type and configuration type
 			//String typename = nodeTemplate.getType().getLocalPart().toLowerCase();
 			return configuration;
 
-			
+
 		} catch (NullPointerException | ClassCastException ex) {
 			//To be eventually defined a mechanism to distinguish hostnode from forwarder
 			System.out.println("[Warning] Node " + nodeTemplate.getId().toString() 
@@ -107,12 +116,26 @@ public class XmlParsingUtils {
 			Configuration defConf = new Configuration();
 			defConf.setConfDescr(ToscaGrpcUtils.defaultDescr);
 			defConf.setConfID(ToscaGrpcUtils.defaultConfID);
-			
+
 			Configuration.FieldmodifierConfiguration defaultForward = new Configuration.FieldmodifierConfiguration();
 			defaultForward.setName("DefaultForwarder");
-			
+
 			defConf.setFieldmodifierConfiguration(defaultForward);
 			return defConf;    		
 		}
+	}
+
+
+	public static String obtainStringConfiguration(Configuration nodeConfig) throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		SimpleModule module = new SimpleModule();
+		module.addSerializer(Configuration.class, new XmlConfigSerializer());
+		mapper.registerModule(module);
+
+		String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(nodeConfig);
+		if (!stringConfiguration.equals("null"))
+			return stringConfiguration;
+		else 
+			return "[]";
 	}
 }
