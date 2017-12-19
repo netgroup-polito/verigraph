@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration> {
 	  
@@ -82,14 +83,15 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 				List<Configuration.FirewallConfiguration.Elements> fwelements = firewall.getElements();
 				Configuration.FirewallConfiguration.Elements element;
 				String src, dest;
-				JsonNode current;
-				while(elements.hasNext()) {
-					current = elements.next();
+				Map.Entry<String, JsonNode> entry;
+				Iterator<Map.Entry<String, JsonNode>> current = elements.next().fields();
+				while(current.hasNext()) {
+					entry = current.next();
 					element = new Configuration.FirewallConfiguration.Elements();
 					src = element.getSource();
 					dest = element.getDestination();
-					src = current.findValue("source").asText();
-					dest = current.findValue("destination").asText();
+					src = entry.getKey();
+					dest = entry.getValue().asText();
 					fwelements.add(element);
 				}
 				deserialized.setFirewallConfiguration(firewall);
@@ -97,26 +99,43 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 			
 			case "mailclient":
 				Configuration.MailclientConfiguration mailclient = new Configuration.MailclientConfiguration();
+				String mailserv = mailclient.getMailserver();
+				mailserv = elements.next().findValue("mailserver").asText();
 				deserialized.setMailclientConfiguration(mailclient);
+				break;
+			
+			case "mailserver":
+				Configuration.MailserverConfiguration mailserver = new Configuration.MailserverConfiguration();
+				deserialized.setMailserverConfiguration(mailserver);
 				break;
 			
 			case "nat":
 				Configuration.NatConfiguration nat = new Configuration.NatConfiguration();
+				List<String> natsource = nat.getSource();
+				while(elements.hasNext()) {
+					natsource.add(elements.next().asText());
+				}
 				deserialized.setNatConfiguration(nat);
 				break;	
 			
 			case "vpnaccess":
 				Configuration.VpnaccessConfiguration vpnaccess = new Configuration.VpnaccessConfiguration();
+				String vpnex = vpnaccess.getVpnexit();
+				vpnex = elements.next().findValue("vpnexit").asText();
 				deserialized.setVpnaccessConfiguration(vpnaccess);
 				break;	
 			
 			case "vpnexit":
 				Configuration.VpnexitConfiguration vpnexit = new Configuration.VpnexitConfiguration();
+				String vpnacc = vpnexit.getVpnaccess();
+				vpnacc = elements.next().findValue("vpnaccess").asText();
 				deserialized.setVpnexitConfiguration(vpnexit);
 				break;	
 			
 			case "webclient":
 				Configuration.WebclientConfiguration webclient = new Configuration.WebclientConfiguration();
+				String webserv = webclient.getNameWebServer();
+				webserv = elements.next().findValue("webserver").asText();
 				deserialized.setWebclientConfiguration(webclient);
 				break;	
 				

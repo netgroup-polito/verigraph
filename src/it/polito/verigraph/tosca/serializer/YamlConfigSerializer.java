@@ -8,21 +8,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import it.polito.verigraph.tosca.yaml.beans.AntispamNode;
-import it.polito.verigraph.tosca.yaml.beans.CacheNode;
-import it.polito.verigraph.tosca.yaml.beans.DpiNode;
-import it.polito.verigraph.tosca.yaml.beans.EndhostNode;
-import it.polito.verigraph.tosca.yaml.beans.EndpointNode;
-import it.polito.verigraph.tosca.yaml.beans.FieldModifierNode;
-import it.polito.verigraph.tosca.yaml.beans.FirewallNode;
-import it.polito.verigraph.tosca.yaml.beans.MailClientNode;
-import it.polito.verigraph.tosca.yaml.beans.MailServerNode;
-import it.polito.verigraph.tosca.yaml.beans.NatNode;
-import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml.ConfigurationYaml;
-import it.polito.verigraph.tosca.yaml.beans.VpnAccessNode;
-import it.polito.verigraph.tosca.yaml.beans.VpnExitNode;
-import it.polito.verigraph.tosca.yaml.beans.WebClientNode;
-import it.polito.verigraph.tosca.yaml.beans.WebServerNode;
+import it.polito.verigraph.tosca.yaml.beans.AntispamConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.CacheConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.ConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.DpiConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.EndhostConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.EndpointConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.FieldModifierConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.FirewallConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.MailClientConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.MailServerConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.NatConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.VpnAccessConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.VpnExitConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.WebClientConfigurationYaml;
+import it.polito.verigraph.tosca.yaml.beans.WebServerConfigurationYaml;
+
+
 
 //Custom serializer for XmlToscaConfigurationObject conversion to JSON
 public class YamlConfigSerializer extends StdSerializer<ConfigurationYaml> {
@@ -43,32 +45,32 @@ public class YamlConfigSerializer extends StdSerializer<ConfigurationYaml> {
 			ConfigurationYaml value, JsonGenerator jgen, SerializerProvider provider) 
 					throws IOException, JsonProcessingException {
 
-		if(value instanceof AntispamNode.AntispamConfigurationYaml) {
+		if(value instanceof AntispamConfigurationYaml) {
 			jgen.writeStartArray();
-			for(String source : ((AntispamNode.AntispamConfigurationYaml) value).getSources()) {
+			for(String source : ((AntispamConfigurationYaml) value).getSources()) {
 				jgen.writeString(source);
 			}
 			jgen.writeEndArray();
 
-		}else if(value instanceof CacheNode.CacheConfigurationYaml) {
+		}else if(value instanceof CacheConfigurationYaml) {
 			jgen.writeStartArray();
-			for(String resource : ((CacheNode.CacheConfigurationYaml) value).getResources()) {
+			for(String resource : ((CacheConfigurationYaml) value).getResources()) {
 				jgen.writeString(resource);
 			}
 			jgen.writeEndArray();
 
-		}else if(value instanceof DpiNode.DpiConfigurationYaml) {
+		}else if(value instanceof DpiConfigurationYaml) {
 			jgen.writeStartArray();
-			for(String notAllowed : ((DpiNode.DpiConfigurationYaml) value).getNotAllowedList()) {
+			for(String notAllowed : ((DpiConfigurationYaml) value).getNotAllowedList()) {
 				jgen.writeString(notAllowed);
 			}
 			jgen.writeEndArray();
 
-		}else if(value instanceof EndhostNode.EndhostConfigurationYaml) {
+		}else if(value instanceof EndhostConfigurationYaml) {
 			jgen.writeStartArray();
 			jgen.writeStartObject();
 
-			EndhostNode.EndhostConfigurationYaml endhost = (EndhostNode.EndhostConfigurationYaml) value;
+			EndhostConfigurationYaml endhost = (EndhostConfigurationYaml) value;
 
 			if(endhost.getBody() != null) 
 				jgen.writeObjectField("body", endhost.getBody());
@@ -88,17 +90,17 @@ public class YamlConfigSerializer extends StdSerializer<ConfigurationYaml> {
 			jgen.writeEndObject();
 			jgen.writeEndArray();
 
-		}else if(value instanceof EndpointNode.EndpointConfigurationYaml) {
+		}else if(value instanceof EndpointConfigurationYaml) {
 			jgen.writeStartArray();
 			jgen.writeEndArray();
 
-		}else if(value instanceof FieldModifierNode.FieldModifierConfigurationYaml) {
+		}else if(value instanceof FieldModifierConfigurationYaml) {
 			jgen.writeStartArray();
 			jgen.writeEndArray();
 
-		}else if(value instanceof FirewallNode.FirewallConfigurationYaml) {
+		}else if(value instanceof FirewallConfigurationYaml) {
 			jgen.writeStartArray();
-			FirewallNode.FirewallConfigurationYaml fw = (FirewallNode.FirewallConfigurationYaml) value;  
+			FirewallConfigurationYaml fw = (FirewallConfigurationYaml) value;  
 
 			for(Map.Entry<String, String> entry : fw.getElements().entrySet()) {
 				jgen.writeStartObject();
@@ -108,63 +110,63 @@ public class YamlConfigSerializer extends StdSerializer<ConfigurationYaml> {
 			}  		
 			jgen.writeEndArray();
 
-		}else if(value instanceof MailClientNode.MailClientConfigurationYaml) {
+		}else if(value instanceof MailClientConfigurationYaml) {
 			jgen.writeStartArray();
 
-			if(((MailClientNode.MailClientConfigurationYaml) value).getMailserver() != null) {
+			if(((MailClientConfigurationYaml) value).getMailserver() != null) {
 				jgen.writeStartObject();
-				jgen.writeObjectField("mailserver", ((MailClientNode.MailClientConfigurationYaml) value).getMailserver());
+				jgen.writeObjectField("mailserver", ((MailClientConfigurationYaml) value).getMailserver());
 				jgen.writeEndObject();
 			}
 			jgen.writeEndArray();
 
-		}else if(value instanceof MailServerNode.MailServerConfigurationYaml) {
+		}else if(value instanceof MailServerConfigurationYaml) {
 			jgen.writeStartArray();
 			jgen.writeEndArray();
 
-		}else if(value instanceof NatNode.NatConfigurationYaml) {
+		}else if(value instanceof NatConfigurationYaml) {
 			jgen.writeStartArray();
 
-			for(String source : ((NatNode.NatConfigurationYaml) value).getSources()) {
+			for(String source : ((NatConfigurationYaml) value).getSources()) {
 				jgen.writeString(source);
 			}
 
 			jgen.writeEndArray();
 
-		}else if(value instanceof VpnAccessNode.VpnAccessConfigurationYaml) {
+		}else if(value instanceof VpnAccessConfigurationYaml) {
 			jgen.writeStartArray();
 
-			if(((VpnAccessNode.VpnAccessConfigurationYaml) value).getVpnexit()!= null) {
+			if(((VpnAccessConfigurationYaml) value).getVpnexit()!= null) {
 				jgen.writeStartObject();
-				jgen.writeObjectField("vpnexit", ((VpnAccessNode.VpnAccessConfigurationYaml) value).getVpnexit());
+				jgen.writeObjectField("vpnexit", ((VpnAccessConfigurationYaml) value).getVpnexit());
 				jgen.writeEndObject();
 			}
 
 			jgen.writeEndArray();
 
-		}else if(value instanceof VpnExitNode.VpnExitConfigurationYaml) {
+		}else if(value instanceof VpnExitConfigurationYaml) {
 			jgen.writeStartArray();
 
-			if(((VpnExitNode.VpnExitConfigurationYaml) value).getVpnaccess()!= null) {
+			if(((VpnExitConfigurationYaml) value).getVpnaccess()!= null) {
 				jgen.writeStartObject();
-				jgen.writeObjectField("vpnaccess", ((VpnExitNode.VpnExitConfigurationYaml) value).getVpnaccess());
+				jgen.writeObjectField("vpnaccess", ((VpnExitConfigurationYaml) value).getVpnaccess());
 				jgen.writeEndObject();
 			}
 
 			jgen.writeEndArray();
 
-		}else if(value instanceof WebClientNode.WebClientConfigurationYaml) {
+		}else if(value instanceof WebClientConfigurationYaml) {
 			jgen.writeStartArray();
 
-			if(((WebClientNode.WebClientConfigurationYaml) value).getNameWebServer() != null) {
+			if(((WebClientConfigurationYaml) value).getNameWebServer() != null) {
 				jgen.writeStartObject();
-				jgen.writeObjectField("webserver", ((WebClientNode.WebClientConfigurationYaml) value).getNameWebServer());
+				jgen.writeObjectField("webserver", ((WebClientConfigurationYaml) value).getNameWebServer());
 				jgen.writeEndObject();
 			}
 
 			jgen.writeEndArray();
 
-		}else if(value instanceof WebServerNode.WebServerConfigurationYaml) {
+		}else if(value instanceof WebServerConfigurationYaml) {
 			jgen.writeStartArray();
 			jgen.writeEndArray();
 

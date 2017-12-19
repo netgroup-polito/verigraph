@@ -11,6 +11,7 @@ import javax.xml.namespace.QName;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -87,13 +88,13 @@ public class MappingUtils {
 		nodeTemplate.setId(String.valueOf(node.getId()));
 		nodeTemplate.setName(node.getName());
 
-		//QName type = new QName("http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition",
+		//QName type = new QName("http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition")
 		QName type = new QName("http://docs.oasis-open.org/tosca/ns/2011/12",
 				node.getFunctional_type().substring(0, 1).toUpperCase() + node.
 				getFunctional_type().substring(1) + "Type");
 		nodeTemplate.setType(type);
 
-		it.polito.verigraph.tosca.classes.Configuration config = mapModelConfiguration(node.getConfiguration());
+		it.polito.verigraph.tosca.classes.Configuration config = mapModelConfiguration(node.getConfiguration(), node.getFunctional_type().toLowerCase());
 		nodeTemplate.getAny().add(config);
 
 		return nodeTemplate;
@@ -124,12 +125,8 @@ public class MappingUtils {
 	}
 
 
-	private static it.polito.verigraph.tosca.classes.Configuration mapModelConfiguration(Configuration conf) {
+	private static it.polito.verigraph.tosca.classes.Configuration mapModelConfiguration(Configuration conf, String type) {
 		it.polito.verigraph.tosca.classes.Configuration configuration = new it.polito.verigraph.tosca.classes.Configuration();
-
-		//TODO CONTROLLARE
-		configuration.setConfID(conf.getId());
-		configuration.setConfDescr(conf.getDescription());
 
 		ObjectMapper mapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule();
@@ -137,7 +134,9 @@ public class MappingUtils {
 		mapper.registerModule(module);
 
 		try {
-			configuration = mapper.readValue(conf.getConfiguration().asText(), it.polito.verigraph.tosca.classes.Configuration.class);
+			//We are passing the configuration type to the Deserializer context
+			configuration = mapper.reader(new InjectableValues.Std().addValue("type", type))
+					.forType(it.polito.verigraph.tosca.classes.Configuration.class).readValue(conf.getConfiguration());;
 			configuration.setConfID(conf.getId());
 			configuration.setConfDescr(conf.getDescription());
 

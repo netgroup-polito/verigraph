@@ -1,7 +1,5 @@
 package it.polito.verigraph.tosca.yaml.beans;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 public class VpnExitNode extends NodeTemplateYaml {
 	private VpnExitConfigurationYaml properties;
 
@@ -11,19 +9,6 @@ public class VpnExitNode extends NodeTemplateYaml {
 
 	public void setProperties(VpnExitConfigurationYaml properties) {
 		this.properties = properties;
-	}
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	public class VpnExitConfigurationYaml implements ConfigurationYaml {
-		private String vpnaccess;
-
-		public String getVpnaccess() {
-			return vpnaccess;
-		}
-
-		public void setVpnaccess(String vpnaccess) {
-			this.vpnaccess = vpnaccess;
-		}
 	}
 
 }

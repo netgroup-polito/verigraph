@@ -102,11 +102,9 @@ public class XmlConfigSerializer extends StdSerializer<Configuration> {
 
 		}else if(value.getNatConfiguration() != null) {
 			jgen.writeStartArray();
-
 			for(String source : value.getNatConfiguration().getSource()) {
 				jgen.writeString(source);
 			}
-
 			jgen.writeEndArray();
 
 		}else if(value.getVpnaccessConfiguration() != null) {

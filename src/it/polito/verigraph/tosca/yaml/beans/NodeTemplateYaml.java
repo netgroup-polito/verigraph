@@ -38,8 +38,8 @@ public class NodeTemplateYaml {
 		this.type = type;
 	}
 	
-	//Generic YamlNode configuration to be extended in single nodes
-	public interface ConfigurationYaml {
-	}
+//	//Generic YamlNode configuration to be extended in single nodes
+//	public interface ConfigurationYaml {
+//	}
 
 }
