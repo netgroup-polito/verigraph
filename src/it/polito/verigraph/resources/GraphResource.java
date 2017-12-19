@@ -304,10 +304,8 @@ public class GraphResource /*extends ResourceConfig */{
             GenericEntity<Definitions> entity = new GenericEntity<Definitions>(MappingUtils.mapPathsToXml(paths)) {};
             return Response.ok().entity(entity).build();
         } else if (headers.getAcceptableMediaTypes().contains(new MediaType("application", "x-yaml"))) {
-            // TODO
-//            GenericEntity<ServiceTemplateYaml> entity = new GenericEntity<ServiceTemplateYaml>(MappingUtils.mapPathsToYaml(paths)) {};
-//            return Response.ok().entity(entity).build();
-            return null;
+            GenericEntity<List<ServiceTemplateYaml>> entity = new GenericEntity<List<ServiceTemplateYaml>>(MappingUtils.mapPathsToYaml(paths)) {};
+            return Response.ok().entity(entity).build();
         } else {
             return Response.ok().entity(paths).build();
         }

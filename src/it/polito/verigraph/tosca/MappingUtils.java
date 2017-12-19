@@ -543,6 +543,7 @@ public class MappingUtils {
 		}
 	}
 
+
 	// From a list of nodes (path) returns a Definitions object that contains all the paths as different service templates
 	public static Definitions mapPathsToXml(List<List<Node>> paths) {
 		Definitions definitions = new Definitions();
@@ -564,8 +565,25 @@ public class MappingUtils {
 		return definitions;
 	}
 
-	public static ServiceTemplateYaml mapPathsToYaml(List<List<Node>> paths) {
-		// TODO
-		return null;
+
+    // From a list of nodes (path) returns a list of ServiceTemplateYaml object that represent the paths
+	public static List<ServiceTemplateYaml> mapPathsToYaml(List<List<Node>> paths) {
+        List<ServiceTemplateYaml> serviceTemplates = new ArrayList<ServiceTemplateYaml>();
+        List<Graph> tempGraphs = new ArrayList<Graph>();
+
+        int i = 0;
+        for (List<Node> path: paths) {
+            Graph tempGraph = new Graph();
+            tempGraph.setId(i++);
+            for (Node node : path)
+                tempGraph.getNodes().put(node.getId(), node);
+            tempGraphs.add(tempGraph);
+        }
+
+        for (Graph g: tempGraphs) {
+            serviceTemplates.add(MappingUtils.mapGraphYaml(g));
+        }
+
+        return serviceTemplates;
 	}
 }
