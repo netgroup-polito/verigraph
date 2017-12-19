@@ -548,11 +548,12 @@ public class MappingUtils {
 		Definitions definitions = new Definitions();
 		List<Graph> tempGraphs = new ArrayList<Graph>();
 
+		int i = 0;
 		for (List<Node> path: paths) {
 			Graph tempGraph = new Graph();
-			long i = 0;
+			tempGraph.setId(i++);
 			for (Node node : path)
-				tempGraph.getNodes().put(i++, node);
+				tempGraph.getNodes().put(node.getId(), node);
 			tempGraphs.add(tempGraph);
 		}
 
