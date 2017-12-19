@@ -1,4 +1,4 @@
-package it.polito.verigraph.tosca;
+package it.polito.verigraph.tosca.converter.grpc;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +28,8 @@ import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Test;
 import it.polito.verigraph.model.Verification;
+import it.polito.verigraph.tosca.MappingUtils;
+import it.polito.verigraph.tosca.XmlParsingUtils;
 import it.polito.verigraph.tosca.classes.TNodeTemplate;
 import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
 import it.polito.verigraph.tosca.classes.TServiceTemplate;
@@ -113,8 +115,8 @@ public class ToscaGrpcUtils {
 			} catch(NullPointerException ex) {
 				grpcConfig.setDescription(defaultDescr);
 			}
-			try {
-				grpcConfig.setConfiguration(XmlParsingUtils.obtainStringConfiguration(nodeConfig));
+			try {;
+			grpcConfig.setConfiguration(MappingUtils.obtainStringConfiguration(nodeConfig)); 
 			} catch(NullPointerException | JsonProcessingException ex) {
 				grpcConfig.setConfiguration(defaultConfig);
 			} 
@@ -157,89 +159,6 @@ public class ToscaGrpcUtils {
 		.setIdTargetNodeTemplate(target);    	
 		return relatgrpc.build();
 	}
-
-	//UTILTY METHODS NOT ANYMORE USEFUL
-/*	
-	*//** Create a TopologyTemplateGrpc object *//*
-	public static TopologyTemplateGrpc createTopologyTemplateGrpc(String id, List<NodeTemplateGrpc> nodeList, List<RelationshipTemplateGrpc> relatList) throws IllegalArgumentException {
-		TopologyTemplateGrpc.Builder topolBuild = TopologyTemplateGrpc.newBuilder().setId(id);   	
-		if(nodeList.isEmpty())
-			throw new IllegalArgumentException("NodeTemplate list cannot be empty");
-		else
-			topolBuild.addAllNodeTemplate(nodeList);
-
-		if(relatList.isEmpty())
-			throw new IllegalArgumentException("RelatioshipTemplate list cannot be empty");
-		else
-			topolBuild.addAllRelationshipTemplate(relatList);  	
-		return topolBuild.build();
-	}
-
-
-	*//** Create a NodeTemplateGrpc object *//*
-	public static NodeTemplateGrpc createNodeTemplateGrpc (String name, String id, String type, ToscaConfigurationGrpc config) throws IllegalArgumentException {
-		NodeTemplateGrpc.Builder nodeBuilder = NodeTemplateGrpc.newBuilder();   
-		Type nodeType;
-		if(id != null)
-			nodeBuilder.setId(id);
-		else
-			throw new IllegalArgumentException("NodeTemplate must have an id");
-		if(name != null)
-			nodeBuilder.setName(name);
-		else
-			throw new IllegalArgumentException("NodeTemplate must have a name");
-		if(type == null)
-			throw new IllegalArgumentException("NodeTemplate must have a type");
-		try { 
-			nodeType = Type.valueOf(type.toLowerCase());
-		} catch (IllegalArgumentException ex) {
-			//in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be an endhost node
-			nodeType = Type.endhost;
-		}
-		nodeBuilder.setType(nodeType);
-		if(config != null)
-			nodeBuilder.setConfiguration(config);
-		else
-			throw new IllegalArgumentException("NodeTemplate must have a configuration");            
-		return nodeBuilder.build();
-	}
-
-
-	*//** Create a RelationshipTemplateGrpc object *//*
-	public static RelationshipTemplateGrpc createRelationshipTemplateGrpc (String name, String id, String source, String target) throws IllegalArgumentException{
-		RelationshipTemplateGrpc.Builder relatBuilder = RelationshipTemplateGrpc.newBuilder();  	
-		if(id != null)
-			relatBuilder.setId(id);
-		else
-			throw new IllegalArgumentException("RelationshipTemplate must have an id");
-		if(name != null)
-			relatBuilder.setName(name);
-		if(source != null)
-			relatBuilder.setIdSourceNodeTemplate(source);
-		else
-			throw new IllegalArgumentException("RelationshipTemplate must have a source Node reference");
-		if(target != null)
-			relatBuilder.setIdTargetNodeTemplate(target);
-		else
-			throw new IllegalArgumentException("RelationshipTemplate must have a target Node reference");      
-		return relatBuilder.build();    
-	}
-
-
-	*//** Create a ToscaConfigurationGrpc object *//*
-	public static ToscaConfigurationGrpc createToscaConfigurationGrpc (String id, String descr, String config) throws Exception{
-		ToscaConfigurationGrpc.Builder confBuilder = ToscaConfigurationGrpc.newBuilder();	
-		if(id != null)
-			confBuilder.setId(id);
-		if(descr != null)
-			confBuilder.setDescription(descr);
-		if(config != null)
-			confBuilder.setConfiguration(config);
-		else
-			throw new IllegalArgumentException("ToscaConfigurationGrpc must have a configuration");       
-		return confBuilder.build();
-	}
-	*/
 
 	/** Create a ToscaPolicy */
 	public static ToscaPolicy createToscaPolicy(String src, String dst, String type, String middlebox, String idTopologyTemplate) throws IllegalArgumentException{

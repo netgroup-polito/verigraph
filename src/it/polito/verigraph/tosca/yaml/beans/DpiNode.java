@@ -1,6 +1,6 @@
 package it.polito.verigraph.tosca.yaml.beans;
 
-public class DpiNode {
+public class DpiNode extends NodeTemplateYaml {
 	private DpiConfigurationYaml properties;
 
 	public DpiConfigurationYaml getProperties() {

@@ -25,7 +25,7 @@ import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.resources.beans.VerificationBean;
 import it.polito.verigraph.service.GraphService;
 import it.polito.verigraph.service.VerificationService;
-import it.polito.verigraph.tosca.ToscaGrpcUtils;
+import it.polito.verigraph.tosca.converter.grpc.ToscaGrpcUtils;
 
 public class ToscaService {
 	/** Port on which the server should run. */

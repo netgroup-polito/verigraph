@@ -64,7 +64,7 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 				options = thisnode.findValue("options").asText();
 				String destination = endhost.getDestination();
 				destination = thisnode.findValue("destination").asText();
-				
+			
 				deserialized.setEndhostConfiguration(endhost);
 				break;
 			

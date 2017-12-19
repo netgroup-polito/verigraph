@@ -20,9 +20,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.sun.research.ws.wadl.ObjectFactory;
 
 import it.polito.verigraph.exception.DataNotFoundException;
@@ -34,7 +31,7 @@ import it.polito.verigraph.tosca.classes.TNodeTemplate;
 import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
 import it.polito.verigraph.tosca.classes.TServiceTemplate;
 import it.polito.verigraph.tosca.classes.TTopologyTemplate;
-import it.polito.verigraph.tosca.serializer.XmlConfigSerializer;
+import it.polito.verigraph.tosca.converter.grpc.ToscaGrpcUtils;
 
 
 public class XmlParsingUtils {
@@ -125,17 +122,4 @@ public class XmlParsingUtils {
 		}
 	}
 
-
-	public static String obtainStringConfiguration(Configuration nodeConfig) throws JsonProcessingException {
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule();
-		module.addSerializer(Configuration.class, new XmlConfigSerializer());
-		mapper.registerModule(module);
-
-		String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(nodeConfig);
-		if (!stringConfiguration.equals("null"))
-			return stringConfiguration;
-		else 
-			return "[]";
-	}
 }

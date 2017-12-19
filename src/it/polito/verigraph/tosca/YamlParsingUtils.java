@@ -26,6 +26,7 @@ import it.polito.verigraph.exception.InvalidServiceTemplateException;
 import it.polito.verigraph.tosca.serializer.YamlConfigSerializer;
 import it.polito.verigraph.tosca.yaml.beans.AntispamNode;
 import it.polito.verigraph.tosca.yaml.beans.CacheNode;
+import it.polito.verigraph.tosca.yaml.beans.ConfigurationYaml;
 import it.polito.verigraph.tosca.yaml.beans.DpiNode;
 import it.polito.verigraph.tosca.yaml.beans.EndhostNode;
 import it.polito.verigraph.tosca.yaml.beans.EndpointNode;
@@ -102,10 +103,10 @@ public class YamlParsingUtils {
 
 
 	public static String obtainConfiguration(NodeTemplateYaml node) throws BadRequestException {
-		NodeTemplateYaml.ConfigurationYaml yamlConfiguration = null;		
+		ConfigurationYaml yamlConfiguration = null;		
 		ObjectMapper mapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule();
-		module.addSerializer(NodeTemplateYaml.ConfigurationYaml.class, new YamlConfigSerializer());
+		module.addSerializer(ConfigurationYaml.class, new YamlConfigSerializer());
 		mapper.registerModule(module);
 
 		// Find out node type, retrieve the corresponding configuration and convert it properly

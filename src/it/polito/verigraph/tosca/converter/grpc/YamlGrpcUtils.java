@@ -1,4 +1,4 @@
-package it.polito.verigraph.tosca;
+package it.polito.verigraph.tosca.converter.grpc;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +15,7 @@ import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
 import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
 import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
 import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
+import it.polito.verigraph.tosca.YamlParsingUtils;
 import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.RelationshipTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;

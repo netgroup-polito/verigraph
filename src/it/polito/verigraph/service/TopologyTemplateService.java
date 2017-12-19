@@ -24,8 +24,10 @@ import it.polito.neo4j.manager.Neo4jDBManager;
 import it.polito.verigraph.exception.ForbiddenException;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
-import it.polito.verigraph.tosca.MappingUtils;
 import it.polito.verigraph.tosca.classes.Definitions;
+import it.polito.verigraph.tosca.converter.xml.GraphToXml;
+import it.polito.verigraph.tosca.converter.xml.XmlToGraph;
+import it.polito.verigraph.tosca.converter.yaml.GraphToYaml;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 public class TopologyTemplateService {
@@ -35,7 +37,7 @@ public class TopologyTemplateService {
 
 	public TopologyTemplateService() {}
 
-		//XML methods
+	//XML methods
 
 	public List<Definitions> getAllTopologyTemplates() throws JsonProcessingException, MyNotFoundException {
 		List<Graph> verigraphResult;
@@ -44,19 +46,19 @@ public class TopologyTemplateService {
 		verigraphResult = manager.getGraphs();
 		for(Graph g : verigraphResult){
 			validateGraph(g);
-			result.add(MappingUtils.mapGraph(g));
+			result.add(GraphToXml.mapGraph(g));
 		}
 		return result;
 	}
 
 
 	public Definitions addTopologyTemplate(Definitions topologyTemplate) throws JAXBException, IOException, MyInvalidIdException {
-		Graph graph = MappingUtils.mapTopologyTemplate(topologyTemplate);
+		Graph graph = XmlToGraph.mapTopologyTemplate(topologyTemplate);
 		validateGraph(graph);
 
 		Graph newGraph = manager.addGraph(graph);
 		validateGraph(newGraph);
-		Definitions newTopologyTemplate = MappingUtils.mapGraph(newGraph);
+		Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
 
 		return newTopologyTemplate;
 	}
@@ -68,7 +70,7 @@ public class TopologyTemplateService {
 		}
 		Graph localGraph = manager.getGraph(id);
 		validateGraph(localGraph);
-		return MappingUtils.mapGraph(localGraph);
+		return GraphToXml.mapGraph(localGraph);
 	}
 
 	//    public TopologyTemplate updateTopologyTemplate(TTopologyTemplate graph) throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
@@ -105,7 +107,7 @@ public class TopologyTemplateService {
 		}
 	}
 
-		//YAML methods
+	//YAML methods
 
 	public List<ServiceTemplateYaml> getAllTopologyTemplatesYaml() throws JsonProcessingException, MyNotFoundException {
 		List<Graph> verigraphResult;
@@ -114,7 +116,7 @@ public class TopologyTemplateService {
 		verigraphResult = manager.getGraphs();
 		for(Graph g : verigraphResult){
 			validateGraph(g);
-			result.add(MappingUtils.mapGraphYaml(g));
+			result.add(GraphToYaml.mapGraphYaml(g));
 		}
 		return result;
 	}
@@ -125,6 +127,6 @@ public class TopologyTemplateService {
 		}
 		Graph localGraph = manager.getGraph(graphId);
 		validateGraph(localGraph);
-		return MappingUtils.mapGraphYaml(localGraph);
+		return GraphToYaml.mapGraphYaml(localGraph);
 	}
 }

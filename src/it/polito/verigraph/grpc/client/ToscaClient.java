@@ -22,8 +22,8 @@ import it.polito.verigraph.grpc.tosca.ToscaRequestID;
 import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
 import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc;
 import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
-import it.polito.verigraph.tosca.ToscaGrpcUtils;
-import it.polito.verigraph.tosca.YamlGrpcUtils;
+import it.polito.verigraph.tosca.converter.grpc.ToscaGrpcUtils;
+import it.polito.verigraph.tosca.converter.grpc.YamlGrpcUtils;
 
 
 public class ToscaClient {
