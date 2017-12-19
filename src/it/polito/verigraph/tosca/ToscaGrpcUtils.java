@@ -39,7 +39,7 @@ public class ToscaGrpcUtils {
 	/** Default configuration for a Tosca NodeTemplate non compliant with Verigraph types*/
 	public static final String defaultConfID = new String("");
 	public static final String defaultDescr = new String("Default Configuration");
-	
+	public static final String defaultConfig = new String("[]");
 
 	/** Returns the (first) TopologyTemplate found in the TOSCA-compliant XML file */
 	public static TopologyTemplateGrpc obtainTopologyTemplateGrpc (String filepath) throws IOException, JAXBException, DataNotFoundException, ClassCastException, BadRequestException{
@@ -68,7 +68,7 @@ public class ToscaGrpcUtils {
 
 
 	/** Parsing method: TNodeTemplate(tosca) --> NodeTemplateGrpc */
-	public static NodeTemplateGrpc parseNodeTemplate(TNodeTemplate nodeTempl) throws ClassCastException, NullPointerException {   	
+	private static NodeTemplateGrpc parseNodeTemplate(TNodeTemplate nodeTempl) throws ClassCastException, NullPointerException {   	
 		Boolean isVerigraphCompl = true;
 		Type type;
 
@@ -114,10 +114,10 @@ public class ToscaGrpcUtils {
 				grpcConfig.setDescription(defaultDescr);
 			}
 			try {
-				grpcConfig.setConfiguration(nodeConfig.getJSON());
-			} catch(NullPointerException ex) {
+				grpcConfig.setConfiguration(XmlParsingUtils.obtainStringConfiguration(nodeConfig));
+			} catch(NullPointerException | JsonProcessingException ex) {
 				grpcConfig.setConfiguration(defaultConfig);
-			}
+			} 
 		}
 		else {
 			grpcConfig = ToscaConfigurationGrpc.newBuilder()
@@ -131,7 +131,7 @@ public class ToscaGrpcUtils {
 
 
 	/** Parsing method: TRelationshipTemplate(tosca) --> RelationshipTemplateGrpc */
-	public static RelationshipTemplateGrpc parseRelationshipTemplate(TRelationshipTemplate relatTempl) throws ClassCastException{   	
+	private static RelationshipTemplateGrpc parseRelationshipTemplate(TRelationshipTemplate relatTempl) throws ClassCastException{   	
 		String source, target;
 		//RelationshipTemplateGrpc building
 		RelationshipTemplateGrpc.Builder relatgrpc = RelationshipTemplateGrpc.newBuilder();  	
@@ -158,8 +158,9 @@ public class ToscaGrpcUtils {
 		return relatgrpc.build();
 	}
 
-
-	/** Create a TopologyTemplateGrpc object */
+	//UTILTY METHODS NOT ANYMORE USEFUL
+/*	
+	*//** Create a TopologyTemplateGrpc object *//*
 	public static TopologyTemplateGrpc createTopologyTemplateGrpc(String id, List<NodeTemplateGrpc> nodeList, List<RelationshipTemplateGrpc> relatList) throws IllegalArgumentException {
 		TopologyTemplateGrpc.Builder topolBuild = TopologyTemplateGrpc.newBuilder().setId(id);   	
 		if(nodeList.isEmpty())
@@ -175,7 +176,7 @@ public class ToscaGrpcUtils {
 	}
 
 
-	/** Create a NodeTemplateGrpc object */
+	*//** Create a NodeTemplateGrpc object *//*
 	public static NodeTemplateGrpc createNodeTemplateGrpc (String name, String id, String type, ToscaConfigurationGrpc config) throws IllegalArgumentException {
 		NodeTemplateGrpc.Builder nodeBuilder = NodeTemplateGrpc.newBuilder();   
 		Type nodeType;
@@ -204,7 +205,7 @@ public class ToscaGrpcUtils {
 	}
 
 
-	/** Create a RelationshipTemplateGrpc object */
+	*//** Create a RelationshipTemplateGrpc object *//*
 	public static RelationshipTemplateGrpc createRelationshipTemplateGrpc (String name, String id, String source, String target) throws IllegalArgumentException{
 		RelationshipTemplateGrpc.Builder relatBuilder = RelationshipTemplateGrpc.newBuilder();  	
 		if(id != null)
@@ -225,7 +226,7 @@ public class ToscaGrpcUtils {
 	}
 
 
-	/** Create a ToscaConfigurationGrpc object */
+	*//** Create a ToscaConfigurationGrpc object *//*
 	public static ToscaConfigurationGrpc createToscaConfigurationGrpc (String id, String descr, String config) throws Exception{
 		ToscaConfigurationGrpc.Builder confBuilder = ToscaConfigurationGrpc.newBuilder();	
 		if(id != null)
@@ -238,7 +239,7 @@ public class ToscaGrpcUtils {
 			throw new IllegalArgumentException("ToscaConfigurationGrpc must have a configuration");       
 		return confBuilder.build();
 	}
-
+	*/
 
 	/** Create a ToscaPolicy */
 	public static ToscaPolicy createToscaPolicy(String src, String dst, String type, String middlebox, String idTopologyTemplate) throws IllegalArgumentException{
@@ -314,7 +315,7 @@ public class ToscaGrpcUtils {
 
 
 	/** Mapping method --> from model Node to grpc NodeTemplate */
-	public static NodeTemplateGrpc obtainNodeTemplate(Node node){
+	private static NodeTemplateGrpc obtainNodeTemplate(Node node){
 		NodeTemplateGrpc.Builder nodegrpc = NodeTemplateGrpc.newBuilder();
 
 		nodegrpc.setId(String.valueOf(node.getId()));
@@ -329,7 +330,7 @@ public class ToscaGrpcUtils {
 
 
 	/** Mapping method --> from model Neighbour to grpc RelationshipTemplate */
-	public static RelationshipTemplateGrpc obtainRelationshipTemplate(Neighbour neigh, Node sourceNode) {
+	private static RelationshipTemplateGrpc obtainRelationshipTemplate(Neighbour neigh, Node sourceNode) {
 		RelationshipTemplateGrpc.Builder relat = RelationshipTemplateGrpc.newBuilder();
 		relat.setId(String.valueOf(sourceNode.getId())); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is set to sourceNodeID
 		relat.setIdSourceNodeTemplate(String.valueOf(sourceNode.getId()));
@@ -340,7 +341,7 @@ public class ToscaGrpcUtils {
 
 
 	/** Mapping method --> from model Configuration to grpc ToscaConfigurationGrpc */
-	public static ToscaConfigurationGrpc obtainToscaConfiguration(Configuration conf) {
+	private static ToscaConfigurationGrpc obtainToscaConfiguration(Configuration conf) {
 		return ToscaConfigurationGrpc.newBuilder()
 				.setId(conf.getId())
 				.setDescription(conf.getDescription())
@@ -403,7 +404,7 @@ public class ToscaGrpcUtils {
 
 
 	/** Mapping method --> from grpc NodeTemplate to model Node (with no Neighbour) */
-	public static Node deriveNode(NodeTemplateGrpc nodegrpc) throws BadRequestException, JsonProcessingException, IOException {
+	private static Node deriveNode(NodeTemplateGrpc nodegrpc) throws BadRequestException, JsonProcessingException, IOException {
 		Node node = new Node();
 		try {
 			try {
@@ -427,7 +428,7 @@ public class ToscaGrpcUtils {
 
 
 	/** Mapping method --> from a list of model Node to a list of model Node with their Neighbour */
-	public static Map<Long,Node> deriveNeighboursNode(Map<Long,Node> nodes, List<RelationshipTemplateGrpc> relatList) throws BadRequestException{
+	private static Map<Long,Node> deriveNeighboursNode(Map<Long,Node> nodes, List<RelationshipTemplateGrpc> relatList) throws BadRequestException{
 		Map<Long,Node> updNodes = nodes; //new list to be filled with updated Node (update = Node + its Neighbour)
 		for(RelationshipTemplateGrpc relat : relatList) {   		
 			try {
@@ -456,7 +457,7 @@ public class ToscaGrpcUtils {
 	}
 
 	/** Mapping method --> from ToscaConfiguration to model Configuration */
-	public static Configuration deriveConfiguration(ToscaConfigurationGrpc request) throws BadRequestException, JsonProcessingException, IOException {
+	private static Configuration deriveConfiguration(ToscaConfigurationGrpc request) throws BadRequestException, JsonProcessingException, IOException {
 		Configuration conf = new Configuration();
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode rootNode = null;

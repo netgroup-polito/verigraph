@@ -13,92 +13,58 @@
 
 	<Import importType=" http://docs.oasis-open.org/tosca/ns/2011/12"
 		namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
-		location="../ToscaVerigraph_compliance/ToscaVerigraphDefinitions.xml" />
+		location="../tosca_support/ToscaVerigraphDefinitions.xml" />
 
 
-	<ServiceTemplate id="0" name="verigraph-req3-success">
+	<ServiceTemplate id="0" name="prova">
 
 		<TopologyTemplate id="10" name="dummyTopology">
 			<NodeTemplate id="100" name="fw" type="FirewallType">
 				<Properties>
-					<Configuration confID="401" confDescr="superDescription2" /> 
-				</Properties>
-			</NodeTemplate>
-
-			<NodeTemplate id="101" name="webeserver1" type="WebserverType" />
-
-			<NodeTemplate id="102" name="nat" type="NatType">
-				<Properties>
-					<Configuration confID="400" confDescr="superDescription" >
-						<JSON> 
-						[
-							"host1",
-							"host2"
-						]
-						</JSON>
+					<Configuration confID="100" confDescr="ciao">
+						 <firewallConfiguration>
+							<elements>
+								<source>webeserver1</source>
+								<destination>host2</destination>
+							</elements>
+						</firewallConfiguration>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="103" name="dpi" type="DpiType" >
+			<NodeTemplate id="101" name="webeserver1" type="WebserverType">
 				<Properties>
-					<Configuration>
-						<JSON> 
-						[
-							"sex"
-						]
-						</JSON>
+					<Configuration confID="101" confDescr="Configurazione Server">
+						<webserverConfiguration>
+							<name>My web Server 1</name>
+						</webserverConfiguration>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
-			
-			<NodeTemplate id="104" name="host2" type="EndhostType" >
+
+			<NodeTemplate id="102" name="host2" type="EndhostType" >
 				<Properties>
 					<Configuration>
-						<JSON> 
-						[
-							{
-							   "url":"www.facebook.com",
-							   "body":"candy",
-							   "destination":"webserver1",
-							   "protocol":"HTTP_REQUEST"
-							}
-						]
-						</JSON>
+						<endhostConfiguration url="www.facebook.com" protocol="HTTP_REQUEST"/>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
-			
-			<NodeTemplate id="105" name="host1" type="EndhostType" >
+
+			<NodeTemplate id="103" name="host1" type="EndhostType" >
 				<Properties>
 					<Configuration>
-						<JSON> 
-						[
-							{
-							   "url":"www.facebook.com",
-							   "body":"cats",
-							   "destination":"webserver1",
-							   "protocol":"HTTP_REQUEST"
-							}
-						]
-						</JSON>
+						<endhostConfiguration url="www.google.com" destination="server1" protocol="HTTP_REQUEST"/>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
-			
-			<NodeTemplate id="106" name="host3" type="EndhostType" >
+
+			<NodeTemplate id="104" name="antispamNode1" type="AntispamType">
 				<Properties>
 					<Configuration>
-						<JSON> 
-						[
-							{
-							   "url":"www.facebook.com",
-							   "body":"cats",
-							   "destination":"webserver1",
-							   "protocol":"HTTP_REQUEST"
-							}
-						]
-						</JSON>
+						<antispamConfiguration>
+							<source>host1</source>
+							<source>host2</source>
+						</antispamConfiguration>
 					</Configuration>
 				</Properties>
 			</NodeTemplate>
@@ -108,56 +74,33 @@
 				<SourceElement ref="100" />
 				<TargetElement ref="101" />
 			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1002" name="fwToNat" type="linkedTo">
+
+			<RelationshipTemplate id="1002" name="serv1ToFw" type="linkedTo">
+				<SourceElement ref="101" />
+				<TargetElement ref="100" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="1003" name="fwToHost1" type="linkedTo">
+				<SourceElement ref="100" />
+				<TargetElement ref="103" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="1004" name="fwToHost2" type="linkedTo">
 				<SourceElement ref="100" />
 				<TargetElement ref="102" />
 			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1003" name="serv1ToHost3" type="linkedTo">
-				<SourceElement ref="101" />
-				<TargetElement ref="106" />
-			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1004" name="serv1Tofw" type="linkedTo">
-				<SourceElement ref="101" />
-				<TargetElement ref="100" />
-			</RelationshipTemplate>			
 
-			<RelationshipTemplate id="1005" name="natToHost1" type="linkedTo">
-				<SourceElement ref="102" />
-				<TargetElement ref="105" />
-			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1006" name="natToDpi" type="linkedTo">
-				<SourceElement ref="102" />
-				<TargetElement ref="103" />
-			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1007" name="natTofw" type="linkedTo">
+
+			<RelationshipTemplate id="1005" name="Host2Tofw" type="linkedTo">
 				<SourceElement ref="102" />
 				<TargetElement ref="100" />
 			</RelationshipTemplate>
 
-			<RelationshipTemplate id="1008" name="dpiToHost2" type="linkedTo">
+			<RelationshipTemplate id="1006" name="Host1Tofw" type="linkedTo">
 				<SourceElement ref="103" />
-				<TargetElement ref="104" />
+				<TargetElement ref="100" />
 			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1009" name="Host2ToNat" type="linkedTo">
-				<SourceElement ref="104" />
-				<TargetElement ref="102" />
-			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1010" name="Host1ToNat" type="linkedTo">
-				<SourceElement ref="105" />
-				<TargetElement ref="102" />
-			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1011" name="Host3ToWebs1" type="linkedTo">
-				<SourceElement ref="106" />
-				<TargetElement ref="101" />
-			</RelationshipTemplate>
+
 
 		</TopologyTemplate>
 

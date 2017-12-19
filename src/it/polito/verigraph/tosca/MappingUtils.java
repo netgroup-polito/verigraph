@@ -10,12 +10,14 @@ import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import it.polito.neo4j.jaxb.FunctionalTypes;
 import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.model.Configuration;
@@ -30,25 +32,14 @@ import it.polito.verigraph.tosca.classes.TRelationshipTemplate.SourceElement;
 import it.polito.verigraph.tosca.classes.TRelationshipTemplate.TargetElement;
 import it.polito.verigraph.tosca.classes.TServiceTemplate;
 import it.polito.verigraph.tosca.classes.TTopologyTemplate;
+import it.polito.verigraph.tosca.deserializer.XmlConfigurationDeserializer;
+import it.polito.verigraph.tosca.serializer.YamlConfigSerializer;
 import it.polito.verigraph.tosca.yaml.beans.AntispamNode;
-import it.polito.verigraph.tosca.yaml.beans.CacheNode;
-import it.polito.verigraph.tosca.yaml.beans.DpiNode;
 import it.polito.verigraph.tosca.yaml.beans.EndhostNode;
-import it.polito.verigraph.tosca.yaml.beans.EndpointNode;
-import it.polito.verigraph.tosca.yaml.beans.FieldModifierNode;
-import it.polito.verigraph.tosca.yaml.beans.FirewallNode;
-import it.polito.verigraph.tosca.yaml.beans.MailClientNode;
-import it.polito.verigraph.tosca.yaml.beans.MailServerNode;
-import it.polito.verigraph.tosca.yaml.beans.NatNode;
 import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.RelationshipTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.TopologyTemplateYaml;
-import it.polito.verigraph.tosca.yaml.beans.VpnAccessNode;
-import it.polito.verigraph.tosca.yaml.beans.VpnExitNode;
-import it.polito.verigraph.tosca.yaml.beans.WebClientNode;
-import it.polito.verigraph.tosca.yaml.beans.WebServerNode;
-import it.polito.neo4j.jaxb.FunctionalTypes;
 
 public class MappingUtils {
 
@@ -136,31 +127,23 @@ public class MappingUtils {
 	private static it.polito.verigraph.tosca.classes.Configuration mapModelConfiguration(Configuration conf) {
 		it.polito.verigraph.tosca.classes.Configuration configuration = new it.polito.verigraph.tosca.classes.Configuration();
 
+		//TODO CONTROLLARE
 		configuration.setConfID(conf.getId());
 		configuration.setConfDescr(conf.getDescription());
-		
+
 		ObjectMapper mapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule();
-		module.addDeserializer(it.polito.verigraph.tosca.classes.Configuration.class, new XmlAntispamDeserializer());
+		module.addDeserializer(it.polito.verigraph.tosca.classes.Configuration.class, new XmlConfigurationDeserializer());
 		mapper.registerModule(module);
-		
-		
+
 		try {
 			configuration = mapper.readValue(conf.getConfiguration().asText(), it.polito.verigraph.tosca.classes.Configuration.class);
 			configuration.setConfID(conf.getId());
 			configuration.setConfDescr(conf.getDescription());
-			
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
+		} catch (IOException | NullPointerException e) {
 			e.printStackTrace();
 		}
-
 		return configuration;
 	}
 
@@ -220,7 +203,7 @@ public class MappingUtils {
 			Configuration conf = mapToscaConfiguration(XmlParsingUtils.obtainConfiguration(nodeTemplate));
 			node.setConfiguration(conf);
 			node.setFunctional_type(toscaType); // replace because the namespace it's included 
-		} catch(NullPointerException ex) {
+		} catch(NullPointerException | IOException ex) {
 			throw new BadRequestException("The NodeTemplate id:"+node.getId()+" has wrong fields representation.");
 		}    	
 		return node;
@@ -258,35 +241,39 @@ public class MappingUtils {
 		}
 	}
 
-	private static Configuration mapToscaConfiguration(it.polito.verigraph.tosca.classes.Configuration configuration) {
+	private static Configuration mapToscaConfiguration(it.polito.verigraph.tosca.classes.Configuration configuration) throws JsonProcessingException, IOException {
 		Configuration conf = new Configuration();
-		
-		JsonNode rootNode = null;
-		try {
-			if (configuration.getConfID() != null)
-				conf.setId(configuration.getConfID());
-			else
-				conf.setId("");
-			if (configuration.getConfDescr() != null)
-				conf.setDescription(configuration.getConfDescr());
-			else
-				conf.setDescription("");
+		ObjectMapper mapper = new ObjectMapper();	    
+		String stringConfiguration;
 
-			ObjectMapper mapper = new ObjectMapper();	        
-			try {
-				if ("".equals(configuration.getJSON()))
-					rootNode = mapper.readTree("[]");
-				else
-					rootNode = mapper.readTree(configuration.getJSON());
-			} catch (NullPointerException e) {
-				conf.setConfiguration(mapper.readTree("[]"));
-				return conf; // Controllare mapping Angelo
-			}
+		//Retrieve configuration ID (optional)
+		if (configuration.getConfID() != null)
+			conf.setId(configuration.getConfID());
+		else
+			conf.setId("");
+
+		//Retrieve description (optional)
+		if (configuration.getConfDescr() != null)
+			conf.setDescription(configuration.getConfDescr());
+		else
+			conf.setDescription("");
+
+		//Retrieve string of configuration
+		try {
+			stringConfiguration = XmlParsingUtils.obtainStringConfiguration(configuration);
+		} catch(IOException ex) {
+			conf.setConfiguration(mapper.readTree("[]"));
+			System.out.println("[WARNING] Provided defaul configuration.");
+			return conf;
+		} 
+
+		//Retrieve JsonNode from the string of configuration
+		try {
+			conf.setConfiguration(mapper.readTree(stringConfiguration));
+			return conf;
 		} catch (IOException e) {
 			throw new BadRequestException("NodeTemplate configuration is invalid.");
 		}
-		conf.setConfiguration(rootNode);
-		return conf;
 	}
 
 
@@ -325,7 +312,7 @@ public class MappingUtils {
 
 	private static NodeTemplateYaml mapNodeYaml(Node node) throws JsonParseException, JsonMappingException, IOException {
 
-		//TODO 
+		//TODO in attesa del deserializzatore yaml
 		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 		JsonNode configNode = node.getConfiguration().getConfiguration();
 		//configNode.findValue(fieldName)
@@ -480,52 +467,21 @@ public class MappingUtils {
 
 
 	private static Configuration mapConfigurationYaml(NodeTemplateYaml node) {
-		ObjectMapper mapper = new ObjectMapper();
-		NodeTemplateYaml.ConfigurationYaml yamlConfiguration = null;
 		Configuration config = new Configuration();
 		JsonNode jsonConfiguration = null;
+		ObjectMapper mapper = new ObjectMapper();
+		SimpleModule module = new SimpleModule();
+		module.addSerializer(NodeTemplateYaml.ConfigurationYaml.class, new YamlConfigSerializer());
+		mapper.registerModule(module);
 
-		// Find out node type, retrieve the corresponding configuration and convert it properly
-		try {
-			if(node instanceof AntispamNode) {
-				yamlConfiguration = ((AntispamNode)node).getProperties();
-			}else if(node instanceof CacheNode) {
-				yamlConfiguration = ((CacheNode)node).getProperties();
-			}else if(node instanceof DpiNode) {
-				yamlConfiguration = ((DpiNode)node).getProperties();
-			}else if(node instanceof EndhostNode) {
-				yamlConfiguration = ((EndhostNode)node).getProperties();
-			}else if(node instanceof EndpointNode) {
-				yamlConfiguration = ((EndpointNode)node).getProperties();
-			}else if(node instanceof FieldModifierNode) {
-				yamlConfiguration = ((FieldModifierNode)node).getProperties();
-			}else if(node instanceof FirewallNode) {
-				yamlConfiguration = ((FirewallNode)node).getProperties();
-			}else if(node instanceof MailClientNode) {
-				yamlConfiguration = ((MailClientNode)node).getProperties();
-			}else if(node instanceof MailServerNode) {
-				yamlConfiguration = ((MailServerNode)node).getProperties();
-			}else if(node instanceof NatNode) {
-				yamlConfiguration = ((NatNode)node).getProperties();
-			}else if(node instanceof VpnAccessNode) {
-				yamlConfiguration = ((VpnAccessNode)node).getProperties();
-			}else if(node instanceof VpnExitNode) {
-				yamlConfiguration = ((VpnExitNode)node).getProperties();
-			}else if(node instanceof WebClientNode) {
-				yamlConfiguration = ((WebClientNode)node).getProperties();
-			}else if(node instanceof WebServerNode) {
-				yamlConfiguration = ((WebServerNode)node).getProperties();
-			}else {
-				throw new BadRequestException("The provided node is of unknown type, unable to retrieve the node configuration");
-			}
-
-			String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(yamlConfiguration);
+		try{
+			String stringConfiguration = YamlParsingUtils.obtainConfiguration(node);
 			jsonConfiguration = mapper.readTree(stringConfiguration); 
 			config.setConfiguration(jsonConfiguration);
 			config.setDescription("");
 			config.setId("");
 
-		} catch (NullPointerException | IOException e) {
+		} catch (NullPointerException | IOException | BadRequestException e) {
 			throw new BadRequestException("Not able to retrieve a valid configuration");
 		} 
 

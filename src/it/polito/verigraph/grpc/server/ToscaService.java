@@ -141,7 +141,7 @@ public class ToscaService {
 				response.setSuccess(true).setTopologyTemplate(ToscaGrpcUtils.obtainTopologyTemplate(newGraph)); 
 			} catch(BadRequestException ex) {
 				ex.printStackTrace();
-				response.setSuccess(false).setErrorMessage(ex.getMessage());
+				response.setSuccess(false).setErrorMessage("Provided invalid request to the service.");
 				logger.log(Level.WARNING, ex.getClass().toString());
 				logger.log(Level.WARNING, ex.getMessage());
 			} catch(Exception ex) {
