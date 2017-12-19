@@ -1,6 +1,7 @@
 package it.polito.verigraph.tosca;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,17 @@ public class MappingUtils {
 
 	public static Definitions mapGraph(Graph graph) {
 		Definitions definitions = new Definitions();
+		TServiceTemplate serviceTemplate = mapPathToXml(graph);
+
+		definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().add(serviceTemplate);
+
+		return definitions;
+	}
+
+
+	// These functions have been split so that they can be reused for obtaining all the paths into a single Definitions (see mapPathsToXml)
+	public static TServiceTemplate mapPathToXml(Graph graph) {
+
 		TServiceTemplate serviceTemplate = new TServiceTemplate();
 		TTopologyTemplate topologyTemplate = new TTopologyTemplate();
 
@@ -73,9 +85,8 @@ public class MappingUtils {
 
 		serviceTemplate.setId(String.valueOf(graph.getId()));
 		serviceTemplate.setTopologyTemplate(topologyTemplate);
-		definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().add(serviceTemplate);
 
-		return definitions;
+		return serviceTemplate;
 	}
 
 
@@ -530,5 +541,30 @@ public class MappingUtils {
 		} catch (Exception e) {
 			return "Sorry, pretty print didn't work";
 		}
+	}
+
+	// From a list of nodes (path) returns a Definitions object that contains all the paths as different service templates
+	public static Definitions mapPathsToXml(List<List<Node>> paths) {
+		Definitions definitions = new Definitions();
+		List<Graph> tempGraphs = new ArrayList<Graph>();
+
+		for (List<Node> path: paths) {
+			Graph tempGraph = new Graph();
+			long i = 0;
+			for (Node node : path)
+				tempGraph.getNodes().put(i++, node);
+			tempGraphs.add(tempGraph);
+		}
+
+		for (Graph g: tempGraphs) {
+			definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().add(MappingUtils.mapPathToXml(g));
+		}
+
+		return definitions;
+	}
+
+	public static ServiceTemplateYaml mapPathsToYaml(List<List<Node>> paths) {
+		// TODO
+		return null;
 	}
 }
