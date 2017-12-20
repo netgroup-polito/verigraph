@@ -1,11 +1,10 @@
 package it.polito.verigraph.providers;
 
 import it.polito.verigraph.model.Graph;
-import it.polito.verigraph.tosca.MappingUtils;
 import it.polito.verigraph.tosca.classes.Definitions;
+import it.polito.verigraph.tosca.converter.xml.XmlToGraph;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -32,7 +31,7 @@ public class DefinitionsProvider implements MessageBodyReader<Graph> {
             JAXBContext jaxbContext = JAXBContext.newInstance(Definitions.class);
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             Definitions topologyTemplate = (Definitions) jaxbUnmarshaller.unmarshal(entityStream);
-            return MappingUtils.mapTopologyTemplate(topologyTemplate);
+            return XmlToGraph.mapTopologyTemplate(topologyTemplate);
         } catch (JAXBException e) {
             e.printStackTrace();
         }

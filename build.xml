@@ -23,6 +23,9 @@
   <property name="lib.dir" location="${root.location}/lib" />
   <property name="schemadir" location="${root.location}/schema" />
   <property name="schemafile" value="xml_components.xsd" />
+  <property name="toscaschemadir" location="${root.location}/tosca_support" />
+  <property name="toscaschemafile" value="TOSCA-v1.0.xsd" />
+  <property name="toscaverigraphschemafile" value="ToscaTypes_XMLconfig.xsd" />
   <property name="testfile" value="test.py" />
   <property name="target" value="1.8" />
   <property name="source" value="1.8" />
@@ -90,6 +93,8 @@
   <target name="-chk-bindings">
     <uptodate property="generate-bindings.notRequired" targetfile="${src.dir}/.flagfile">
       <srcfiles dir="${schemadir}" includes="${schemafile}" />
+      <srcfiles dir="${toscaschemadir}" includes="${toscaschemafile}" />
+      <srcfiles dir="${toscaschemadir}" includes="${toscaverigraphschemafile}" />
     </uptodate>
   </target>
 
@@ -98,6 +103,17 @@
     <exec executable="xjc" failonerror="true">
       <arg line="-d ${gen.dir} -p it.polito.neo4j.jaxb ${schemadir}/${schemafile}" />
     </exec>
+    <exec executable="xjc" failonerror="true">
+      <arg line="-d ${gen.dir} -p it.polito.tosca.jaxb ${toscaschemadir}/${toscaschemafile}" />
+    </exec>
+    <mkdir dir="${root.location}/temp-gen" />
+    <exec executable="xjc" failonerror="true">
+      <arg line="-d ${root.location}/temp-gen -p it.polito.tosca.jaxb ${toscaschemadir}/${toscaverigraphschemafile}" />
+    </exec>
+    <copy toDir="${gen.dir}/it/polito/tosca/jaxb" overwrite="true">
+      <file name="${root.location}/temp-gen/it/polito/tosca/jaxb/Configuration.java" />
+    </copy>
+    <delete dir="${root.location}/temp-gen" />
     <touch file="${src.dir}/.flagfile" />
   </target>
 

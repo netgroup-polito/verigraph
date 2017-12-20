@@ -19,6 +19,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.tosca.MappingUtils;
+import it.polito.verigraph.tosca.converter.yaml.YamlToGraph;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 @Provider
@@ -42,7 +43,7 @@ public class YamlReaderProvider implements MessageBodyReader<Object> {
             e.printStackTrace();
         }
 
-        return MappingUtils.mapTopologyTemplateYaml(yamlServiceTemplate);
+        return YamlToGraph.mapTopologyTemplateYaml(yamlServiceTemplate);
     }
 
 }

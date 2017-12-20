@@ -20,19 +20,16 @@ import it.polito.verigraph.model.ErrorMessage;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Verification;
-import it.polito.verigraph.providers.DefinitionsProvider;
-import it.polito.verigraph.providers.YamlReaderProvider;
-import it.polito.verigraph.providers.YamlWriterProvider;
 import it.polito.verigraph.resources.beans.VerificationBean;
 import it.polito.verigraph.service.GraphService;
 import it.polito.verigraph.service.TopologyTemplateService;
 import it.polito.verigraph.service.VerificationService;
 import it.polito.verigraph.tosca.MappingUtils;
 import it.polito.verigraph.tosca.classes.Definitions;
+import it.polito.verigraph.tosca.converter.xml.GraphToXml;
+import it.polito.verigraph.tosca.converter.yaml.GraphToYaml;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
-import org.glassfish.jersey.server.ResourceConfig;
 
-import javax.print.attribute.standard.Media;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.xml.bind.JAXBException;
@@ -124,7 +121,7 @@ public class GraphResource /*extends ResourceConfig */{
 
         if (headers.getMediaType().equals(MediaType.APPLICATION_XML_TYPE)) {
             Graph newGraph = graphService.addGraph((Graph) graph);
-            Definitions newTopologyTemplate = MappingUtils.mapGraph(newGraph);
+            Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
             String newId = String.valueOf(newGraph.getId());
             URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
             GenericEntity<Definitions> entity = new GenericEntity<Definitions>(newTopologyTemplate) {
@@ -133,7 +130,7 @@ public class GraphResource /*extends ResourceConfig */{
 
         } else if (headers.getMediaType().equals(new MediaType("application", "x-yaml"))) {
             Graph newGraph = graphService.addGraph((Graph) graph);
-            ServiceTemplateYaml yamlServiceTemplate = MappingUtils.mapGraphYaml(newGraph);
+            ServiceTemplateYaml yamlServiceTemplate = GraphToYaml.mapGraphYaml(newGraph);
             String newId = String.valueOf(newGraph.getId());
             URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
             GenericEntity<ServiceTemplateYaml> entity = new GenericEntity<ServiceTemplateYaml>(yamlServiceTemplate) {
@@ -173,7 +170,7 @@ public class GraphResource /*extends ResourceConfig */{
             GenericEntity<Definitions> entity = new GenericEntity<Definitions>(topologyTemplate) {
             }; // Anonymous class
             return Response.ok().entity(entity).build();
-        } else if (headers.getAcceptableMediaTypes().contains("application/x-yaml")) {
+        } else if (headers.getAcceptableMediaTypes().contains(new MediaType("application", "x-yaml"))) {
             ServiceTemplateYaml yamlServiceTemplate = topologyTemplateService.getTopologyTemplateYaml(graphId);
             GenericEntity<ServiceTemplateYaml> entity = new GenericEntity<ServiceTemplateYaml>(yamlServiceTemplate) {
             };
@@ -204,14 +201,14 @@ public class GraphResource /*extends ResourceConfig */{
         if (headers.getMediaType().equals(MediaType.APPLICATION_XML_TYPE)) {
             graph.setId(id);
             Graph newGraph = graphService.updateGraph(graph);
-            Definitions newTopologyTemplate = MappingUtils.mapGraph(newGraph);
+            Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
             GenericEntity<Definitions> entity = new GenericEntity<Definitions>(newTopologyTemplate) {
             }; // Anonymous class
             return Response.ok().type(MediaType.APPLICATION_XML_TYPE).entity(entity).build();
-        } else if (headers.getMediaType().equals("application/x-yaml")) {
+        } else if (headers.getMediaType().equals(new MediaType("application", "x-yaml"))) {
             graph.setId(id);
             Graph newGraph = graphService.updateGraph(graph);
-            ServiceTemplateYaml yamlServiceTemplate = MappingUtils.mapGraphYaml(newGraph);
+            ServiceTemplateYaml yamlServiceTemplate = GraphToYaml.mapGraphYaml(newGraph);
             GenericEntity<ServiceTemplateYaml> entity = new GenericEntity<ServiceTemplateYaml>(yamlServiceTemplate) {
             }; // Anonymous class
             return Response.ok().type("application/x-yaml").entity(entity).build();
