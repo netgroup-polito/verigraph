@@ -43,6 +43,11 @@ public class YamlConfigurationDeserializer extends JsonDeserializer<Configuratio
 			//Get the content from the array wrapping the JSON configuration
 			final Iterator<JsonNode> elements = node.elements();
 			
+			if(!elements.hasNext()) {
+				System.out.println("The provided configuration is empty.");
+				return null;
+			}
+			
 			switch ((String)ctxt.findInjectableValue("type", null, null)) {
 
 			case "antispam":
