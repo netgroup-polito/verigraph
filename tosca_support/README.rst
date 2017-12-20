@@ -46,7 +46,7 @@ In particular, a ``RelationshipTemplate`` from a ``NodeTemplate`` X to a ``NodeT
     </Properties>
   </NodeTemplate>
 
-Complete examples of NF-FGs (in YAML and XML) can be find `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/examples>`__.
+Complete examples of NF-FGs (in YAML and XML) can be found `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/tosca_support/examples>`__.
 
 By deploying the **tosca_support** branch of **VeriGraph** with these `instructions <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README.rst>`__, TOSCA support is already seamlessly integrated with the **VeriGraph** provided APIs.
 
@@ -63,7 +63,13 @@ TODO
 ``/graphs``
  - ``GET``: based on the request header, the server returns all the graphs stored on Neo4j represented with the default **VeriGraph** representation (``Accept: application/json``) or with a **TOSCA** representation (``Accept: application/{x-yaml, xml}``)
  - ``POST``: the server accepts a graph represented with the default **VeriGraph** representation (``Content-Type: application/json``) or with a **TOSCA** representation (``Content-type: application/{x-yaml, xml}`` and stores it on Neo4j and returns the stored graph with the same format received
- - ``PUT``:  the server accepts a graph represented with the default **VeriGraph** representation (``Content-Type: application/json``) or with a **TOSCA** representation (``Content-type: application/{x-yaml, xml}`` and stores it on Neo4j and returns the updated graph with the same format received
+ - ``PUT``:  the server accepts a graph represented with the default **VeriGraph** representation (``Content-Type: application/json``) or with a **TOSCA** representation (``Content-type: application/{x-yaml, xml}``, updates the id-specified graph, and returns the updated graph with the same format received
 
 ``/graphs/{graphId}``
  - ``GET``: based on the request header, the server returns the id-specified graph stored on Neo4j, represented with the formats specified below
+
+``/graphs/{graphId}/paths``
+ - ``GET``:
+
+``/graphs/{graphId}/policy``
+ - ``GET``:
