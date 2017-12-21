@@ -14,26 +14,26 @@ import java.util.List;
 import java.util.Map;
 
 public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration> {
-	  
-	  @Override
-	  public Configuration deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-	    ObjectCodec oc = jp.getCodec();
-	    JsonNode node = oc.readTree(jp);
-	    Configuration deserialized;
-	    
+
+	@Override
+	public Configuration deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		ObjectCodec oc = jp.getCodec();
+		JsonNode node = oc.readTree(jp);
+		Configuration deserialized;
+
 		try {
 			//Get the content from the array wrapping the JSON configuration
 			final Iterator<JsonNode> elements = node.elements();
 			deserialized = new Configuration();
-			
-			
+
+
 			if(!elements.hasNext()) {
 				//System.out.println("The provided configuration is empty.");
 				//return null; //TODO shall we return an empty configuration?
-				
+
 				return new Configuration();
 			}
-			
+
 			switch ((String) ctxt.findInjectableValue("type", null, null)) {
 
 			case "antispam":
@@ -44,7 +44,7 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 				}
 				deserialized.setAntispamConfiguration(antispam);
 				break;
-			
+
 			case "cache":
 				Configuration.CacheConfiguration cache = new Configuration.CacheConfiguration();
 				List<String> resources = cache.getResource();
@@ -53,7 +53,7 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 				}
 				deserialized.setCacheConfiguration(cache);
 				break;
-				
+
 			case "endhost":
 				Configuration.EndhostConfiguration endhost = new Configuration.EndhostConfiguration();
 				JsonNode thisnode = elements.next();
@@ -72,20 +72,20 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 					endhost.setOptions(thisnode.findValue("options").asText());
 				if(thisnode.has("destination"))
 					endhost.setDestination(thisnode.findValue("destination").asText());
-			
+
 				deserialized.setEndhostConfiguration(endhost);
 				break;
-			
+
 			case "endpoint":
 				Configuration.EndpointConfiguration endpoint = new Configuration.EndpointConfiguration();
 				deserialized.setEndpointConfiguration(endpoint);
 				break;
-			
+
 			case "fieldmodifier":
 				Configuration.FieldmodifierConfiguration fieldmodifier = new Configuration.FieldmodifierConfiguration();
 				deserialized.setFieldmodifierConfiguration(fieldmodifier);
 				break;
-			
+
 			case "firewall":
 				Configuration.FirewallConfiguration firewall = new Configuration.FirewallConfiguration();
 				List<Configuration.FirewallConfiguration.Elements> fwelements = firewall.getElements();
@@ -100,21 +100,21 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 					element.setDestination(entry.getValue().asText());
 					fwelements.add(element);
 				}
-				
+
 				deserialized.setFirewallConfiguration(firewall);
 				break;
-			
+
 			case "mailclient":
 				Configuration.MailclientConfiguration mailclient = new Configuration.MailclientConfiguration();
 				mailclient.setMailserver(elements.next().findValue("mailserver").asText());
 				deserialized.setMailclientConfiguration(mailclient);
 				break;
-			
+
 			case "mailserver":
 				Configuration.MailserverConfiguration mailserver = new Configuration.MailserverConfiguration();
 				deserialized.setMailserverConfiguration(mailserver);
 				break;
-			
+
 			case "nat":
 				Configuration.NatConfiguration nat = new Configuration.NatConfiguration();
 				List<String> natsource = nat.getSource();
@@ -123,25 +123,25 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 				}
 				deserialized.setNatConfiguration(nat);
 				break;	
-			
+
 			case "vpnaccess":
 				Configuration.VpnaccessConfiguration vpnaccess = new Configuration.VpnaccessConfiguration();
 				vpnaccess.setVpnexit(elements.next().findValue("vpnexit").asText());
 				deserialized.setVpnaccessConfiguration(vpnaccess);
 				break;	
-			
+
 			case "vpnexit":
 				Configuration.VpnexitConfiguration vpnexit = new Configuration.VpnexitConfiguration();
 				vpnexit.setVpnaccess(elements.next().findValue("vpnaccess").asText());
 				deserialized.setVpnexitConfiguration(vpnexit);
 				break;	
-			
+
 			case "webclient":
 				Configuration.WebclientConfiguration webclient = new Configuration.WebclientConfiguration();
 				webclient.setNameWebServer(elements.next().findValue("webserver").asText());
 				deserialized.setWebclientConfiguration(webclient);
 				break;	
-				
+
 			case "webserver":
 				Configuration.WebserverConfiguration webserver = new Configuration.WebserverConfiguration();
 				deserialized.setWebserverConfiguration(webserver);
@@ -152,17 +152,17 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 				deserialized.setFieldmodifierConfiguration(defaultForwarder);
 				break;
 			}
-			
-			
+
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			System.err.println("Error converting the Json to XmlConfiguration");
 			e.printStackTrace();
 			return null;
 		}
-	    
-	    return deserialized;
-	    
-	  }
+
+		return deserialized;
+
+	}
 
 }
