@@ -1,5 +1,6 @@
 package it.polito.verigraph.providers;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
@@ -35,8 +36,9 @@ public class YamlWriterProvider implements MessageBodyWriter<List<ServiceTemplat
 
     @Override
     public void writeTo(List<ServiceTemplateYaml> serviceTemplatesYaml, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         for (final ServiceTemplateYaml st: serviceTemplatesYaml) {
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             mapper.writeValue(entityStream, st);
         }
     }
