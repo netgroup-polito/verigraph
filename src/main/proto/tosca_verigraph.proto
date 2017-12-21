@@ -6,9 +6,7 @@
  * TopologyTemplate -> Graph
  * NodeTemplate -> Node
  * RelationshipTemplate -> Neighbour (partial)
- *
- * idTopologyTemplate is commented into some messages definitions because, being TopologyTemplate
- * the only granularity, a further reference to the TopologyTemplate is not needed. */
+*/
 
 syntax = "proto3";
 

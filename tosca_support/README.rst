@@ -38,7 +38,7 @@ In particular, a ``RelationshipTemplate`` from a ``NodeTemplate`` X to a ``NodeT
       <Configuration confID="10" confDescr="Firewall config">
          <firewallConfiguration>
           <elements>
-            <source>webeserver1</source>
+            <source>webserver1</source>
             <destination>host2</destination>
           </elements>
         </firewallConfiguration>
@@ -54,7 +54,29 @@ Below are detailed the extensions made to the RESTful APIs and gRPC:
 
 **gRPC**
 
-TODO
+**VeriGraph** gRPC implementation support TOSCA YAML and XML representation at the Graph resource level.
+The messages used to send/receive information from/to server/client are the `following <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/tosca_verigraph.proto>`__:
+
+- ``TopologyTemplateGrpc``: it represents the *Graph*.
+- ``NodeTemplateGrpc``: it represents the Node without its *Neighbours*.
+- ``RelationshipTemplateGrpc``: it represents the *Neighbours* within each *Node*.
+- ``NewTopologyTemplate``: it contains the exact *Graph* created/updated by **VeriGraph**.
+- ``ToscaRequestID``: used to identify a specific *Graph*.
+- ``ToscaConfigurationGrpc``: it contains the configuration of a *Node*.
+- ``ToscaPolicyGrpc``: used to perform a verification.
+- ``ToscaVerificationGrpc``: used to return the result of a verification.
+- ``ToscaTestGrpc``: it contains a path of *Nodes* used as result of a verification.
+
+[TODO: short description of how to obtain grpc object from xml/yaml file]
+
+The previous messages are used with the `following <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/tosca_verigraph.proto>`__ gRPC to perform the CRUD operation on Graphs and to verify a specific policy:
+- ``GetTopologyTemplates(GetRequest)``: returns a list that contains all the *Graphs* stored in **VeriGraph** (as *TopologyTemplateGrpc*).
+- ``GetTopologyTemplate(ToscaRequestID)``: returns the *Graph* with the specific ID provided (as *TopologyTemplateGrpc*).
+- ``CreateTopologyTemplate(TopologyTemplateGrpc)``: sends to **VeriGraph** a *Graph* (as *TopologyTemplateGrpc*) and returns the *Graph* (as *NewTopologyTemplate*) as it has been created by **VeriGraph**.
+- ``DeleteTopologyTemplate(ToscaRequestID)``: deletes the *Graph* with the specific ID provided from **VeriGraph**.
+- ``UpdateTopologyTemplate(TopologyTemplateGrpc)``: sends to **VeriGraph** an update of the *Graph* (as *TopologyTemplateGrpc*) and returns the *Graph* updated (as *NewTopologyTemplate*).
+- ``VerifyPolicy(ToscaPolicy)``: send a *ToscaPolicy* to **VeriGraph** and returns a *ToscaVerificationGrpc* that contains the result.
+
 
 **REST**
 
