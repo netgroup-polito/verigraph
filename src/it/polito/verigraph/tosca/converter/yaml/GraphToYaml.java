@@ -56,11 +56,13 @@ public class GraphToYaml {
 	public static ServiceTemplateYaml mapGraphYaml(Graph graph) {
 		ServiceTemplateYaml serviceTemplate = new ServiceTemplateYaml();
 		TopologyTemplateYaml topologyTemplate = new TopologyTemplateYaml();
+		
 		topologyTemplate.setNode_templates(new HashMap<String,NodeTemplateYaml>());
 		topologyTemplate.setRelationship_templates(new HashMap<String,RelationshipTemplateYaml>());
 		serviceTemplate.setMetadata(new HashMap<String,String>());
-
+		
 		for(Node node : graph.getNodes().values()) {
+			long i = 0;
 			NodeTemplateYaml nodeTemplate;
 			try {
 				nodeTemplate = mapNodeYaml(node);
@@ -73,7 +75,7 @@ public class GraphToYaml {
 			for (Map.Entry<Long, Neighbour> myentry : neighMap.entrySet()) {
 				Neighbour neigh = myentry.getValue();
 				RelationshipTemplateYaml relat = mapRelationshipYaml(node, neigh);
-				topologyTemplate.getRelationship_templates().put(String.valueOf(node.getId()), relat); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is set to sourceNodeID
+				topologyTemplate.getRelationship_templates().put(String.valueOf(i), relat); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is an incremental number for each node
 			}
 		}
 
@@ -95,7 +97,7 @@ public class GraphToYaml {
 
 
 		ConfigurationYaml yamlConfig = mapper
-				.reader(new InjectableValues.Std().addValue("type", node.getFunctional_type().toLowerCase())).forType(it.polito.verigraph.tosca.classes.Configuration.class)
+				.reader(new InjectableValues.Std().addValue("type", node.getFunctional_type().toLowerCase())).forType(ConfigurationYaml.class)
 				.readValue(configNode);
 
 

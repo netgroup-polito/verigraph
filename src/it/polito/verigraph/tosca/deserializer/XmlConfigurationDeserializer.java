@@ -28,8 +28,10 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 			
 			
 			if(!elements.hasNext()) {
-				System.out.println("The provided configuration is empty.");
-				return null;
+				//System.out.println("The provided configuration is empty.");
+				//return null; //TODO shall we return an empty configuration?
+				
+				return new Configuration();
 			}
 			
 			switch ((String) ctxt.findInjectableValue("type", null, null)) {
@@ -55,14 +57,21 @@ public class XmlConfigurationDeserializer extends JsonDeserializer<Configuration
 			case "endhost":
 				Configuration.EndhostConfiguration endhost = new Configuration.EndhostConfiguration();
 				JsonNode thisnode = elements.next();
-				
-				endhost.setBody(thisnode.findValue("body").asText());
-				endhost.setSequence(new BigInteger(thisnode.findValue("sequence").asText()));
-				endhost.setProtocol(thisnode.findValue("protocol").asText());
-				endhost.setEmailFrom(thisnode.findValue("email_from").asText());
-				endhost.setUrl(thisnode.findValue("url").asText());
-				endhost.setOptions(thisnode.findValue("options").asText());
-				endhost.setDestination(thisnode.findValue("destination").asText());
+
+				if(thisnode.has("body"))
+					endhost.setBody(thisnode.findValue("body").asText());
+				if(thisnode.has("sequence"))
+					endhost.setSequence(BigInteger.valueOf(Long.valueOf(thisnode.findValue("sequence").asText())));
+				if(thisnode.has("protocol"))
+					endhost.setProtocol(thisnode.findValue("protocol").asText());
+				if(thisnode.has("email_from"))
+					endhost.setEmailFrom(thisnode.findValue("email_from").asText());
+				if(thisnode.has("url"))
+					endhost.setUrl(thisnode.findValue("url").asText());
+				if(thisnode.has("options"))
+					endhost.setOptions(thisnode.findValue("options").asText());
+				if(thisnode.has("destination"))
+					endhost.setDestination(thisnode.findValue("destination").asText());
 			
 				deserialized.setEndhostConfiguration(endhost);
 				break;

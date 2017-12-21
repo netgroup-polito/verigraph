@@ -38,140 +38,187 @@ public class YamlConfigurationDeserializer extends JsonDeserializer<Configuratio
 	    ObjectCodec oc = jp.getCodec();
 	    JsonNode node = oc.readTree(jp);
 	    ConfigurationYaml deserialized;
+	    boolean emptyConfig = false;
 	    
 		try {
 			//Get the content from the array wrapping the JSON configuration
 			final Iterator<JsonNode> elements = node.elements();
 			
 			if(!elements.hasNext()) {
-				System.out.println("The provided configuration is empty.");
-				return null;
+				//System.out.println("The provided configuration is empty.");
+				emptyConfig = true;
 			}
 			
 			switch ((String)ctxt.findInjectableValue("type", null, null)) {
 
 			case "antispam":
 				AntispamConfigurationYaml antispam = new AntispamConfigurationYaml();
-				List<String> sources = new ArrayList<String>();
+				antispam.setSources(new ArrayList<String>());
 				while (elements.hasNext()) {
-					sources.add(elements.next().asText());
+					antispam.getSources().add(elements.next().asText());
 				}
-				antispam.setSources(sources);
 				deserialized = antispam;
+				
+				if(emptyConfig)
+					deserialized = new AntispamConfigurationYaml();
 				break;
 			
 			case "cache":
 				CacheConfigurationYaml cache = new CacheConfigurationYaml();
-				List<String> resources = new ArrayList<String>();
+				cache.setResources(new ArrayList<String>());
 				while(elements.hasNext()) {
-					resources.add(elements.next().asText());
+					cache.getResources().add(elements.next().asText());
 				}
-				cache.setResources(resources);
 				deserialized = cache;
+				
+				if(emptyConfig)
+					deserialized = new CacheConfigurationYaml();
 				break;
 				
 			case "dpi":
 				DpiConfigurationYaml dpi = new DpiConfigurationYaml();
-				List<String> notallowed = new ArrayList<String>();
+				dpi.setNotAllowedList(new ArrayList<String>());
 				while(elements.hasNext()) {
-					notallowed.add(elements.next().asText());
+					dpi.getNotAllowedList().add(elements.next().asText());
 				}
-				dpi.setNotAllowedList(notallowed);
 				deserialized = dpi;
+				
+				if(emptyConfig)
+					deserialized = new DpiConfigurationYaml();
 				break;
 				
 			case "endhost":
 				EndhostConfigurationYaml endhost = new EndhostConfigurationYaml();
 				JsonNode thisnode = elements.next();
-				
-				endhost.setBody(thisnode.findValue("body").asText());
-				endhost.setSequence(Integer.valueOf(thisnode.findValue("sequence").asText()));
-				endhost.setProtocol(thisnode.findValue("protocol").asText());
-				endhost.setEmail_from(thisnode.findValue("email_from").asText());
-				endhost.setOptions(thisnode.findValue("options").asText());
-				endhost.setUrl(thisnode.findValue("url").asText());
-				endhost.setDestination(thisnode.findValue("destination").asText());
-				
+
+				if(thisnode.has("body"))
+					endhost.setBody(thisnode.findValue("body").asText());
+				if(thisnode.has("sequence"))
+					endhost.setSequence(Integer.valueOf(thisnode.findValue("sequence").asText()));
+				if(thisnode.has("protocol"))
+					endhost.setProtocol(thisnode.findValue("protocol").asText());
+				if(thisnode.has("email_from"))
+					endhost.setEmail_from(thisnode.findValue("email_from").asText());
+				if(thisnode.has("options"))
+					endhost.setOptions(thisnode.findValue("options").asText());
+				if(thisnode.has("url"))
+					endhost.setUrl(thisnode.findValue("url").asText());
+				if(thisnode.has("destination"))
+					endhost.setDestination(thisnode.findValue("destination").asText());
+
 				deserialized = endhost;
+				
+				if(emptyConfig)
+					deserialized = new EndhostConfigurationYaml();
 				break;
 			
 			case "endpoint":
 				EndpointConfigurationYaml endpoint = new EndpointConfigurationYaml();
 				deserialized = endpoint;
+				
+				if(emptyConfig)
+					deserialized = new EndpointConfigurationYaml();
 				break;
 			
 			case "fieldmodifier":
 				FieldModifierConfigurationYaml fieldmodifier = new FieldModifierConfigurationYaml();
 				deserialized = fieldmodifier;
+				
+				if(emptyConfig)
+					deserialized = new FieldModifierConfigurationYaml();
 				break;
 			
 			case "firewall":
 				FirewallConfigurationYaml firewall = new FirewallConfigurationYaml();
-				Map<String, String> fwelements = new HashMap<String, String>();
+				firewall.setElements(new HashMap<String,String>()); 
 				JsonNode current = elements.next();
 				Iterator<Map.Entry<String, JsonNode>> iter = current.fields();
+				
 				while (iter.hasNext()) {
 					Map.Entry<String, JsonNode> entry = iter.next();
-					fwelements.put(entry.getKey(), entry.getValue().asText());
+					firewall.getElements().put(entry.getKey(), entry.getValue().asText());
 				}
+
 				deserialized = firewall;
+				if(emptyConfig)
+					deserialized = new FirewallConfigurationYaml();
 				break;
 			
 			case "mailclient":
 				MailClientConfigurationYaml mailclient = new MailClientConfigurationYaml();
 				mailclient.setMailserver(elements.next().findValue("mailserver").asText());
 				deserialized = mailclient;
+				
+				if(emptyConfig)
+					deserialized = new MailClientConfigurationYaml();
 				break;
 			
 			case "mailserver":
 				MailServerConfigurationYaml mailserver = new MailServerConfigurationYaml();
 				deserialized = mailserver;
+				
+				if(emptyConfig)
+					deserialized = new MailServerConfigurationYaml();
 				break;
 			
 			case "nat":
 				NatConfigurationYaml nat = new NatConfigurationYaml();
-				List<String> natsource = new ArrayList<String>();
+				nat.setSources(new ArrayList<String>());
 				while(elements.hasNext()) {
-					natsource.add(elements.next().asText());
+					nat.getSources().add(elements.next().asText());
 				}
 				deserialized = nat;
+				
+				if(emptyConfig)
+					deserialized = new NatConfigurationYaml();
 				break;	
 			
 			case "vpnaccess":
 				VpnAccessConfigurationYaml vpnaccess = new VpnAccessConfigurationYaml();
 				vpnaccess.setVpnexit(elements.next().findValue("vpnexit").asText());
 				deserialized = vpnaccess;
+				
+				if(emptyConfig)
+					deserialized = new VpnAccessConfigurationYaml();
 				break;	
 			
 			case "vpnexit":
 				VpnExitConfigurationYaml vpnexit = new VpnExitConfigurationYaml();
 				vpnexit.setVpnaccess(elements.next().findValue("vpnaccess").asText());
 				deserialized = vpnexit;
+				
+				if(emptyConfig)
+					deserialized = new VpnExitConfigurationYaml();
 				break;	
 			
 			case "webclient":
 				WebClientConfigurationYaml webclient = new WebClientConfigurationYaml();
 				webclient.setNameWebServer(elements.next().findValue("webserver").asText());
 				deserialized = webclient;
+				
+				if(emptyConfig)
+					deserialized = new WebClientConfigurationYaml();
 				break;	
 				
 			case "webserver":
 				WebServerConfigurationYaml webserver = new WebServerConfigurationYaml();
 				deserialized = webserver;
+				
+				if(emptyConfig)
+					deserialized = new WebServerConfigurationYaml();
 				break;	
 
 			default:
-				FieldModifierConfigurationYaml defaultForwarder = new FieldModifierConfigurationYaml();
-				deserialized = defaultForwarder;
+				deserialized = new FieldModifierConfigurationYaml();
 				break;
 			}
 			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			System.err.println("Error converting the Json to XmlConfiguration");
+			//System.err.println("Error converting the Json to YamlConfiguration");
 			e.printStackTrace();
-			return null;
+			return new FieldModifierConfigurationYaml();
 		}
 	    
 	    return deserialized;

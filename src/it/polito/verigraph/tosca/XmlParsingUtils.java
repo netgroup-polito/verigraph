@@ -24,6 +24,7 @@ import com.sun.research.ws.wadl.ObjectFactory;
 
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.tosca.classes.Configuration;
+import it.polito.verigraph.tosca.classes.Definitions;
 import it.polito.verigraph.tosca.classes.TDefinitions;
 import it.polito.verigraph.tosca.classes.TEntityTemplate;
 import it.polito.verigraph.tosca.classes.TExtensibleElements;
@@ -36,6 +37,20 @@ import it.polito.verigraph.tosca.converter.grpc.ToscaGrpcUtils;
 
 public class XmlParsingUtils {
 
+	/** Returns a List of TServiceTemplate JAXB-generated objects, parsed from a TOSCA-compliant XML. */
+	public static Definitions obtainDefinitions(String file) throws JAXBException, IOException, ClassCastException, DataNotFoundException {
+		// Create a JAXBContext capable of handling the generated classes
+		JAXBContext jc = JAXBContext.newInstance(ObjectFactory.class, TDefinitions.class, Configuration.class);
+		Unmarshaller u = jc.createUnmarshaller();
+
+		//Retrieve the TDefinitions object
+		Source source = new StreamSource(new FileInputStream(file));
+		
+		JAXBElement<Definitions> rootElement = (JAXBElement<Definitions>)u.unmarshal(source, Definitions.class);
+		Definitions definitions = rootElement.getValue();   
+		return definitions;
+	}
+	
 	/** Returns a List of TServiceTemplate JAXB-generated objects, parsed from a TOSCA-compliant XML. */
 	public static List<TServiceTemplate> obtainServiceTemplates(String file) throws JAXBException, IOException, ClassCastException, DataNotFoundException {
 		// Create a JAXBContext capable of handling the generated classes

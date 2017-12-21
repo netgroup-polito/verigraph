@@ -76,7 +76,7 @@ public class XmlToGraph {
 			node.setName(nodeTemplate.getName());
 			Configuration conf = mapToscaConfiguration(XmlParsingUtils.obtainConfiguration(nodeTemplate));
 			node.setConfiguration(conf);
-			node.setFunctional_type(toscaType); // replace because the namespace it's included 
+			node.setFunctional_type(toscaType);
 		} catch(NullPointerException | IOException ex) {
 			throw new BadRequestException("The NodeTemplate id:"+node.getId()+" has wrong fields representation.");
 		}    	

@@ -145,8 +145,9 @@ public class XmlConfigSerializer extends StdSerializer<Configuration> {
 			jgen.writeEndArray();
 
 		}else  {
-			//Behaviour to be defined
-			System.err.println("Error converting configuration to json, unrecognized configuration");
+			//Case of empty Configuration
+			jgen.writeStartArray();
+			jgen.writeEndArray();
 		}
 
 	}

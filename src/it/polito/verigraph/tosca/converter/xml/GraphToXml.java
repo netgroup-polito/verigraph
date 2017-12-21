@@ -11,6 +11,7 @@ import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.tosca.MappingUtils;
 import it.polito.verigraph.tosca.classes.Definitions;
+import it.polito.verigraph.tosca.classes.TEntityTemplate.Properties;
 import it.polito.verigraph.tosca.classes.TNodeTemplate;
 import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
 import it.polito.verigraph.tosca.classes.TRelationshipTemplate.SourceElement;
@@ -36,6 +37,7 @@ public class GraphToXml {
 		TTopologyTemplate topologyTemplate = new TTopologyTemplate();
 
 		for(Node node : graph.getNodes().values()) {
+			long i = 0;
 			TNodeTemplate nodeTemplate = mapNode(node);
 			topologyTemplate.getNodeTemplateOrRelationshipTemplate().add(nodeTemplate);
 
@@ -43,8 +45,9 @@ public class GraphToXml {
 			Map<Long,Neighbour> neighMap = node.getNeighbours();
 			for (Map.Entry<Long, Neighbour> myentry : neighMap.entrySet()) {
 				Neighbour neigh = myentry.getValue();
-				TRelationshipTemplate relat = mapRelationship(graph, node, neigh);
+				TRelationshipTemplate relat = mapRelationship(graph, node, neigh, i);
 				topologyTemplate.getNodeTemplateOrRelationshipTemplate().add(relat);
+				i++; //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is an incremental number for each node
 			}
 		}
 
@@ -68,13 +71,14 @@ public class GraphToXml {
 		nodeTemplate.setType(type);
 
 		it.polito.verigraph.tosca.classes.Configuration config = mapModelConfiguration(node.getConfiguration(), node.getFunctional_type().toLowerCase());
-		nodeTemplate.getAny().add(config);
-
+		//nodeTemplate.getAny().add(config);
+		nodeTemplate.setProperties(new Properties());
+		nodeTemplate.getProperties().setAny(config);
 		return nodeTemplate;
 	}
 
 
-	private static TRelationshipTemplate mapRelationship(Graph graph, Node sourceNode, Neighbour neigh) {
+	private static TRelationshipTemplate mapRelationship(Graph graph, Node sourceNode, Neighbour neigh, long i) {
 		TRelationshipTemplate relationship = new TRelationshipTemplate();
 		SourceElement source = new SourceElement();
 		TargetElement target = new TargetElement();
@@ -87,7 +91,7 @@ public class GraphToXml {
 		source.setRef(sourceNT);
 		target.setRef(targetNT);
 
-		relationship.setId(String.valueOf(sourceNode.getId())); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is set to sourceNodeID
+		relationship.setId(String.valueOf(i)); 
 		relationship.setSourceElement(source);
 		relationship.setTargetElement(target);
 		relationship.setName(sourceNode.getName()+"to"+neigh.getName());
@@ -101,8 +105,10 @@ public class GraphToXml {
 		try {
 			//We are passing the configuration type to the Deserializer context
 			configuration = MappingUtils.obtainToscaConfiguration(conf, type);
-			configuration.setConfID(conf.getId());
-			configuration.setConfDescr(conf.getDescription());
+			
+			//In Graph, ID and DESCRIPTION are always empty
+			//configuration.setConfID(conf.getId());
+			//configuration.setConfDescr(conf.getDescription());
 
 		} catch (IOException | NullPointerException e) {
 			e.printStackTrace();

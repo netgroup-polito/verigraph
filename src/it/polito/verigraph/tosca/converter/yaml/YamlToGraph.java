@@ -80,7 +80,7 @@ public class YamlToGraph {
 				// Retrieve relationship information
 				String target = yamlRelationshipTemplate.getValue().getProperties().get("target_id");
 				String source = yamlRelationshipTemplate.getValue().getProperties().get("source_id");
-				String name = yamlRelationshipTemplate.getValue().getProperties().get("name");
+				String name = graphNodes.get(Long.valueOf(target)).getName();
 
 				Neighbour neigh = new Neighbour();
 				neigh.setName(name);
