@@ -21,6 +21,8 @@ import java.util.List;
 @Provider
 @Produces("application/x-yaml")
 public class YamlWriterProvider implements MessageBodyWriter<List<ServiceTemplateYaml>> {
+
+
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         // TODO: Check that return
@@ -29,10 +31,12 @@ public class YamlWriterProvider implements MessageBodyWriter<List<ServiceTemplat
                 && (((ParameterizedType)genericType).getActualTypeArguments()[0]).equals(ServiceTemplateYaml.class);
     }
 
+
     @Override
     public long getSize(List<ServiceTemplateYaml> serviceTemplatesYaml , Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return -1;
     }
+
 
     @Override
     public void writeTo(List<ServiceTemplateYaml> serviceTemplatesYaml, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {

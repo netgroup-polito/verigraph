@@ -11,6 +11,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 import javax.xml.bind.JAXBContext;
@@ -22,7 +23,7 @@ import java.lang.reflect.Type;
 
 @Provider
 @Consumes(MediaType.APPLICATION_XML)
-public class DefinitionsProvider implements MessageBodyReader<Graph> {
+public class XmlProvider implements MessageBodyReader<Graph> {
 
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return Graph.class == type;
@@ -36,10 +37,8 @@ public class DefinitionsProvider implements MessageBodyReader<Graph> {
             Definitions topologyTemplate = (Definitions) jaxbUnmarshaller.unmarshal(entityStream);
             return XmlToGraph.mapTopologyTemplate(topologyTemplate);
         } catch (JAXBException e) {
-            e.printStackTrace();
+            throw new WebApplicationException(e.getCause(), Response.status(Response.Status.BAD_REQUEST).build());
         }
-
-        return null; // Check that
     }
 
 }

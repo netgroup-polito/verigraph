@@ -46,10 +46,10 @@ public class XmlWriterProvider implements MessageBodyWriter<List<Definitions>> {
 
 @Provider
 @Produces(MediaType.APPLICATION_XML)
-public class DefinitionsResolver implements ContextResolver<JAXBContext> {
+public class XmlContextResolver implements ContextResolver<JAXBContext> {
     private JAXBContext ctx;
 
-    public DefinitionsResolver() throws JAXBException {
+    public XmlContextResolver() throws JAXBException {
         this.ctx = JAXBContext.newInstance(ObjectFactory.class, TDefinitions.class, Configuration.class); // initialize it the way you want
     }
 

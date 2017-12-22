@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
@@ -26,24 +27,22 @@ import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 @Consumes("application/x-yaml")
 public class YamlReaderProvider implements MessageBodyReader<Object> {
 
+
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return Object.class == type;
     }
 
+
     public Graph readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
                           InputStream entityStream) throws WebApplicationException {
-
-        ServiceTemplateYaml yamlServiceTemplate = new ServiceTemplateYaml();
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
-
         try {
+            ServiceTemplateYaml yamlServiceTemplate = new ServiceTemplateYaml();
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
             yamlServiceTemplate = mapper.readValue(entityStream, ServiceTemplateYaml.class);
+            return YamlToGraph.mapTopologyTemplateYaml(yamlServiceTemplate);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new WebApplicationException(e.getCause(), Response.status(Response.Status.BAD_REQUEST).build());
         }
-
-        return YamlToGraph.mapTopologyTemplateYaml(yamlServiceTemplate);
     }
-
 }
