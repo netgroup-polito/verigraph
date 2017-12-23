@@ -20,9 +20,7 @@ import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.RelationshipTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
-public class YamlGrpcUtils {
-
-	/** CLIENT UTILITY METHODS */
+public class YamlToGrpc {
 
 	/** Returns the (first) TopologyTemplate found in the TOSCA-compliant yaml file */
 	public static TopologyTemplateGrpc obtainTopologyTemplateGrpc (String filepath) throws IOException, JAXBException, DataNotFoundException, ClassCastException, BadRequestException{

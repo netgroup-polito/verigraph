@@ -25,6 +25,8 @@ import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.resources.beans.VerificationBean;
 import it.polito.verigraph.service.GraphService;
 import it.polito.verigraph.service.VerificationService;
+import it.polito.verigraph.tosca.converter.grpc.GraphToGrpc;
+import it.polito.verigraph.tosca.converter.grpc.GrpcToGraph;
 import it.polito.verigraph.tosca.converter.grpc.ToscaGrpcUtils;
 
 public class ToscaService {
@@ -96,7 +98,7 @@ public class ToscaService {
 			boolean not_correct = false;
 			try {
 				for(Graph item : graphService.getAllGraphs()) {
-					TopologyTemplateGrpc topol = ToscaGrpcUtils.obtainTopologyTemplate(item);
+					TopologyTemplateGrpc topol = GraphToGrpc.obtainTopologyTemplate(item);
 					responseObserver.onNext(topol);
 				}
 			} catch(Exception ex){
@@ -114,7 +116,7 @@ public class ToscaService {
 			try {
 				Long graphID = Long.valueOf(request.getIdTopologyTemplate()); //this method will throw a NumberFormatException in case the ID is not representable as a long                 
 				Graph graph = graphService.getGraph(graphID);
-				TopologyTemplateGrpc topol = ToscaGrpcUtils.obtainTopologyTemplate(graph);
+				TopologyTemplateGrpc topol = GraphToGrpc.obtainTopologyTemplate(graph);
 				responseObserver.onNext(topol);
 			} catch(ForbiddenException | DataNotFoundException ex) {
 				TopologyTemplateGrpc topolError = TopologyTemplateGrpc.newBuilder().setErrorMessage(ex.getMessage()).build();
@@ -136,9 +138,9 @@ public class ToscaService {
 		public void createTopologyTemplate (TopologyTemplateGrpc request, StreamObserver<NewTopologyTemplate> responseObserver) {
 			NewTopologyTemplate.Builder response = NewTopologyTemplate.newBuilder();
 			try{
-				Graph graph = ToscaGrpcUtils.deriveGraph(request);
+				Graph graph = GrpcToGraph.deriveGraph(request);
 				Graph newGraph = graphService.addGraph(graph);
-				response.setSuccess(true).setTopologyTemplate(ToscaGrpcUtils.obtainTopologyTemplate(newGraph)); 
+				response.setSuccess(true).setTopologyTemplate(GraphToGrpc.obtainTopologyTemplate(newGraph)); 
 			} catch(BadRequestException ex) {
 				ex.printStackTrace();
 				response.setSuccess(false).setErrorMessage("Provided invalid request to the service.");
@@ -159,9 +161,9 @@ public class ToscaService {
 		public void updateTopologyTemplate (TopologyTemplateGrpc request, StreamObserver<NewTopologyTemplate> responseObserver) {
 			NewTopologyTemplate.Builder response = NewTopologyTemplate.newBuilder();
 			try{
-				Graph graph = ToscaGrpcUtils.deriveGraph(request);
+				Graph graph = GrpcToGraph.deriveGraph(request);
 				Graph newGraph = graphService.updateGraph(graph);
-				response.setSuccess(true).setTopologyTemplate(ToscaGrpcUtils.obtainTopologyTemplate(newGraph));
+				response.setSuccess(true).setTopologyTemplate(GraphToGrpc.obtainTopologyTemplate(newGraph));
 			} catch(ForbiddenException | DataNotFoundException | BadRequestException ex){
 				response.setSuccess(false).setErrorMessage(ex.getMessage());
 				logger.log(Level.WARNING, ex.getMessage());
@@ -210,7 +212,7 @@ public class ToscaService {
 				//Convert Response
 				Long graphID = Long.valueOf(request.getIdTopologyTemplate()); //this method will throw a NumberFormatException in case the ID is not representable as a long                  		
 				Verification ver = verificationService.verify(graphID, verify);
-				responseObserver.onNext(ToscaGrpcUtils.obtainToscaVerification(ver));
+				responseObserver.onNext(GraphToGrpc.obtainToscaVerification(ver));
 			} catch(ForbiddenException | DataNotFoundException | BadRequestException ex) {
 				ToscaVerificationGrpc verError = ToscaVerificationGrpc.newBuilder().setSuccessOfOperation(false)
 						.setErrorMessage(ex.getMessage()).build();

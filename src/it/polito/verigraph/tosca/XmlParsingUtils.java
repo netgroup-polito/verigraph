@@ -10,12 +10,14 @@ package it.polito.verigraph.tosca;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -45,12 +47,12 @@ public class XmlParsingUtils {
 
 		//Retrieve the TDefinitions object
 		Source source = new StreamSource(new FileInputStream(file));
-		
+
 		JAXBElement<Definitions> rootElement = (JAXBElement<Definitions>)u.unmarshal(source, Definitions.class);
 		Definitions definitions = rootElement.getValue();   
 		return definitions;
 	}
-	
+
 	/** Returns a List of TServiceTemplate JAXB-generated objects, parsed from a TOSCA-compliant XML. */
 	public static List<TServiceTemplate> obtainServiceTemplates(String file) throws JAXBException, IOException, ClassCastException, DataNotFoundException {
 		// Create a JAXBContext capable of handling the generated classes
@@ -134,6 +136,22 @@ public class XmlParsingUtils {
 
 			defConf.setFieldmodifierConfiguration(defaultForward);
 			return defConf;    		
+		}
+	}
+
+	public static String writeDefinitionsString(Definitions def) throws JAXBException {
+		// Create a JAXBContext capable of handling the generated classes
+		JAXBContext jc;
+		try {
+			jc = JAXBContext.newInstance(ObjectFactory.class, TDefinitions.class, Configuration.class);
+			Marshaller m = jc.createMarshaller();
+			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			StringWriter sw = new StringWriter();
+			m.marshal(def,sw);
+			return sw.toString();
+
+		} catch (JAXBException e) {
+			throw new JAXBException("Cannot convert Definitions element to string.");
 		}
 	}
 

@@ -10,7 +10,10 @@ package it.polito.verigraph.tosca;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Map;
+
+import javax.xml.bind.JAXBException;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -153,5 +156,16 @@ public class YamlParsingUtils {
 			throw new BadRequestException("Not able to retrieve a valid configuration");
 		} 
 	}	
+
+	public static String writeServiceTemplateYamlString(ServiceTemplateYaml yamlServ) throws JAXBException {
+		try {
+			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+			StringWriter sw = new StringWriter();
+			mapper.writeValue(sw, yamlServ);
+			return sw.toString();
+		} catch (IOException e) {
+			throw new BadRequestException("Cannot convert Definitions element to string.");
+		}
+	}
 
 }
