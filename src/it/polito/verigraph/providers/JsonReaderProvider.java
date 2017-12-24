@@ -16,8 +16,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 @Provider
-@Consumes(MediaType.APPLICATION_OCTET_STREAM)
-public class NoContentTypeProvider implements MessageBodyReader<Graph> {
+@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
+public class JsonReaderProvider implements MessageBodyReader<Graph> {
 
 
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -27,11 +27,11 @@ public class NoContentTypeProvider implements MessageBodyReader<Graph> {
 
     public Graph readFrom(Class<Graph> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
                           InputStream entityStream) throws WebApplicationException {
-        ObjectMapper mapper = new ObjectMapper();
         try {
+            ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(entityStream, Graph.class);
         } catch (IOException e) {
-            throw new WebApplicationException(e.getCause(), Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).build());
+            throw new WebApplicationException(e.getCause(), Response.status(Response.Status.BAD_REQUEST).build());
         }
     }
 }

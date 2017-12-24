@@ -25,15 +25,17 @@ import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 @Provider
 @Consumes("application/x-yaml")
-public class YamlReaderProvider implements MessageBodyReader<Object> {
+public class YamlReaderProvider implements MessageBodyReader<Graph> {
 
 
+   @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return Object.class == type;
+        return Graph.class == type;
     }
 
 
-    public Graph readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
+    @Override
+    public Graph readFrom(Class<Graph> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
                           InputStream entityStream) throws WebApplicationException {
         try {
             ServiceTemplateYaml yamlServiceTemplate = new ServiceTemplateYaml();
