@@ -29,6 +29,7 @@ import it.polito.verigraph.tosca.classes.Definitions;
 import it.polito.verigraph.tosca.converter.xml.GraphToXml;
 import it.polito.verigraph.tosca.converter.yaml.GraphToYaml;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
+import it.polito.verigraph.tosca.yaml.beans.VerificationYaml;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -41,17 +42,10 @@ import java.util.List;
 @Api(value = "/graphs", description = "Manage graphs")
 //@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
 //@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
-public class GraphResource /*extends ResourceConfig */{
+public class GraphResource {
     TopologyTemplateService topologyTemplateService = new TopologyTemplateService();
     GraphService graphService = new GraphService();
     VerificationService verificationService = new VerificationService();
-
-//    // TODO Solve Swagger issues (when generating documentation an exception is thrown)
-//    public GraphResource() {
-//        register(DefinitionsProvider.class); // registering a resolver for TOSCA XML
-//        register(YamlReaderProvider.class); // registering a resolver for TOSCA YAML
-//        register(YamlWriterProvider.class);
-//    }
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
@@ -119,28 +113,67 @@ public class GraphResource /*extends ResourceConfig */{
     public Response addGraph(@Context HttpHeaders headers, @ApiParam(value = "New graph object", required = true) Graph graph,
                              @Context UriInfo uriInfo) throws JAXBException, IOException, MyInvalidIdException {
 
-        if (headers.getMediaType().equals(MediaType.APPLICATION_XML_TYPE)) {
-            Graph newGraph = graphService.addGraph((Graph) graph);
-            Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
-            String newId = String.valueOf(newGraph.getId());
-            URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
-            GenericEntity<Definitions> entity = new GenericEntity<Definitions>(newTopologyTemplate) {
-            }; // Anonymous class
-            return Response.created(uri).type(MediaType.APPLICATION_XML_TYPE).entity(entity).build();
+/*        if (headers.getMediaType() != null) {
+            if (headers.getMediaType().equals(MediaType.APPLICATION_XML_TYPE)) {
+                Graph newGraph = graphService.addGraph((Graph) graph);
+                Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
+                String newId = String.valueOf(newGraph.getId());
+                URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+                GenericEntity<Definitions> entity = new GenericEntity<Definitions>(newTopologyTemplate) {
+                }; // Anonymous class
+                return Response.created(uri).type(MediaType.APPLICATION_XML_TYPE).entity(entity).build();
 
-        } else if (headers.getMediaType().equals(new MediaType("application", "x-yaml"))) {
-            Graph newGraph = graphService.addGraph((Graph) graph);
-            ServiceTemplateYaml yamlServiceTemplate = GraphToYaml.mapGraphYaml(newGraph);
-            String newId = String.valueOf(newGraph.getId());
-            URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
-            GenericEntity<ServiceTemplateYaml> entity = new GenericEntity<ServiceTemplateYaml>(yamlServiceTemplate) {
-            };
-            return Response.created(uri).type("application/x-yaml").entity(entity).build();
-
+            } else if (headers.getMediaType().equals(new MediaType("application", "x-yaml"))) {
+                Graph newGraph = graphService.addGraph((Graph) graph);
+                ServiceTemplateYaml yamlServiceTemplate = GraphToYaml.mapGraphYaml(newGraph);
+                String newId = String.valueOf(newGraph.getId());
+                URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+                GenericEntity<ServiceTemplateYaml> entity = new GenericEntity<ServiceTemplateYaml>(yamlServiceTemplate) {
+                };
+                return Response.created(uri).type("application/x-yaml").entity(entity).build();
+            } else if (headers.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)) {
+                Graph newGraph = graphService.addGraph(graph);
+                String newId = String.valueOf(newGraph.getId());
+                URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+                return Response.created(uri).entity(newGraph).build();
+            } else
+                return Response.status(415).build();
         } else {
-            ObjectMapper mapper = new ObjectMapper();
-            Graph customGraph = mapper.convertValue(graph, Graph.class);
-            Graph newGraph = graphService.addGraph(customGraph);
+            if (graph != null) {
+                Graph newGraph = graphService.addGraph(graph);
+                String newId = String.valueOf(newGraph.getId());
+                URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+                return Response.created(uri).entity(newGraph).build();
+            } else
+                return Response.status(415).build();
+        }*/
+
+        if (headers.getMediaType() != null) {
+            if (headers.getMediaType().equals(MediaType.APPLICATION_XML_TYPE)) {
+                Graph newGraph = graphService.addGraph((Graph) graph);
+                Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
+                String newId = String.valueOf(newGraph.getId());
+                URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+                GenericEntity<Definitions> entity = new GenericEntity<Definitions>(newTopologyTemplate) {
+                }; // Anonymous class
+                return Response.created(uri).type(MediaType.APPLICATION_XML_TYPE).entity(entity).build();
+            } else if (headers.getMediaType().equals(new MediaType("application", "x-yaml"))) {
+                Graph newGraph = graphService.addGraph((Graph) graph);
+                ServiceTemplateYaml yamlServiceTemplate = GraphToYaml.mapGraphYaml(newGraph);
+                String newId = String.valueOf(newGraph.getId());
+                URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+                GenericEntity<ServiceTemplateYaml> entity = new GenericEntity<ServiceTemplateYaml>(yamlServiceTemplate) {
+                };
+                return Response.created(uri).type("application/x-yaml").entity(entity).build();
+            } else {
+                Graph newGraph = graphService.addGraph(graph);
+                String newId = String.valueOf(newGraph.getId());
+                URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+                return Response.created(uri).entity(newGraph).build();
+            }
+        } else {
+
+            Graph newGraph = graphService.addGraph(graph);
             String newId = String.valueOf(newGraph.getId());
             URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
             return Response.created(uri).entity(newGraph).build();
@@ -253,15 +286,11 @@ public class GraphResource /*extends ResourceConfig */{
         Verification verification = verificationService.verify(graphId, verificationBean);
 
         if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
-            // TODO
-//            GenericEntity<ToscaXmlVerification> entity = new GenericEntity<ToscaXmlVerification>(MappingUtils.mapVerificationToXml) {}; // Anonymous class
-//            return Response.ok().entity(entity).build();
-            return null;
+            GenericEntity<Definitions> entity = new GenericEntity<Definitions>(MappingUtils.mapVerificationToXml(verification)) {};
+            return Response.ok().entity(entity).build();
         } else if (headers.getAcceptableMediaTypes().contains(new MediaType("application", "x-yaml"))) {
-            // TODO
-//            GenericEntity<ToscaXmlVerification> entity = new GenericEntity<ToscaXmlVerification>(MappingUtils.mapVerificationToYaml) {}; // Anonymous class
-//            return Response.ok().entity(entity).build();
-            return null;
+            GenericEntity<VerificationYaml> entity = new GenericEntity<VerificationYaml>(MappingUtils.mapVerificationToYaml(verification)) {};
+            return Response.ok().entity(entity).build();
         } else {
             return Response.ok().entity(verification).build();
         }

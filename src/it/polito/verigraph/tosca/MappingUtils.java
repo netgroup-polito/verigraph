@@ -1,8 +1,7 @@
 package it.polito.verigraph.tosca;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.InjectableValues;
@@ -10,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+import it.polito.verigraph.grpc.server.Service;
 import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
@@ -23,6 +23,7 @@ import it.polito.verigraph.tosca.converter.yaml.GraphToYaml;
 import it.polito.verigraph.tosca.deserializer.XmlConfigurationDeserializer;
 import it.polito.verigraph.tosca.serializer.XmlConfigSerializer;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
+import it.polito.verigraph.tosca.yaml.beans.VerificationYaml;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -109,6 +110,31 @@ public class MappingUtils {
 		toscaVerification.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().addAll(0, toscaPaths);
 		return toscaVerification;
 	}
+
+
+	public static VerificationYaml mapVerificationToYaml(Verification verification) {
+		VerificationYaml verificationYaml = new VerificationYaml();
+		verificationYaml.setResult(verification.getResult());
+		verificationYaml.setComment(verification.getComment());
+
+		List<ServiceTemplateYaml> toscaPaths = new ArrayList<ServiceTemplateYaml>();
+
+		int i = 0;
+		for (Test test: verification.getTests()) {
+			Graph tempGraph = new Graph();
+			tempGraph.setId(i++);
+			for (Node node : test.getPath())
+				tempGraph.getNodes().put(node.getId(), node);
+
+			ServiceTemplateYaml toscaPath = GraphToYaml.mapGraphYaml(tempGraph);
+			toscaPath.getMetadata().put("result", test.getResult());
+			toscaPaths.add(toscaPath);
+		}
+
+		verificationYaml.setPaths(toscaPaths);
+		return verificationYaml;
+	}
+
 
 	/** Return a string that represent the Tosca Configuration in json string.
 	 * 

@@ -74,8 +74,10 @@ public class GraphToYaml {
 			Map<Long,Neighbour> neighMap = node.getNeighbours();
 			for (Map.Entry<Long, Neighbour> myentry : neighMap.entrySet()) {
 				Neighbour neigh = myentry.getValue();
-				RelationshipTemplateYaml relat = mapRelationshipYaml(node, neigh);
-				topologyTemplate.getRelationship_templates().put(String.valueOf(i), relat); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is an incremental number for each node
+				if (graph.getNodes().containsKey(neigh.getId())) { // I have to check that because if I'm mapping a path (and not a graph) I could have as neighbour a node which is not in the path
+					RelationshipTemplateYaml relat = mapRelationshipYaml(node, neigh);
+					topologyTemplate.getRelationship_templates().put(String.valueOf(i), relat); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is an incremental number for each node
+				}
 			}
 		}
 
