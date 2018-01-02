@@ -31,7 +31,7 @@ public class Test_3Dpis {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public PolitoIDS dpi1, dpi2, dpi3;
 
     public  Test_3Dpis(){
@@ -42,7 +42,7 @@ public class Test_3Dpis {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         dpi1 = new PolitoIDS(ctx, new Object[]{nctx.nm.get("dpi1"), net, nctx});
         dpi2 = new PolitoIDS(ctx, new Object[]{nctx.nm.get("dpi2"), net, nctx});
         dpi3 = new PolitoIDS(ctx, new Object[]{nctx.nm.get("dpi3"), net, nctx});
@@ -119,8 +119,8 @@ public class Test_3Dpis {
         packet.setBody(4);
         packet.setProto(nctx.HTTP_REQUEST);
         packet.setIp_dest(nctx.am.get("ip_b"));
-        a.installEndHost(packet);
-
+        a.installAsWebClient(nctx.am.get("ip_b"), packet);
+        b.installAsWebServer(new PacketModel());
 
         check = new Checker(ctx,nctx,net);
     }

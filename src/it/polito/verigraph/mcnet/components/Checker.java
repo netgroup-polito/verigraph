@@ -78,16 +78,16 @@ public class Checker {
         this.solver.add((BoolExpr)nctx.recv.apply(n_0, dest.getZ3Node(), p0));
 
         //Constraint2 send(srcNode,n_1,p1,t_1)
-        this.solver.add((BoolExpr)nctx.send.apply(src.getZ3Node(), n_1, p1));
+        //this.solver.add((BoolExpr)nctx.send.apply(src.getZ3Node(), n_1, p1));
 
         //Constraint3 nodeHasAddr(srcNode,p1.srcAddr)
-        this.solver.add((BoolExpr)nctx.nodeHasAddr.apply(src.getZ3Node(), nctx.pf.get("src").apply(p1)));
+        //this.solver.add((BoolExpr)nctx.nodeHasAddr.apply(src.getZ3Node(), nctx.pf.get("src").apply(p1)));
 
         //Constraint4 p1.origin == srcNode
-        this.solver.add(ctx.mkEq(nctx.pf.get("origin").apply(p1), src.getZ3Node()));
+        this.solver.add(ctx.mkEq(nctx.pf.get("origin").apply(p0), src.getZ3Node()));
 
         //Constraint5 nodeHasAddr(destNode,p1.destAddr)
-        this.solver.add((BoolExpr)nctx.nodeHasAddr.apply(dest.getZ3Node(), nctx.pf.get("dest").apply(p1)));
+        //this.solver.add((BoolExpr)nctx.nodeHasAddr.apply(dest.getZ3Node(), nctx.pf.get("dest").apply(p1)));
 
         //NON sembrano necessari
         //         this.solver.add(z3.Or(this.ctx.nodeHasAddr(src.getZ3Node(), this.ctx.packet.src(p0)),\
@@ -96,7 +96,7 @@ public class Checker {
         //this.solver.add(this.ctx.packet.dest(p1) == this.ctx.packet.dest(p0))
 
         //Constraint6 p1.origin ==  p0.origin
-        this.solver.add(ctx.mkEq(nctx.pf.get("origin").apply(p1),nctx.pf.get("origin").apply(p0)));
+        //this.solver.add(ctx.mkEq(nctx.pf.get("origin").apply(p1),nctx.pf.get("origin").apply(p0)));
 
         //Constraint7 nodeHasAddr(destNode, p0.destAddr)
         this.solver.add((BoolExpr)nctx.nodeHasAddr.apply(dest.getZ3Node(), nctx.pf.get("dest").apply(p0)));

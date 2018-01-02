@@ -90,10 +90,10 @@ private_addresses.addAll(address);
         private_addr_func = ctx.mkFuncDecl(nat + "_nat_func", nctx.address, ctx.mkBoolSort());
 
         //Constraint1
-        //    "send(nat, x, p_0, t_0) && !private_addr_func(p_0.dest) ->
+        //    "send(nat, x, p_0) && !private_addr_func(p_0.dest) ->
         //    p_0.src == ip_politoNat &&
-        //    (exist y, p_1,t_1 :
-        //       (recv(y, nat, p_1, t_1) && t_1 < t_0 &&
+        //    (exist y, p_1 :
+        //       (recv(y, nat, p_1)&&
         //        private_addr_func(p1.src) &&
         //        p_1.origin == p_0.origin &&
         //        same for p_1.<dest,orig_body,body,seq,proto,emailFrom,url,options> == p_0.<...>) "
@@ -106,7 +106,6 @@ private_addresses.addAll(address);
                                 ctx.mkExists(new Expr[]{y, p_1},
                                         ctx.mkAnd(
                                                 (BoolExpr)nctx.recv.apply(y, nat, p_1),
-                                               
                                                 (BoolExpr)private_addr_func.apply(nctx.pf.get("src").apply(p_1)),
                                                 ctx.mkEq(nctx.pf.get("origin").apply(p_1),nctx.pf.get("origin").apply(p_0)),
                                                 ctx.mkEq(nctx.pf.get("dest").apply(p_1),nctx.pf.get("dest").apply(p_0)),
@@ -119,10 +118,10 @@ private_addresses.addAll(address);
                                                 ctx.mkEq(nctx.pf.get("options").apply(p_1),nctx.pf.get("options").apply(p_0))),1,null,null,null,null))),1,null,null,null,null));
 
         //Constraint2
-        //    send(nat, x, p_0, t_0) && private_addr_func(p_0.dest) ->
+        //    send(nat, x, p_0) && private_addr_func(p_0.dest) ->
         //    !private_addr_func(p_0.src) &&
-        //    (exist y, p_1,t_1 :
-        //      (recv(y, nat, p_1, t_1) && t_1 < t_0 &&
+        //    (exist y, p_1 :
+        //      (recv(y, nat, p_1)  &&
         //       !private_addr_func(p1.src) &&
         //       p_1.dest == ip_politoNat &&
         //       p_1.origin == p_0.origin &&
@@ -154,7 +153,6 @@ private_addresses.addAll(address);
                                                                 (BoolExpr)nctx.recv.apply(z, nat, p_2),
                                                                 (BoolExpr)private_addr_func.apply(nctx.pf.get("src").apply(p_2)),
                                                                 ctx.mkEq(nctx.pf.get("src").apply(p_1),nctx.pf.get("dest").apply(p_2)),
-                                                                ctx.mkEq(nctx.pf.get("src").apply(p_0),nctx.pf.get("dest").apply(p_2)),
                                                                 ctx.mkEq(nctx.pf.get("src").apply(p_2),nctx.pf.get("dest").apply(p_0))),1,null,null,null,null)),1,null,null,null,null))),1,null,null,null,null));
 
     }

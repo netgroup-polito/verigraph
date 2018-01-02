@@ -23,6 +23,7 @@ import it.polito.verigraph.mcnet.components.NetworkObject;
 import it.polito.verigraph.mcnet.components.Tuple;
 import it.polito.verigraph.mcnet.netobjs.PolitoEndHost;
 import it.polito.verigraph.mcnet.netobjs.PolitoWebServer;
+import it.polito.verigraph.mcnet.netobjs.PacketModel;
 import it.polito.verigraph.mcnet.netobjs.PolitoCache;
 
 public class Test_Cache {
@@ -30,7 +31,7 @@ public class Test_Cache {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public PolitoCache cache1;
 
     public  Test_Cache(){
@@ -41,7 +42,7 @@ public class Test_Cache {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         cache1 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache1"), net, nctx});
 
         ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>> adm = new ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>>();
@@ -80,6 +81,7 @@ public class Test_Cache {
         //Configuring middleboxes
         cache1.installCache(new NetworkObject[]{nctx.nm.get("a")});
 
+        b.installAsWebServer(new PacketModel());
         check = new Checker(ctx,nctx,net);
 }
     

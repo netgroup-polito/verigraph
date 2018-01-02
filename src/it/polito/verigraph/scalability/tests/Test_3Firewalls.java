@@ -24,13 +24,14 @@ import it.polito.verigraph.mcnet.components.Tuple;
 import it.polito.verigraph.mcnet.netobjs.PolitoEndHost;
 import it.polito.verigraph.mcnet.netobjs.PolitoWebServer;
 import it.polito.verigraph.mcnet.netobjs.AclFirewall;
+import it.polito.verigraph.mcnet.netobjs.PacketModel;
 
 public class Test_3Firewalls {
 
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public AclFirewall fw1, fw2, fw3;
 
     public  Test_3Firewalls(){
@@ -41,7 +42,7 @@ public class Test_3Firewalls {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         fw1 = new AclFirewall(ctx, new Object[]{nctx.nm.get("fw1"), net, nctx});
         fw2 = new AclFirewall(ctx, new Object[]{nctx.nm.get("fw2"), net, nctx});
         fw3 = new AclFirewall(ctx, new Object[]{nctx.nm.get("fw3"), net, nctx});
@@ -108,12 +109,15 @@ public class Test_3Firewalls {
 
         //Configuring middleboxes
         ArrayList<Tuple<DatatypeExpr,DatatypeExpr>> acl = new ArrayList<Tuple<DatatypeExpr,DatatypeExpr>>();
-        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_a"),nctx.am.get("ip_b")));
-        
+        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_fw1"),nctx.am.get("ip_a")));
+      
+        PacketModel packet = new PacketModel();
+        a.installAsWebClient(nctx.am.get("ip_b"),packet);
+       
         fw1.addAcls(acl);
         fw2.addAcls(acl);
         fw3.addAcls(acl);
-
+        b.installAsWebServer(packet);
         check = new Checker(ctx,nctx,net);
 }
     

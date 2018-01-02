@@ -46,6 +46,8 @@ public class PolitoEndHost extends NetworkObject {
         this.net = (Network)args[0][1];
         this.nctx = (NetContext)args[0][2];
         net.saneSend(this);
+        n_0 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_n_0", nctx.node);
+        p_0 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_0", nctx.packet);
     }
 
     @Override
@@ -53,14 +55,85 @@ public class PolitoEndHost extends NetworkObject {
         BoolExpr[] constr = new BoolExpr[constraints.size()];
         solver.add(constraints.toArray(constr));
     }
+    
+
+    public  void installAsWebServer(PacketModel packet){
+    	installEndHost(packet);
+    	Expr p_1 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_1", nctx.packet);
+ 
+        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
+                		ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.HTTP_REQUEST))
+                		),1,null,null,null,null));
+
+        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                ctx.mkImplies(ctx.mkAnd((BoolExpr)nctx.send.apply(politoEndHost, n_0, p_0),ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.HTTP_RESPONSE))),
+                        ctx.mkExists(new Expr[]{p_1},
+                                ctx.mkAnd(
+                                        ctx.mkEq(nctx.pf.get("url").apply(p_0), nctx.pf.get("url").apply(p_1)),
+                                        (BoolExpr)nctx.recv.apply(n_0, politoEndHost, p_1),
+                                        ctx.mkEq(nctx.pf.get("src").apply(p_1), nctx.pf.get("dest").apply(p_0))),
+                                1,null,null,null,null)),1,null,null,null,null));
+    }
+    
+    public  void installAsWebClient(DatatypeExpr ipServer,PacketModel packet){
+    	installEndHost(packet);
+    	Expr p_1 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_1", nctx.packet);
+        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
+                		ctx.mkAnd( ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.HTTP_RESPONSE)),
+                				 ctx.mkExists(new Expr[]{p_1}, 
+                                         ctx.mkAnd( (BoolExpr)nctx.send.apply(politoEndHost, n_0, p_1),
+                                         		ctx.mkEq(nctx.pf.get("dest").apply(p_1), nctx.pf.get("src").apply(p_0))),1,null,null,null,null)
+                				)
+                        ),1,null,null,null,null));
+
+    }
+    
+    
+    public  void installAsPOP3MailServer(PacketModel packet){
+    	installEndHost(packet);
+    	 Expr p_1 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_1", nctx.packet);
+
+         //constraint4 recv(n_0, politomailserver, p) -> nodehasaddr(politomailserver,p.dest)
+         constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                 ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
+                		 ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.POP3_REQUEST))
+                		 ),1,null,null,null,null));
+
+         //Constraint5 send(politoMailServer, n_0, p) -> p.proto == POP3_RESP 
+         constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                 ctx.mkImplies((BoolExpr)nctx.send.apply(politoEndHost, n_0, p_0),
+                         ctx.mkAnd(ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.POP3_RESPONSE))
+                                 )),1,null,null,null,null));
+
+     	constraints.add( ctx.mkForall(new Expr[]{n_0, p_0}, 
+                 ctx.mkImplies((BoolExpr)nctx.send.apply(politoEndHost, n_0, p_0), 
+                     ctx.mkExists(new Expr[]{p_1}, 
+                         ctx.mkAnd(
+                         		(BoolExpr)nctx.recv.apply(n_0, politoEndHost, p_1),
+                         		ctx.mkEq(nctx.pf.get("proto").apply(p_1), ctx.mkInt(nctx.POP3_REQUEST)),
+                         		ctx.mkEq(nctx.pf.get("dest").apply(p_0), nctx.pf.get("src").apply(p_1))),1,null,null,null,null)),1,null,null,null,null));    	        	            	        
+           	
+    }
+    public  void installAsPOP3MailClient(DatatypeExpr ipServer,PacketModel packet){
+    	installEndHost(packet);
+         constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                 ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
+                		 ctx.mkAnd( ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.POP3_RESPONSE)),
+                        		 ctx.mkEq(nctx.pf.get("src").apply(p_0), ipServer))              		
+                		 ),1,null,null,null,null));
+    }
+    
 
     /*
      * Fields that can be configured -> "dest","body","seq","proto","emailFrom","url","options"
      */
+    Expr n_0;
+    Expr p_0;
     public void installEndHost (PacketModel packet){
         //System.out.println("Installing PolitoEndHost...");
-        Expr n_0 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_n_0", nctx.node);
-        Expr p_0 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_0", nctx.packet);
+    
         //IntExpr t_0 = ctx.mkIntConst("PolitoEndHost_"+politoEndHost+"_t_0");
         BoolExpr predicatesOnPktFields = ctx.mkTrue();
 
@@ -79,22 +152,23 @@ public class PolitoEndHost extends NetworkObject {
         if(packet.getUrl() != null)
             predicatesOnPktFields = ctx.mkAnd(predicatesOnPktFields, ctx.mkEq(nctx.pf.get("url").apply(p_0), ctx.mkInt(packet.getUrl())));
 
-        //Constraint1 send(politoWebClient, n_0, p, t_0) -> p.origin == politoWebClient && p.orig_body == p.body && nodeHasAddr(politoWebClient,p.src)
+        //Constraint1 send(politoEndHost, n_0, p) -> 
+        //p.origin == politoEndHost && p.orig_body == p.body && nodeHasAddr(politoEndHost,p.src)
         constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
                 ctx.mkImplies((BoolExpr)nctx.send.apply(politoEndHost, n_0, p_0),
                         ctx.mkAnd(predicatesOnPktFields,
                                 ctx.mkEq(nctx.pf.get("orig_body").apply(p_0),nctx.pf.get("body").apply(p_0)),
-                                //ctx.mkEq(nctx.pf.get("origin").apply(p_0),politoEndHost),
+                                ctx.mkEq(nctx.pf.get("origin").apply(p_0),politoEndHost),
                                 ctx.mkEq(nctx.pf.get("inner_src").apply(p_0),nctx.am.get("null")),
                                 ctx.mkEq(nctx.pf.get("inner_dest").apply(p_0),nctx.am.get("null")),
                                 ctx.mkEq(nctx.pf.get("encrypted").apply(p_0),ctx.mkFalse()),
                                 (BoolExpr)nctx.nodeHasAddr.apply(politoEndHost,nctx.pf.get("src").apply(p_0))
                                 )),1,null,null,null,null));
 
-        //Constraint2 recv(n_0, politoWebClient, p, t_0) -> nodeHasAddr(politoWebClient,p.dest)
-//        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
-//                ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
-//                        (BoolExpr)nctx.nodeHasAddr.apply(politoEndHost,nctx.pf.get("dest").apply(p_0))),1,null,null,null,null));
+        //Constraint2 recv(n_0, politoEndHost, p) -> nodeHasAddr(politoEndHost,p.dest)
+        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
+                        (BoolExpr)nctx.nodeHasAddr.apply(politoEndHost,nctx.pf.get("dest").apply(p_0))),1,null,null,null,null));
 
         //System.out.println("Done.");
 

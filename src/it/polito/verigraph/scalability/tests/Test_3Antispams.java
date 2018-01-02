@@ -31,7 +31,7 @@ public class Test_3Antispams {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoMailServer b;
+    public PolitoEndHost b;
     public PolitoAntispam spam1, spam2, spam3;
 
     public  Test_3Antispams(){
@@ -42,7 +42,7 @@ public class Test_3Antispams {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoMailServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         spam1 = new PolitoAntispam(ctx, new Object[]{nctx.nm.get("spam1"), net, nctx});
         spam2 = new PolitoAntispam(ctx, new Object[]{nctx.nm.get("spam2"), net, nctx});
         spam3 = new PolitoAntispam(ctx, new Object[]{nctx.nm.get("spam3"), net, nctx});
@@ -115,12 +115,12 @@ public class Test_3Antispams {
         int[] s3= {3};
         spam3.addBlackList(s3);
         
+        
         PacketModel packet = new PacketModel();
         packet.setEmailFrom(4);
-        packet.setProto(nctx.POP3_REQUEST);
-        packet.setIp_dest(nctx.am.get("ip_b"));
-        a.installEndHost(packet);
-
+        //packet.setIp_dest(nctx.am.get("ip_b"));
+        a.installAsPOP3MailClient(nctx.am.get("ip_b"),packet);
+        b.installAsPOP3MailServer(new PacketModel());
 
         check = new Checker(ctx,nctx,net);
     }

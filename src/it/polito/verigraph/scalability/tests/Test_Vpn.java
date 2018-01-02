@@ -32,7 +32,7 @@ public class Test_Vpn {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public PolitoVpnAccess access;
     public PolitoVpnExit exit;
 
@@ -44,7 +44,7 @@ public class Test_Vpn {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         access = new PolitoVpnAccess(ctx, new Object[]{nctx.nm.get("access"), net, nctx});
         exit = new PolitoVpnExit(ctx, new Object[]{nctx.nm.get("exit"), net, nctx});
 
@@ -106,7 +106,7 @@ public class Test_Vpn {
         packet.setProto(nctx.HTTP_REQUEST);
         packet.setIp_dest(nctx.am.get("ip_b"));
         a.installEndHost(packet);
-
+        b.installAsWebServer(new PacketModel());
         check = new Checker(ctx,nctx,net);
 }
     

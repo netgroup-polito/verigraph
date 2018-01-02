@@ -98,7 +98,6 @@ public class AclFirewall extends NetworkObject{
                         ctx.mkImplies(
                                 (BoolExpr)nctx.send.apply(new Expr[]{ fw, n_0, p_0}),
                                 ctx.mkAnd(
-                                        ctx.mkNot((BoolExpr)nctx.nodeHasAddr.apply( fw, nctx.pf.get("dest").apply(p_0))),
                                         ctx.mkExists(new Expr[]{n_1}, 
                                                 nctx.recv.apply(n_1, fw, p_0),1,null,null,null,null), 
                                         ctx.mkNot((BoolExpr)acl_func.apply(nctx.pf.get("src").apply(p_0), nctx.pf.get("dest").apply(p_0))))),1,null,null,null,null));

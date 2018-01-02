@@ -23,6 +23,7 @@ import it.polito.verigraph.mcnet.components.NetworkObject;
 import it.polito.verigraph.mcnet.components.Tuple;
 import it.polito.verigraph.mcnet.netobjs.PolitoEndHost;
 import it.polito.verigraph.mcnet.netobjs.PolitoWebServer;
+import it.polito.verigraph.mcnet.netobjs.PacketModel;
 import it.polito.verigraph.mcnet.netobjs.PolitoCache;
 
 public class Test_10Caches {
@@ -30,7 +31,7 @@ public class Test_10Caches {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public PolitoCache cache1, cache2, cache3,cache4,cache5,cache6,cache7,cache8,cache9,cache10;
 
     public  Test_10Caches(){
@@ -41,7 +42,7 @@ public class Test_10Caches {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         cache1 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache1"), net, nctx});
         cache2 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache2"), net, nctx});
         cache3 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache3"), net, nctx});
@@ -286,6 +287,7 @@ public class Test_10Caches {
         cache9.installCache(new NetworkObject[]{nctx.nm.get("cache8")});
         cache10.installCache(new NetworkObject[]{nctx.nm.get("cache9")});
 
+        b.installAsWebServer(new PacketModel());
         check = new Checker(ctx,nctx,net);
 }
     

@@ -35,7 +35,7 @@ public class Test_Dpi_Firewall {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public PolitoIDS dpi1;
     public AclFirewall fw;
 
@@ -47,7 +47,7 @@ public class Test_Dpi_Firewall {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         dpi1 = new PolitoIDS(ctx, new Object[]{nctx.nm.get("dpi1"), net, nctx});
         fw = new AclFirewall(ctx, new Object[]{nctx.nm.get("fw"), net, nctx});
 
@@ -103,7 +103,7 @@ public class Test_Dpi_Firewall {
         dpi1.installIDS(s);
         
         ArrayList<Tuple<DatatypeExpr,DatatypeExpr>> acl = new ArrayList<Tuple<DatatypeExpr,DatatypeExpr>>();
-        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_a"),nctx.am.get("ip_b")));
+        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_fw"),nctx.am.get("ip_b")));
         fw.addAcls(acl);
         
         PacketModel packet = new PacketModel();
@@ -111,7 +111,8 @@ public class Test_Dpi_Firewall {
         packet.setBody(5);
         packet.setProto(nctx.HTTP_REQUEST);
         packet.setIp_dest(nctx.am.get("ip_b"));
-        a.installEndHost(packet);
+        a.installAsWebClient(nctx.am.get("ip_b"), packet);
+        b.installAsWebServer(new PacketModel());
 
         check = new Checker(ctx,nctx,net);
 }

@@ -71,21 +71,21 @@ public class PolitoAntispam extends NetworkObject{
 
        isInBlacklist = ctx.mkFuncDecl(politoAntispam+"_isInBlacklist", ctx.mkIntSort(), ctx.mkBoolSort());
 
-     //Constraint1 send(politoAntispam, n_0, p, t_0) ->
-       // (p.proto(POP3_RESP) || (p.proto(POP3_REQ)) && !nodeHasAddr(politoAntispam, p.dest) &&
-       //(exist  n_1,t_1 : (recv(n_1, politoAntispam, p, t_1)) && !isInBlackList(p.emailFrom)
-        constraints.add(
-                ctx.mkForall(new Expr[]{n_0, p_0}, 
-                        ctx.mkImplies(
-                                (BoolExpr)nctx.send.apply(new Expr[]{ politoAntispam, n_0, p_0}),
-                                ctx.mkAnd(
-                                        ctx.mkOr(ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.POP3_REQUEST)),
-                                                ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.POP3_RESPONSE))),
-                                        ctx.mkNot((BoolExpr)nctx.nodeHasAddr.apply( politoAntispam, nctx.pf.get("dest").apply(p_0))),
-                                        ctx.mkExists(new Expr[]{n_1}, 
-                                                nctx.recv.apply(n_1, politoAntispam, p_0),1,null,null,null,null), 
-                                        ctx.mkNot((BoolExpr)isInBlacklist.apply(nctx.pf.get("emailFrom").apply(p_0)))
-                                        )),1,null,null,null,null));
+       constraints.add(
+               ctx.mkForall(new Expr[]{n_0, p_0}, 
+                       ctx.mkImplies(
+                     		  ctx.mkAnd( (BoolExpr)nctx.send.apply(new Expr[]{ politoAntispam, n_0, p_0}),
+                     				  		ctx.mkOr(ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.POP3_REQUEST))
+                     				  				,ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.POP3_RESPONSE))
+                     				  				 )),
+                               ctx.mkNot((BoolExpr)isInBlacklist.apply(nctx.pf.get("emailFrom").apply(p_0)))
+                                       ),1,null,null,null,null));
+       
+       constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+               ctx.mkImplies(ctx.mkAnd((BoolExpr)nctx.send.apply(politoAntispam, n_0, p_0)),
+                       ctx.mkAnd(ctx.mkExists(new Expr[]{n_1},
+                               ctx.mkAnd((BoolExpr)nctx.recv.apply(n_1, politoAntispam, p_0)),1,null,null,null,null)
+                               )),1,null,null,null,null));
 
     }
     

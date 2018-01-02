@@ -194,49 +194,50 @@ public class NetContext extends Core{
         //IntExpr t_0 = ctx.mkIntConst("ctx_base_t_0");
         //IntExpr t_1 = ctx.mkIntConst("ctx_base_t_1");
 
-        // Constraint1 send(n_0, n_1, p_0, t_0) -> n_0 != n_1
+        // Constraint1 send(n_0, n_1, p_0) -> n_0 != n_1
         constraints.add(
                 ctx.mkForall(new Expr[]{n_0, n_1, p_0},
                         ctx.mkImplies((BoolExpr)send.apply(n_0, n_1, p_0),ctx.mkNot(ctx.mkEq( n_0, n_1))),1,null,null,null,null));
 
         // Constraint2 recv(n_0, n_1, p_0, t_0) -> n_0 != n_1
-        constraints.add(
+     /*   constraints.add(
                 ctx.mkForall(new Expr[]{n_0, n_1, p_0},
-                        ctx.mkImplies((BoolExpr)recv.apply(n_0, n_1, p_0),ctx.mkNot(ctx.mkEq( n_0, n_1))),1,null,null,null,null));
+                        ctx.mkImplies((BoolExpr)recv.apply(n_0, n_1, p_0),ctx.mkNot(ctx.mkEq( n_0, n_1))),1,null,null,null,null));*/
 
-        // Constraint3 send(n_0, n_1, p_0, t_0) -> p_0.src != p_0.dest
+        // Constraint3 send(n_0, n_1, p_0) -> p_0.src != p_0.dest
         constraints.add(
                 ctx.mkForall(new Expr[]{n_0, n_1, p_0},
                         ctx.mkImplies((BoolExpr)send.apply(n_0, n_1, p_0),
                                 ctx.mkNot(ctx.mkEq(  pf.get("src").apply(p_0), pf.get("dest").apply(p_0)))),1,null,null,null,null));
 
         // Constraint4 recv(n_0, n_1, p_0, t_0) -> p_0.src != p_0.dest
-        constraints.add(
+       /* constraints.add(
                 ctx.mkForall(new Expr[]{n_0, n_1, p_0 },
                         ctx.mkImplies((BoolExpr)recv.apply(n_0, n_1, p_0 ),
-                                ctx.mkNot(ctx.mkEq(pf.get("src").apply(p_0),pf.get("dest").apply(p_0)))),1,null,null,null,null));
+                                ctx.mkNot(ctx.mkEq(pf.get("src").apply(p_0),pf.get("dest").apply(p_0)))),1,null,null,null,null));*/
 
-        // Constraint5 recv(n_0, n_1, p ) -> send(n_0, n_1, p, t_1) && t_1 < t_0
+        // Constraint5 recv(n_0, n_1, p ) -> send(n_0, n_1, p) 
         constraints.add(
                 ctx.mkForall(new Expr[]{n_0, n_1, p_0 },
                         ctx.mkImplies((BoolExpr)recv.apply(n_0, n_1, p_0 ),
-                               
                                         ctx.mkAnd((BoolExpr)send.apply(n_0, n_1, p_0)
                                                 )),1,null,null,null,null));
 
-        // Constraint6 send(n_0, n_1, p, t_0) -> p.src_port > 0 && p.dest_port < MAX_PORT
+        // Constraint6 send(n_0, n_1, p) -> p.src_port > 0 && p.dest_port < MAX_PORT && p.dest_port > 0 && p.src_port < MAX_PORT
         constraints.add(
                 ctx.mkForall(new Expr[]{n_0, n_1, p_0 },
                         ctx.mkImplies((BoolExpr)send.apply(n_0, n_1, p_0 ),
                                 ctx.mkAnd( ctx.mkGe((IntExpr)src_port.apply(p_0),(IntExpr)ctx.mkInt(0)),
+                                		ctx.mkGe((IntExpr)dest_port.apply(p_0),(IntExpr)ctx.mkInt(0)),
+                                		ctx.mkLt((IntExpr)dest_port.apply(p_0),(IntExpr) ctx.mkInt(MAX_PORT)),
                                         ctx.mkLt((IntExpr)src_port.apply(p_0),(IntExpr) ctx.mkInt(MAX_PORT)))),1,null,null,null,null));
 
         // Constraint7 recv(n_0, n_1, p, t_0) -> p.src_port > 0 && p.dest_port < MAX_PORT
-        constraints.add(
+       /* constraints.add(
                 ctx.mkForall(new Expr[]{n_0, n_1, p_0},
                         ctx.mkImplies((BoolExpr)recv.apply(n_0, n_1, p_0),
                                 ctx.mkAnd( ctx.mkGe((IntExpr)dest_port.apply(p_0),(IntExpr)ctx.mkInt(0)),
-                                        ctx.mkLt((IntExpr)dest_port.apply(p_0),(IntExpr) ctx.mkInt(MAX_PORT)))),1,null,null,null,null));
+                                        ctx.mkLt((IntExpr)dest_port.apply(p_0),(IntExpr) ctx.mkInt(MAX_PORT)))),1,null,null,null,null));*/
 
         // Constraint8 recv(n_0, n_1, p_0, t_0) -> t_0 > 0
         /*constraints.add(

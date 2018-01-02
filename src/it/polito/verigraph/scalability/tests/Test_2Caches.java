@@ -7,6 +7,7 @@ package it.polito.verigraph.scalability.tests;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 import com.microsoft.z3.Context;
 import com.microsoft.z3.DatatypeExpr;
@@ -23,6 +24,7 @@ import it.polito.verigraph.mcnet.components.NetworkObject;
 import it.polito.verigraph.mcnet.components.Tuple;
 import it.polito.verigraph.mcnet.netobjs.PolitoEndHost;
 import it.polito.verigraph.mcnet.netobjs.PolitoWebServer;
+import it.polito.verigraph.mcnet.netobjs.PacketModel;
 import it.polito.verigraph.mcnet.netobjs.PolitoCache;
 
 public class Test_2Caches {
@@ -30,7 +32,7 @@ public class Test_2Caches {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public PolitoCache cache1, cache2;
 
     public  Test_2Caches(){
@@ -41,7 +43,7 @@ public class Test_2Caches {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         cache1 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache1"), net, nctx});
         cache2 = new PolitoCache(ctx, new Object[]{nctx.nm.get("cache2"), net, nctx});
 
@@ -92,8 +94,11 @@ public class Test_2Caches {
         net.attach(a, b, cache1, cache2);
 
         //Configuring middleboxes
+        PacketModel packet = new PacketModel();
         cache1.installCache(new NetworkObject[]{nctx.nm.get("a")});
         cache2.installCache(new NetworkObject[]{nctx.nm.get("cache1")});
+        a.installAsWebClient(nctx.am.get("ip_b"),packet);
+        b.installAsWebServer(packet);
 
         check = new Checker(ctx,nctx,net);
 }

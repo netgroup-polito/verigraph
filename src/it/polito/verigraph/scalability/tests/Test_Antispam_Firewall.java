@@ -33,7 +33,7 @@ public class Test_Antispam_Firewall {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoMailServer b;
+    public PolitoEndHost b;
     public PolitoAntispam antispam1;
     public AclFirewall fw;
 
@@ -45,7 +45,7 @@ public class Test_Antispam_Firewall {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoMailServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         antispam1 = new PolitoAntispam(ctx, new Object[]{nctx.nm.get("antispam1"), net, nctx});
         fw = new AclFirewall(ctx, new Object[]{nctx.nm.get("fw"), net, nctx});
 
@@ -99,14 +99,16 @@ public class Test_Antispam_Firewall {
         antispam1.addBlackList(s);
 
         ArrayList<Tuple<DatatypeExpr,DatatypeExpr>> acl = new ArrayList<Tuple<DatatypeExpr,DatatypeExpr>>();
-        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_a"),nctx.am.get("ip_b")));
+        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_fw"),nctx.am.get("ip_b")));
         fw.addAcls(acl);
 
         PacketModel packet = new PacketModel();
         packet.setEmailFrom(4);
         packet.setProto(nctx.POP3_REQUEST);
         packet.setIp_dest(nctx.am.get("ip_b"));
-        a.installEndHost(packet);
+        a.installAsPOP3MailClient(nctx.am.get("ip_b"),packet);
+        
+        b.installAsPOP3MailServer(new PacketModel());
 
         check = new Checker(ctx,nctx,net);
 }

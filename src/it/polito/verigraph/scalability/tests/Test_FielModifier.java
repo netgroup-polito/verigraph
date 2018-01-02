@@ -32,7 +32,7 @@ public class Test_FielModifier {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public PolitoFieldModifier modifier1;
 
     public  Test_FielModifier(){
@@ -43,7 +43,7 @@ public class Test_FielModifier {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         modifier1 = new PolitoFieldModifier(ctx, new Object[]{nctx.nm.get("modifier1"), net, nctx});
 
         ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>> adm = new ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>>();
@@ -90,8 +90,8 @@ public class Test_FielModifier {
         packet.setEmailFrom(3);
         packet.setOptions(11);
         packet.setProto(nctx.HTTP_RESPONSE);
-        a.installEndHost(packet);
-
+        a.installAsWebClient(nctx.am.get("ip_b"), packet);
+        b.installAsWebServer(new PacketModel());
         check = new Checker(ctx,nctx,net);
 }
     

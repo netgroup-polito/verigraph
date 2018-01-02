@@ -32,7 +32,7 @@ public class Test_3FieldModifiers {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoWebServer b;
+    public PolitoEndHost b;
     public PolitoFieldModifier modifier1, modifier2, modifier3;
 
     public  Test_3FieldModifiers(){
@@ -43,7 +43,7 @@ public class Test_3FieldModifiers {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         modifier1 = new PolitoFieldModifier(ctx, new Object[]{nctx.nm.get("modifier1"), net, nctx});
         modifier2 = new PolitoFieldModifier(ctx, new Object[]{nctx.nm.get("modifier2"), net, nctx});
         modifier3 = new PolitoFieldModifier(ctx, new Object[]{nctx.nm.get("modifier3"), net, nctx});
@@ -113,8 +113,8 @@ public class Test_3FieldModifiers {
         packet.setEmailFrom(1);
         packet.setIp_dest(nctx.am.get("ip_b"));
         packet.setProto(nctx.HTTP_REQUEST);packet.setOptions(10);
-        a.installEndHost(packet);
-
+        a.installAsWebClient(nctx.am.get("ip_b"), packet);
+        
         packet.setEmailFrom(101);
         modifier1.installFieldModifier(Optional.of(packet));
         packet.setEmailFrom(102);
@@ -122,7 +122,7 @@ public class Test_3FieldModifiers {
         packet.setEmailFrom(103);
         modifier3.installFieldModifier(Optional.of(packet));
 
-
+        b.installAsWebServer(new PacketModel());
         check = new Checker(ctx,nctx,net);
 }
     
