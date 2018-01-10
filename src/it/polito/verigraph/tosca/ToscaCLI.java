@@ -35,17 +35,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.sun.research.ws.wadl.ObjectFactory;
 
+import it.polito.verigraph.exception.BadRequestException;
+import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.grpc.client.ToscaClient;
 import it.polito.verigraph.grpc.tosca.NewTopologyTemplate;
 import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
 import it.polito.verigraph.grpc.tosca.ToscaPolicy;
 import it.polito.verigraph.grpc.tosca.ToscaRequestID;
+import it.polito.verigraph.grpc.tosca.ToscaTestGrpc;
 import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
 import it.polito.verigraph.tosca.classes.Configuration;
 import it.polito.verigraph.tosca.classes.Definitions;
 import it.polito.verigraph.tosca.classes.TDefinitions;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToXml;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToYaml;
+import it.polito.verigraph.tosca.converter.grpc.XmlToGrpc;
+import it.polito.verigraph.tosca.converter.grpc.YamlToGrpc;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 
@@ -63,9 +68,10 @@ public class ToscaCLI {
 	private static final Pattern yamlSource = Pattern.compile(".*\\.yaml$");
 	private static final Pattern xmlSource = Pattern.compile(".*\\.xml");
 	private static final Pattern jsonSource = Pattern.compile(".*\\.json$");
-	private static final Pattern configOpt = Pattern.compile("-use|-USE|-format|-FORMAT");
-	private static final Pattern useOpt = Pattern.compile("gRPC|grpc|GRPC|REST|rest");
-	private static final Pattern formatOpt = Pattern.compile("yaml|YAML|Json|json|JSON|XML|xml");
+	private static final Pattern configOpt = Pattern.compile("-use|-format", Pattern.CASE_INSENSITIVE);
+	private static final Pattern useOpt = Pattern.compile("grpc|rest", Pattern.CASE_INSENSITIVE);
+	private static final Pattern formatOpt = Pattern.compile("yaml|json|xml", Pattern.CASE_INSENSITIVE);
+	private static final Pattern policies = Pattern.compile("reachability|isolation|traversal", Pattern.CASE_INSENSITIVE);
 	
 	private Boolean useRest;
 	private String mediatype;
@@ -265,8 +271,6 @@ public class ToscaCLI {
 			if (restClient == null)
 				restClient = ClientBuilder.newClient();
 
-			// TODO (?) handling of -x/j/y option to choose the mediatype
-
 			if (!reader.hasNextLong()) {
 				System.out.println("-- Provide the integer Id for the requested graph.");
 				return;
@@ -306,7 +310,7 @@ public class ToscaCLI {
 			// Targeting the resource
 			WebTarget target = restClient.target(baseUri);
 
-			// Performing the request and reading the resonse
+			// Performing the request and reading the response
 			Builder mypost = target.request(mediatype);
 			Response res = null;
 			switch (mediatype) {
@@ -412,8 +416,8 @@ public class ToscaCLI {
 			}
 			graphId = reader.next();
 			
-			if (!reader.hasNext()) {
-				System.out.println("-- Provide the requested typer of verfication.");
+			if (!reader.hasNext(policies)) {
+				System.out.println("-- Provide the requested type of verfication.");
 				return;
 			}
 			whichpolicy = reader.next().toLowerCase();
@@ -487,26 +491,219 @@ public class ToscaCLI {
 				
 			}
 
-
 		}catch (Exception ex) {
-			ex.printStackTrace();
+			ex.printStackTrace(); //TODO check for unhandled exceptions
 		}
 		
 	}
-	public  void grpcGet(Scanner reader) {
+	
+	
+	public void grpcGet(Scanner reader) {
 		
-	}
-	public  void grpcCreate(Scanner reader) {
+		try {
+			if (grpcClient == null)
+				grpcClient = new ToscaClient(host, port);
+
+			if (!reader.hasNextLong()) {
+				System.out.println("-- Provide the integer Id for the requested graph.");
+				return;
+			}
+			
+			TopologyTemplateGrpc templ = grpcClient.getTopologyTemplate(reader.next());
+			if(templ == null) {
+				System.out.println("++ No template received, the requested template could not be present.");
+				return;
+			}
+			
 		
+			switch(mediatype) {
+			case MediaType.APPLICATION_XML:
+				List<Definitions> receivedDefs = new ArrayList<Definitions>();
+				receivedDefs.add(GrpcToXml.mapGraph(templ));
+				this.marshallToXml(receivedDefs);
+				break;
+				
+			case "application/x-yaml":
+				List<ServiceTemplateYaml> receivedTempls = new ArrayList<ServiceTemplateYaml>();
+				receivedTempls.add(GrpcToYaml.mapGraphYaml(templ));
+				this.marshallToYaml(receivedTempls);
+				break;
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
+	
+	public void grpcCreate(Scanner reader) {
+		try {
+			if (grpcClient == null)
+				grpcClient = new ToscaClient(host, port);
+
+			switch (mediatype) {
+			case MediaType.APPLICATION_XML:
+				if (reader.hasNext(xmlSource)) {
+					grpcClient.createTopologyTemplate(XmlToGrpc.obtainTopologyTemplateGrpc(reader.next()));
+				} else {
+					System.out.println("-- The provided file is not compatible with the current configuration.");
+					return;
+				}
+				break;
+
+			case "application/x-yaml":
+				if (reader.hasNext(yamlSource)) {
+					grpcClient.createTopologyTemplate(YamlToGrpc.obtainTopologyTemplateGrpc(reader.next()));
+				} else {
+					System.out.println("-- The provided file is not compatible with the current configuration.");
+					return;
+				}
+				break;
+			}
+
+		} catch (DataNotFoundException | ClassCastException | BadRequestException | IOException | JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return;
+	}
+	
+	
 	public  void grpcDelete(Scanner reader) {
 		
+		try {
+			if (grpcClient == null)
+				grpcClient = new ToscaClient(host, port);
+			
+			if (!reader.hasNextLong()) {
+				System.out.println("-- Provide the integer Id of the graph you want to delete.");
+				return;
+			}
+			
+			grpcClient.deleteTopologyTemplate(reader.next());
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return;
 	}
+	
+	
 	public  void grpcUpdate(Scanner reader) {
-		
+		try {
+			if (grpcClient == null)
+				grpcClient = new ToscaClient(host, port);
+			
+			//Checking if user ha provided the id of the graph to be updated and retrieving it
+			if(!reader.hasNextLong()) {
+				System.out.println("-- Please provide a valid id for the graph to be update");
+				return;
+			}
+			String id = reader.next();
+			
+			//Readign the file and performing the request according to current configuration
+			switch (mediatype) {
+			case MediaType.APPLICATION_XML:
+				if (reader.hasNext(xmlSource)) {
+					grpcClient.updateTopologyTemplate(XmlToGrpc.obtainTopologyTemplateGrpc(reader.next()), id);
+				} else {
+					System.out.println("-- The provided file is not compatible with the current configuration.");
+					return;
+				}
+				break;
+
+			case "application/x-yaml":
+				if (reader.hasNext(yamlSource)) {
+					grpcClient.updateTopologyTemplate(YamlToGrpc.obtainTopologyTemplateGrpc(reader.next()), id);
+				} else {
+					System.out.println("-- The provided file is not compatible with the current configuration.");
+					return;
+				}
+				break;
+			}
+		} catch (DataNotFoundException | ClassCastException | BadRequestException | IOException | JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
+	
+	
 	public  void grpcVerify(Scanner reader) {
+		ToscaPolicy.Builder policyBuilder = ToscaPolicy.newBuilder();
+		String graphId, whichPolicy, source, destination, middlebox = null;
 		
+			try {
+				if(!reader.hasNextLong()) {
+					System.out.println("-- Provide the graph on which you want to perform verification.");
+					return;
+				}
+				graphId = reader.next();
+				
+				if (!reader.hasNext(policies)) {
+					System.out.println("-- Provide the requested type of verfication.");
+					return;
+				}
+				whichPolicy = reader.next().toLowerCase();
+				
+				try {
+					source = reader.next();
+					destination = reader.next();
+					if(!whichPolicy.equals("reachability")) {
+						middlebox = reader.next();
+					}
+				}catch(NoSuchElementException ex) {
+					System.out.println("-- Wrong or missing verification parameters.");
+					return;
+				}
+				
+				policyBuilder.setIdTopologyTemplate(graphId);
+				policyBuilder.setDestination(destination);
+				policyBuilder.setSource(source);
+				switch(whichPolicy) {
+				case "reachability":
+					policyBuilder.setType(ToscaPolicy.PolicyType.forNumber(0));
+					break;
+				case "isolation":
+					policyBuilder.setType(ToscaPolicy.PolicyType.forNumber(1));
+					policyBuilder.setMiddlebox(middlebox);
+					break;
+				case "traversal":
+					policyBuilder.setType(ToscaPolicy.PolicyType.forNumber(2));
+					policyBuilder.setMiddlebox(middlebox);
+					break;
+				}
+				
+				if (grpcClient == null)
+					grpcClient = new ToscaClient(host, port);
+				
+				//Sending verification request
+				ToscaVerificationGrpc result = grpcClient.verifyPolicy(policyBuilder.build());
+				
+				if(result.getErrorMessage().equals("")) {
+					System.out.println("++ Verification result: " + result.getResult());
+					System.out.println("++ Verification comment: " + result.getComment());
+					List<ToscaTestGrpc> tests = result.getTestList();
+					if(!tests.isEmpty()) {
+						System.out.println("++ Followed paths: \n");
+						// TODO complete this part
+//					for(ToscaTestGrpc test : tests) {
+//						test.getNodeTemplateList()
+//					}
+					}
+					
+				}else {
+					System.out.println("-- Something went wrong: " + result.getErrorMessage());
+					return;
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return;
 	}
 	
 	
