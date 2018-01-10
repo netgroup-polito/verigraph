@@ -25,15 +25,15 @@ import javax.xml.transform.stream.StreamSource;
 import com.sun.research.ws.wadl.ObjectFactory;
 
 import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.tosca.classes.Configuration;
-import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TDefinitions;
-import it.polito.verigraph.tosca.classes.TEntityTemplate;
-import it.polito.verigraph.tosca.classes.TExtensibleElements;
-import it.polito.verigraph.tosca.classes.TNodeTemplate;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
-import it.polito.verigraph.tosca.classes.TServiceTemplate;
-import it.polito.verigraph.tosca.classes.TTopologyTemplate;
+import it.polito.tosca.jaxb.Configuration;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TDefinitions;
+import it.polito.tosca.jaxb.TEntityTemplate;
+import it.polito.tosca.jaxb.TExtensibleElements;
+import it.polito.tosca.jaxb.TNodeTemplate;
+import it.polito.tosca.jaxb.TRelationshipTemplate;
+import it.polito.tosca.jaxb.TServiceTemplate;
+import it.polito.tosca.jaxb.TTopologyTemplate;
 import it.polito.verigraph.tosca.converter.grpc.ToscaGrpcUtils;
 
 
@@ -113,7 +113,7 @@ public class XmlParsingUtils {
 	}
 
 
-	/** Returns the it.polito.verigraph.tosca.classes.Configuration JAXB-generated TOSCA object of a TOSCA NodeTemplate. */
+	/** Returns the it.polito.tosca.jaxb.Configuration JAXB-generated TOSCA object of a TOSCA NodeTemplate. */
 	public static Configuration obtainConfiguration(TNodeTemplate nodeTemplate) {
 		try {
 			Configuration configuration = (Configuration)nodeTemplate.getProperties().getAny();

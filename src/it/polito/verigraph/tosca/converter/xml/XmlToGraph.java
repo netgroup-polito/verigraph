@@ -17,11 +17,11 @@ import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.tosca.MappingUtils;
 import it.polito.verigraph.tosca.XmlParsingUtils;
-import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TExtensibleElements;
-import it.polito.verigraph.tosca.classes.TNodeTemplate;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
-import it.polito.verigraph.tosca.classes.TServiceTemplate;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TExtensibleElements;
+import it.polito.tosca.jaxb.TNodeTemplate;
+import it.polito.tosca.jaxb.TRelationshipTemplate;
+import it.polito.tosca.jaxb.TServiceTemplate;
 
 public class XmlToGraph {
 	public static Graph mapTopologyTemplate(Definitions definitions) throws DataNotFoundException, BadRequestException {
@@ -115,7 +115,7 @@ public class XmlToGraph {
 		}
 	}
 
-	private static Configuration mapToscaConfiguration(it.polito.verigraph.tosca.classes.Configuration configuration) throws JsonProcessingException, IOException {
+	private static Configuration mapToscaConfiguration(it.polito.tosca.jaxb.Configuration configuration) throws JsonProcessingException, IOException {
 		Configuration conf = new Configuration();
 		ObjectMapper mapper = new ObjectMapper();	    
 		String stringConfiguration;

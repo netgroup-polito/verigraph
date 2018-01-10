@@ -1,9 +1,9 @@
 package it.polito.verigraph.providers;
 
 import com.sun.research.ws.wadl.ObjectFactory;
-import it.polito.verigraph.tosca.classes.Configuration;
-import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TDefinitions;
+import it.polito.tosca.jaxb.Configuration;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TDefinitions;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;

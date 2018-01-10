@@ -1,6 +1,6 @@
 package it.polito.verigraph.tosca.deserializer;
 
-import it.polito.verigraph.tosca.classes.Configuration;
+import it.polito.tosca.jaxb.Configuration;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;

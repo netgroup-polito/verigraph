@@ -10,14 +10,14 @@ import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.tosca.MappingUtils;
-import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TEntityTemplate.Properties;
-import it.polito.verigraph.tosca.classes.TNodeTemplate;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate.SourceElement;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate.TargetElement;
-import it.polito.verigraph.tosca.classes.TServiceTemplate;
-import it.polito.verigraph.tosca.classes.TTopologyTemplate;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TEntityTemplate.Properties;
+import it.polito.tosca.jaxb.TNodeTemplate;
+import it.polito.tosca.jaxb.TRelationshipTemplate;
+import it.polito.tosca.jaxb.TRelationshipTemplate.SourceElement;
+import it.polito.tosca.jaxb.TRelationshipTemplate.TargetElement;
+import it.polito.tosca.jaxb.TServiceTemplate;
+import it.polito.tosca.jaxb.TTopologyTemplate;
 
 public class GraphToXml {
 	/** model --> tosca_xml*/
@@ -72,7 +72,7 @@ public class GraphToXml {
 				getFunctional_type().substring(1) + "Type");
 		nodeTemplate.setType(type);
 
-		it.polito.verigraph.tosca.classes.Configuration config = mapModelConfiguration(node.getConfiguration(), node.getFunctional_type().toLowerCase());
+		it.polito.tosca.jaxb.Configuration config = mapModelConfiguration(node.getConfiguration(), node.getFunctional_type().toLowerCase());
 		//nodeTemplate.getAny().add(config);
 		nodeTemplate.setProperties(new Properties());
 		nodeTemplate.getProperties().setAny(config);
@@ -102,8 +102,8 @@ public class GraphToXml {
 	}
 
 
-	private static it.polito.verigraph.tosca.classes.Configuration mapModelConfiguration(Configuration conf, String type) {
-		it.polito.verigraph.tosca.classes.Configuration configuration = new it.polito.verigraph.tosca.classes.Configuration();
+	private static it.polito.tosca.jaxb.Configuration mapModelConfiguration(Configuration conf, String type) {
+		it.polito.tosca.jaxb.Configuration configuration = new it.polito.tosca.jaxb.Configuration();
 		try {
 			//We are passing the configuration type to the Deserializer context
 			configuration = MappingUtils.obtainToscaConfiguration(conf, type);

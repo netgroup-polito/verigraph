@@ -2,9 +2,9 @@ package it.polito.verigraph.providers;
 
 import com.sun.research.ws.wadl.ObjectFactory;
 import it.polito.verigraph.model.Graph;
-import it.polito.verigraph.tosca.classes.Configuration;
-import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TDefinitions;
+import it.polito.tosca.jaxb.Configuration;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TDefinitions;
 import it.polito.verigraph.tosca.converter.xml.XmlToGraph;
 
 import javax.ws.rs.Consumes;

@@ -11,15 +11,15 @@ import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
 import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
 import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
 import it.polito.verigraph.tosca.MappingUtils;
-import it.polito.verigraph.tosca.classes.Configuration;
-import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TEntityTemplate.Properties;
-import it.polito.verigraph.tosca.classes.TNodeTemplate;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate.SourceElement;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate.TargetElement;
-import it.polito.verigraph.tosca.classes.TServiceTemplate;
-import it.polito.verigraph.tosca.classes.TTopologyTemplate;
+import it.polito.tosca.jaxb.Configuration;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TEntityTemplate.Properties;
+import it.polito.tosca.jaxb.TNodeTemplate;
+import it.polito.tosca.jaxb.TRelationshipTemplate;
+import it.polito.tosca.jaxb.TRelationshipTemplate.SourceElement;
+import it.polito.tosca.jaxb.TRelationshipTemplate.TargetElement;
+import it.polito.tosca.jaxb.TServiceTemplate;
+import it.polito.tosca.jaxb.TTopologyTemplate;
 
 public class GrpcToXml {
 
@@ -117,8 +117,8 @@ public class GrpcToXml {
 	}
 
 
-	private static it.polito.verigraph.tosca.classes.Configuration mapModelConfiguration(ToscaConfigurationGrpc toscaConfigurationGrpc, String type) {
-		it.polito.verigraph.tosca.classes.Configuration configuration = new it.polito.verigraph.tosca.classes.Configuration();
+	private static it.polito.tosca.jaxb.Configuration mapModelConfiguration(ToscaConfigurationGrpc toscaConfigurationGrpc, String type) {
+		it.polito.tosca.jaxb.Configuration configuration = new it.polito.tosca.jaxb.Configuration();
 		try {
 			//We are passing the configuration type to the Deserializer context
 			configuration = MappingUtils.obtainToscaConfiguration(toscaConfigurationGrpc, type);

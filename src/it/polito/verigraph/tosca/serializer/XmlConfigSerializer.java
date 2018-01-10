@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import it.polito.verigraph.tosca.classes.Configuration;
+import it.polito.tosca.jaxb.Configuration;
 
 //Custom serializer for XmlToscaConfigurationObject conversion to JSON
 public class XmlConfigSerializer extends StdSerializer<Configuration> {

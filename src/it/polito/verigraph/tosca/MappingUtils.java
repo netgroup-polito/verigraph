@@ -15,9 +15,9 @@ import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Test;
 import it.polito.verigraph.model.Verification;
-import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TDocumentation;
-import it.polito.verigraph.tosca.classes.TServiceTemplate;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TDocumentation;
+import it.polito.tosca.jaxb.TServiceTemplate;
 import it.polito.verigraph.tosca.converter.xml.GraphToXml;
 import it.polito.verigraph.tosca.converter.yaml.GraphToYaml;
 import it.polito.verigraph.tosca.deserializer.XmlConfigurationDeserializer;
@@ -142,10 +142,10 @@ public class MappingUtils {
 	 * 
 	 * Used for: xml-->model 
 	 * @throws JsonProcessingException*/
-	public static String obtainStringConfiguration(it.polito.verigraph.tosca.classes.Configuration nodeConfig) throws JsonProcessingException {
+	public static String obtainStringConfiguration(it.polito.tosca.jaxb.Configuration nodeConfig) throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule();
-		module.addSerializer(it.polito.verigraph.tosca.classes.Configuration.class, new XmlConfigSerializer());
+		module.addSerializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigSerializer());
 		mapper.registerModule(module);
 
 		String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(nodeConfig);
@@ -160,19 +160,19 @@ public class MappingUtils {
 	 * 
 	 * Used for: model-->xml 
 	 * @throws JsonProcessingException */
-	public static it.polito.verigraph.tosca.classes.Configuration obtainToscaConfiguration(it.polito.verigraph.model.Configuration modelConfig, String type) throws JsonProcessingException {
+	public static it.polito.tosca.jaxb.Configuration obtainToscaConfiguration(it.polito.verigraph.model.Configuration modelConfig, String type) throws JsonProcessingException {
 
 		ObjectMapper mapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule();
 
 		//Passing the configuration type to the Deserializer context
-		module.addDeserializer(it.polito.verigraph.tosca.classes.Configuration.class, new XmlConfigurationDeserializer());
+		module.addDeserializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigurationDeserializer());
 		mapper.registerModule(module);
 
-		it.polito.verigraph.tosca.classes.Configuration toscaConfig = new it.polito.verigraph.tosca.classes.Configuration();
+		it.polito.tosca.jaxb.Configuration toscaConfig = new it.polito.tosca.jaxb.Configuration();
 		try {
 			toscaConfig = mapper.reader(new InjectableValues.Std().addValue("type", type))
-					.forType(it.polito.verigraph.tosca.classes.Configuration.class)
+					.forType(it.polito.tosca.jaxb.Configuration.class)
 					.readValue(modelConfig.getConfiguration());
 		} catch (IOException e) {
 			//TODO shall we suppose that configuration stored on DB are always correct?
@@ -185,19 +185,19 @@ public class MappingUtils {
 	 * 
 	 * Used for: grpc-->xml 
 	 * @throws JsonProcessingException */
-	public static it.polito.verigraph.tosca.classes.Configuration obtainToscaConfiguration(ToscaConfigurationGrpc grpcConfig, String type) throws JsonProcessingException {
+	public static it.polito.tosca.jaxb.Configuration obtainToscaConfiguration(ToscaConfigurationGrpc grpcConfig, String type) throws JsonProcessingException {
 
 		ObjectMapper mapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule();
 
 		//Passing the configuration type to the Deserializer context
-		module.addDeserializer(it.polito.verigraph.tosca.classes.Configuration.class, new XmlConfigurationDeserializer());
+		module.addDeserializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigurationDeserializer());
 		mapper.registerModule(module);
 
-		it.polito.verigraph.tosca.classes.Configuration toscaConfig = new it.polito.verigraph.tosca.classes.Configuration();
+		it.polito.tosca.jaxb.Configuration toscaConfig = new it.polito.tosca.jaxb.Configuration();
 		try {
 			toscaConfig = mapper.reader(new InjectableValues.Std().addValue("type", type))
-					.forType(it.polito.verigraph.tosca.classes.Configuration.class)
+					.forType(it.polito.tosca.jaxb.Configuration.class)
 					.readValue(grpcConfig.getConfiguration());
 		} catch (IOException e) {
 			//TODO shall we suppose that configuration stored on DB are always correct?

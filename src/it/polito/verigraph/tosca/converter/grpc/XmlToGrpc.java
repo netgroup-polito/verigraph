@@ -17,9 +17,9 @@ import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
 import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
 import it.polito.verigraph.tosca.MappingUtils;
 import it.polito.verigraph.tosca.XmlParsingUtils;
-import it.polito.verigraph.tosca.classes.TNodeTemplate;
-import it.polito.verigraph.tosca.classes.TRelationshipTemplate;
-import it.polito.verigraph.tosca.classes.TServiceTemplate;
+import it.polito.tosca.jaxb.TNodeTemplate;
+import it.polito.tosca.jaxb.TRelationshipTemplate;
+import it.polito.tosca.jaxb.TServiceTemplate;
 
 public class XmlToGrpc {
 
@@ -82,7 +82,7 @@ public class XmlToGrpc {
 		nodegrpc.setType(type);
 		ToscaConfigurationGrpc.Builder grpcConfig;   	
 		if(isVerigraphCompl) {
-			it.polito.verigraph.tosca.classes.Configuration nodeConfig = XmlParsingUtils.obtainConfiguration(nodeTempl);
+			it.polito.tosca.jaxb.Configuration nodeConfig = XmlParsingUtils.obtainConfiguration(nodeTempl);
 			grpcConfig = ToscaConfigurationGrpc.newBuilder();
 			//These fields are optional in TOSCA xml
 			try {

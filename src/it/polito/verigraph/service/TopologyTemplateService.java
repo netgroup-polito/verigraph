@@ -24,7 +24,7 @@ import it.polito.neo4j.manager.Neo4jDBManager;
 import it.polito.verigraph.exception.ForbiddenException;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
-import it.polito.verigraph.tosca.classes.Definitions;
+import it.polito.tosca.jaxb.Definitions;
 import it.polito.verigraph.tosca.converter.xml.GraphToXml;
 import it.polito.verigraph.tosca.converter.xml.XmlToGraph;
 import it.polito.verigraph.tosca.converter.yaml.GraphToYaml;
