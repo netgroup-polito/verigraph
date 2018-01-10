@@ -1,11 +1,16 @@
 The semantic of the configuration parameters passed to VeriGraph depends on the VNF type. Having described the models of the VNFs supported by VeriGraph and how to configure them in Section~\ref{VNFmodels}, we briefly recap what we expect as input for each VNF in the catalogue:
 \begin{itemize}
 	\item \textbf{NAT}: a set of private addresses that represent the hosts in the internal network; 
+	\item \textbf{VPN access}: IP addresses of VPN access and exit network functions;
+	\item \textbf{VPN exit}:  IP addresses of VPN access and exit network functions;
+	\item \textbf{IDS}: the set of blacklist strings;
 	\item \textbf{Web Cache}: the list of network nodes that belong to the internal network;
 	\item \textbf{Anti-spam}: the set of blacklist email addresses;
-	\item \textbf{ACL and Leaning firewalls}: a set of \textit{$<source, destination>$} pair of addresses, which are allowed (Learning firewall) or not (ACL firewall) to communicate between each other;
-	\item \textbf{End-host, Mail Client/Server, Web CLient/Server}: at this version of VeriGraph, the tool does not support end-host configurations. This means that we cannot specify which traffic flow end-hosts send without changing their models (e.g., a client can generate packet with specific port number, destination address etc.). It could be useful to extend end-host model in this direction.
+	\item \textbf{ACL}: a set of \textit{$<source, destination>$} pair of addresses, which are not allowed to communicate between each other;
+	\item \textbf{End-host}: end-host configurations in the form of Packet Model. This means that we specify which traffic flow end-hosts send (e.g., a client can generate packet with specific port number, destination address etc.). Depending on the type of the end-host (Mail Client/Server, Web CLient/Server) corresponding additional formulas for that type are appended.
+	\item \textbf{Field Modifier}: a Packet Model containing the fields needs to be modified;
 \end{itemize}
+
 
 To better understand the information that VeriGraph needs to create the verification scenario, we show an example of JSON file~\footnote{Note that this is note the actual implementation of how VeriGraph supports the function configuration, but a simple example to clarify what VeriGraph expects.} that contains the configurations of each VNF involved in a generic chain, where we have included also the end-hosts configuration to have a complete understanding of the network scenario:\\
 
