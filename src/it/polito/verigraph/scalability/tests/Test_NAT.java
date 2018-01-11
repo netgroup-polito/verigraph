@@ -32,7 +32,7 @@ public class Test_NAT {
     public Checker check;
     public Context ctx;
     public PolitoEndHost a;
-    public PolitoEndHost b;
+    public PolitoWebServer b;
     public PolitoNat nat;
 
     public  Test_NAT(){
@@ -43,7 +43,7 @@ public class Test_NAT {
         Network net = new Network (ctx,new Object[]{nctx});
 
         a = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("a"), net, nctx});
-        b = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
+        b = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("b"), net, nctx});
         nat = new PolitoNat(ctx, new Object[]{nctx.nm.get("nat"), net, nctx});
 
         ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>> adm = new ArrayList<Tuple<NetworkObject,ArrayList<DatatypeExpr>>>();
@@ -82,7 +82,7 @@ public class Test_NAT {
         //Configuring middleboxes
         nat.natModel(nctx.am.get("ip_nat"));
 
-        b.installAsWebServer(new PacketModel());
+        //b.installAsWebServer(new PacketModel());
         check = new Checker(ctx,nctx,net);
 }
     
