@@ -1,5 +1,5 @@
 
-The VNF catalogue supported by VeriGraph is composed of several network function models, which are: End-host, Mail Server/Client, Web Client/Server, Anti-spam, NAT, Web Cache, ACL firewall and Learning Firewall. Here we describe the formulas that model the functional behaviour of each function in catalog.
+The VNF catalogue supported by VeriGraph is composed of several network function models, which are: End-host, Mail Server/Client, Web Client/Server, Anti-spam, NAT, Web Cache, ACL firewall. Here we describe the formulas that model the functional behaviour of each function in catalog.
 
 
 \paragraph{End-host model}
@@ -11,24 +11,25 @@ An end-host is a network node which sends packets towards a destination and rece
 			\begin{align}
 				\begin{split}
 					\label{end-host_constr1}
-					(send(end\_host, n_{0}, p_{0}, t_{0}) &) \implies (nodeHasAddr(end\_host, p_{0}.src) \wedge \\
-					& p_{0}.origin == end\_host \wedge p_{0}.origin\_body == p_{0}.body) \\
-					& \forall (n_{0}, p_{0}, t_{0})
+					(send(end\_host, n_{0}, p_{0}) &) \implies (nodeHasAddr(end\_host, p_{0}.src) \wedge \\
+					& p_{0}.origin == end\_host \wedge p_{0}.origin\_body == p_{0}.body)  \wedge \\
+					& predicatesOnPktFields, \quad   \forall (n_{0}, p_{0})
 				\end{split} \\
 				\begin{split}
 					\label{end-host_constr2}
-					(recv(n_{0}, end\_host, p_{0}, t_{0}) &) \implies (nodeHasAddr(end\_host, p_{0}.dest)),\\
-					& \forall (n_{0}, p_{0}, t_{0})
+					(recv(n_{0}, end\_host, p_{0}) &) \implies (nodeHasAddr(end\_host, p_{0}.dest)),\\
+					& \forall (n_{0}, p_{0})
 				\end{split}
 			\end{align}
 		\end{subequations}
 	}%
 	\caption{End-host model.}
+	\label{end-host_model}
 \end{figure}
 \\
-At this version of VeriGraph, the tool does not support end-host configurations, as well as the other end-host-based models (i.e., servers and clients). In other words, we cannot specify which traffic flow an end-host sends, without changing its model (e.g., a client can generate packet with specific port number, destination address etc.). It could be useful to extend VeriGraph to support end-host configurations.
+This is a basic version of an endpoint in the service graph, which can be configured to behave as end-host-based model (i.e., servers and clients). VeriGraph support end-host configurations to specify which traffic flow an end-host sends, without changing its model (e.g., a client can generate packet with specific port number, destination address etc.). Initially $predicatesOnPktFields$ is set to true and depending on the packet model configured by the user, this predicate will be appended with the assigned fields of the packet. 
 
-\paragraph{Mail Server model} A mail server is a complex form of end-host. In fact, this kind of server can generate only \textit{POP3\_RESPONSE} or \textit{SMTP\_RESPONSE} messages addressed to a mail client (Formula~\ref{mail-server_constr1}), but the type of the response depends on the previous messages. In particular, a \textit{POP3\_RESPONSE} packet is sent only if previously a \textit{POP3\_REQUEST} was received (Formula~\ref{mail-server_constr2}) and similarly for the \textit{SMTP\_RESPONSE} packets (Formula~\ref{mail-server_constr3}). A mail server is also modelled for receiving just \textit{POP3\_REQUEST} or \textit{SMTP\_REQUEST} messages (Formula~\ref{mail-server_constr4}). 
+\paragraph{Mail Server model} A mail server is a complex form of end-host which can function as POP3 or SMTP server. In fact, this kind of server can generate only \textit{POP3\_RESPONSE} or \textit{SMTP\_RESPONSE} messages addressed to a mail client, but the type of the response depends on the type of the mail server. For instance POP3 mail server is modelled for sending only \textit{POP3\_RESPONSE} (Formula~\ref{mail-server_constr1}) and  receiving just \textit{POP3\_REQUEST} messages (Formula~\ref{mail-server_constr4}). In particular, a packet from a mail server is sent only if previously a \textit{POP3\_REQUEST} was received (Formula~\ref{mail-server_constr2}). The same applies for an SMTP server. These set of formulas will be appended to the solver depending on the type of the end-host used in a test scenario. 
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
@@ -36,88 +37,56 @@ At this version of VeriGraph, the tool does not support end-host configurations,
 			\begin{align}
 				\begin{split}
 					\label{mail-server_constr1}
-					(se& nd(mail\_server , n_{0}, p_{0}, t_{0})) \implies (nodeHasAddr(mail\_server, p_{0}.src) \wedge \\
-					& p_{0}.origin = mail\_server \wedge p_{0}.origin\_body = p_{0}.body \wedge \\
-					& (p_{0}.proto = POP3\_RESPONSE \vee p_{0}.proto = SMTP\_RESPONSE) \wedge \\
-					& p_{0}.dst = ip\_mail\_client \wedge p_{0}.emailFrom = mail\_server), \\
-					& \forall (n_{0}, p_{0}, t_{0})
-				\end{split} \\
-%			\end{align}
-%		\end{subequations}
-%	}
-%\end{figure}
-%\begin{figure}
-%	{\footnotesize
-%		\begin{subequations} 
-%		\begin{align}
-				\begin{split}
-					\label{mail-server_constr2}
-					(se& nd(mail\_server , n_{0}, p_{0}, t_{0}) \wedge p_{0}.proto = POP3\_RESPONSE) \implies \\
-					& \exists (p_{1}, t_{1}) | recv(n_{0}, mail\_server, p_{1}, t_{1})  \wedge p_{1}.proto = POP3\_REQUEST),\\
-					& \forall (n_{0}, p_{0}, t_{0})
-				\end{split} \\
-				\begin{split}
-					\label{mail-server_constr3}
-					(se& nd(mail\_server , n_{0}, p_{0}, t_{0}) \wedge p_{0}.proto = SMTP\_RESPONSE) \implies \\
-					& \exists (p_{1}, t_{1}) | recv(n_{0}, mail\_server, p_{1}, t_{1}) \wedge  p_{1}.proto = SMTP\_REQUEST),\\
-					& \forall (n_{0}, p_{0}, t_{0})
-				\end{split} \\
+					(se& nd(end\_host , n_{0}, p_{0})) \implies  (p_{0}.proto = POP3\_RESPONSE ), \\
+					& \forall (n_{0}, p_{0})
+				\end{split} \\							
 				\begin{split}
 					\label{mail-server_constr4}
-					(re& cv(n_{0}, mail\_server, p_{0}, t_{0})) \implies  (nodeHasAddr(mail\_server, p_{0}.dst) \\
-					& (p_{0}.proto = POP3\_REQUEST \vee p_{0}.proto = SMTP\_REQUEST)), \\
-					& \forall (n_{0}, p_{0}, t_{0})
-				\end{split}
+					(re& cv(n_{0}, end\_host, p_{0})) \implies (p_{0}.proto = POP3\_REQUEST ), \\
+					& \forall (n_{0}, p_{0})
+				\end{split}\\	
+				\begin{split}
+					\label{mail-server_constr2}
+					(se& nd(end\_host , n_{0}, p_{0}) \implies \exists (p_{1}) | recv(n_{0}, end\_host, p_{1}) \wedge\\
+					&    (p_{1}.proto = POP3\_REQUEST),\\
+					& \forall (n_{0}, p_{0})
+				\end{split} 
 			\end{align}
 		\end{subequations}
-	}%
-	\caption{Mail Server model.}
+	}% 
+	\caption{POP3 Mail Server model.}
 	\label{mail-server_model}
 \end{figure}
 
-\paragraph{Mail client model} A mail client is a particular kind of end-host (Formulas~\ref{mail-client_constr1} and~\ref{mail-client_constr2}). This node is modelled so that it can send \textit{POP3\_REQUEST} or \textit{SMTP\_REQUEST} messages only. Those messages must have a mail server address as destination (\textit{$p_{0}.dst = ip\_mail\_server$}) and the \textit{emailFrom} field must indicate the mail client node itself (Formula~\ref{mail-client_constr1}).
+\paragraph{Mail Client model} A mail client is a particular kind of end-host and similarly to a Mail Server it can behave as POP3 or SMTP client. This node is modelled so that it can receive \textit{POP3\_RESPONSE} or \textit{SMTP\_RESPONSE} messages only. In the case where the end-host set to behave as POP3 mail client, Formula~\ref{mail-client_constr2} is appended to the available set of formulas in an end-host.  
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
 			%MailClient model:
 			\begin{align}
 				\begin{split}
-					\label{mail-client_constr1}
-					(se& nd(mail\_client , n_{0}, p_{0}, t_{0})) \implies (nodeHasAddr(mail\_client, p_{0}.src) \wedge \\
-					& p_{0}.origin = mail\_client \wedge p_{0}.origin\_body = p_{0}. body \wedge \\
-					& (p_{0}.proto = POP3\_REQUEST \vee p_{0}.proto = SMTP\_REQUEST) \wedge \\
-					& p_{0}.dst = ip\_mail\_server \wedge p_{0}.emailFrom = mail\_client), \\
-					& \forall (n_{0}, p_{0}, t_{0})
-				\end{split} \\
-				\begin{split}
 					\label{mail-client_constr2}
-					(re& cv(n_{0}, mail\_client, p_{0}, t_{0})) \implies  (nodeHasAddr(mail\_client, p_{0}.dst)), \\
-					& \forall (n_{0}, p_{0}, t_{0})
+					(re& cv(n_{0},end\_host, p_{0})) \implies (p_{0}.proto = POP3\_RESPONSE) \wedge  \\
+					& p_{0}.src=ip\_pop3\_mail\_server , \forall (n_{0}, p_{0})
 				\end{split}
 			\end{align}
 		\end{subequations}
 	}%
-	\caption{Mail Client model.}
+	\caption{POP3 Mail Client model.}
 	\label{mail-client_model}
 \end{figure}
 
-\paragraph{Web Client model} The web client is based on the end-host model (Formulas~\ref{web-client_constr1} and~\ref{web-client_constr2}), but it can generate only \textit{HTTP\_REQUEST} packets with a web server address as destination (Formula~\ref{web-client_constr1}).
+\paragraph{Web Client model} The web client is an extension of the end-host model. This node is modelled so that if it receive \textit{HTTP\_RESPONSE} messages there must be a packet sent by this node whose destination address is the source address of the received packet (Formula~\ref{web-client_constr2}). 
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
 			%WebClient model:
 			\begin{align}
 				\begin{split}
-					\label{web-client_constr1}
-					(se& nd(web\_client , n_{0}, p_{0}, t_{0})) \implies (nodeHasAddr(web\_client, p_{0}.src) \wedge \\
-					& p_{0}.origin = web\_client \wedge p_{0}.origin\_body = p_{0}.body \wedge \\
-					& p_{0}.proto = HTTP\_REQUEST \wedge p_{0}.dst = ip\_web\_server), \\
-					& \forall (n_{0}, p_{0}, t_{0})
-				\end{split} \\
-				\begin{split}
 					\label{web-client_constr2}
-					(re& cv(n_{0}, web\_client, p_{0}, t_{0})) \implies  (nodeHasAddr(web\_client, p_{0}.dst)), \\
-					& \forall (n_{0}, p_{0}, t_{0})
+					(re& cv(n_{0}, end\_host, p_{0})) \implies  (p_{0}.proto = HTTP\_RESPONSE) \wedge \\
+					& \exists (p_{1}) | send( end\_host, n_{0}, p_{1}) \wedge  (p_{0}.src == p_{1}.dest),\\
+					& \forall (n_{0}, p_{0})
 				\end{split}
 			\end{align}
 		\end{subequations}
@@ -126,7 +95,7 @@ At this version of VeriGraph, the tool does not support end-host configurations,
 	\label{web-client_model}
 \end{figure}
 
-\paragraph{Web Server model} The web server model is built to send \textit{HTTP\_RESPONSE} packets only if the server has previously received a \textit{HTTP\_REQUEST} packet (Formula~\ref{web-server_constr1}). The sent and received packets must refer to the same \textit{url} field (\textit{$p_{1}.url = p_{0}.url$}):
+\paragraph{Web Server model} The web server model is built to send \textit{HTTP\_RESPONSE} packets only if the server has previously received a \textit{HTTP\_REQUEST} packet (Formula~\ref{web-server_constr1}). The sent and received packets must refer to the same \textit{url} field (\textit{$p_{1}.url = p_{0}.url$}) and  the received packet protocol must be a $HTTP\_REQUEST$ (Formula~\ref{web-server_constr2}).
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
@@ -134,17 +103,13 @@ At this version of VeriGraph, the tool does not support end-host configurations,
 			\begin{align}
 				\begin{split}
 					\label{web-server_constr1}
-					(se& nd(web\_server , n_{0}, p_{0}, t_{0})) \implies (nodeHasAddr(web\_server, p_{0}.src) \wedge \\
-					& p_{0}.origin = web\_server \wedge p_{0}.origin\_body = p_{0}.body \wedge \\
-					& p_{0}.proto = HTTP\_RESPONSE \wedge \exists (p_{1}, t_{1}) | (t_{1} < t_{0} \\
-					& recv(n_{0}, web\_server, p_{1}, t_{1}) \wedge p_{1}.url = p_{0}.url \wedge \\
-					& p_{1}.proto = HTTP\_REQUEST \wedge p_{0}.dst = p_{1}.src \wedge p_{0}.src = p_{1}.dst)), \\
-					& \forall (n_{0}, p_{0}, t_{0})
+					(se& nd(end\_host , n_{0}, p_{0})) \implies (p_{0}.proto = HTTP\_RESPONSE) \wedge \\
+					& \exists (p_{1}) | recv(n_{0}, end\_host, p_{1}) \wedge p_{1}.url = p_{0}.url \wedge \\
+					& p_{0}.dest = p_{1}.src, \forall (n_{0}, p_{0})\\
 				\end{split} \\
 				\begin{split}
 					\label{web-server_constr2}
-					(re& cv( n_{0}, mail\_server, p_{0}, t_{0})) \implies (nodeHasAdrr(web\_server, p_{0}.dst)),\\
-					& \forall (n_{0}, p_{0}, t_{0})
+					& (recv( n_{0}, end\_host, p_{0})) \implies (p_{0}.proto = HTTP\_REQUEST), \forall (n_{0}, p_{0})\\					
 				\end{split} 
 			\end{align}
 		\end{subequations}
@@ -153,7 +118,8 @@ At this version of VeriGraph, the tool does not support end-host configurations,
 	\label{web-server_model}
 \end{figure}
 
-\paragraph{Anti-Spam model}An anti-spam function was modelled to drop packets from blacklisted mail clients and servers. In fact, the anti-spam behaviour was based on the assumption that each client interested in receiving a new message addressed to it, sends a \texttt{POP3\_REQUEST} to the mail server in order to retrieve the message content. The server, in turn, replies with a \texttt{POP3\_RESPONSE} which contains a special field (\textit{emailFrom}) representing the message sender. The process of sending an email is similarly modelled through SMTP request and response messages. As evident from Formula \ref{anti-spam_constr1}, an anti-spam rejects any message containing a black listed email address (that are set during the creation of the VNF chain model). On the other hand, Formula \ref{anti-spam_constr2} is needed in order to state that a \texttt{POP3\_REQUEST} message is forwarded only after having received it in a previous time instant.
+
+\paragraph{Anti-Spam model}An anti-spam function was modelled to drop packets from blacklisted mail clients and servers. In fact, the anti-spam behaviour was based on the assumption that each client interested in receiving a new message addressed to it, sends a \texttt{POP3\_REQUEST} to the mail server in order to retrieve the message content. The server, in turn, replies with a \texttt{POP3\_RESPONSE} which contains a special field (\textit{emailFrom}) representing the message sender. The process of sending an email is similarly modelled through SMTP request and response messages. As evident from Formula \ref{anti-spam_constr1}, an anti-spam rejects any message containing a black listed email address (that are set during the creation of the VNF chain model). However, according to  Formula \ref{anti-spam_constr2} the packet that does not involve mail protocol is forwarded only after having received it.
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
@@ -161,16 +127,15 @@ At this version of VeriGraph, the tool does not support end-host configurations,
 			\begin{align}
 				\begin{split}
 					\label{anti-spam_constr1}
-					(send(anti\_spam, n_{0}, p_{0}, t_{0}) & \wedge p_{0}.protocol = POP3\_RESPONSE) \implies \\
-					& \neg isInBlackList(p_{0}.emailFrom) \wedge \exists (n_{1}, t_{1}) \: | \: (t_{1} < t_{0} \\
-					& \wedge recv(n_{1}, anti\_spam, p_{0}, t_{1})) \\
-					& \forall n_{0}, p_{0}, t_{0}
+					(send(anti\_spam, n_{0}, p_{0}) & \wedge (p_{0}.protocol = POP3\_RESPONSE \vee \\
+					& p_{0}.protocol = POP3\_REQUEST)) \implies \\
+					&  \neg isInBlackList(p_{0}.emailFrom) \\
+					& \forall n_{0}, p_{0}
 				\end{split} \\
 				\begin{split}
 					\label{anti-spam_constr2}
-					(send(anti\_spam, n_{0}, p_{0}, t_{0}) & \wedge p_{0}.protocol = POP3\_REQUEST) \implies \\
-					& \exists (n_{1}, t_{1}) \: | \: (t_{1} < t_{0} \wedge recv(n_{1}, anti\_spam, p_{0}, t_{1})) \\
-					& \forall n_{0}, p_{0}, t_{0}
+					(send(anti\_spam, n_{0}, p_{0})& \implies  \exists (n_{1}) \: | \:  recv(n_{1}, anti\_spam, p_{0})) \\
+					& \forall n_{0}, p_{0}
 				\end{split}
 			\end{align}
 		\end{subequations}
@@ -179,7 +144,7 @@ At this version of VeriGraph, the tool does not support end-host configurations,
 	\label{anti-spam_model}
 \end{figure}
 \\
-The set of blacklist email addresses is configured through a public function (e.g., \textit{parseConfiguration()}), which gives an interpretation to the \textit{isInBlackList()} uninterpreted function. In particular if the blacklist is empty, VeriGraph will build a constraint like Formula~\ref{anti-spam_configuration1}. Otherwise, let us suppose that the blacklist contains two elements (\textit{BlackList=[mail1, mail2]}), VeriGraph will build the Formula~\ref{anti-spam_configuration2}. In this case, VeriGraph is imposing that the \textit{inInBlackList()} function returns \textit{TRUE} if either \textit{$(emailFrom == mail1)$} or \textit{$(emailFrom == mail2)$} are \textit{TRUE}.
+The set of blacklist email addresses is configured through a public function (e.g., \textit{parseConfiguration()}), which gives an interpretation to the \textit{isInBlackList()} uninterpreted function. In particular if the blacklist is empty, VeriGraph will build a constraint like Formula~\ref{anti-spam_configuration1}. Otherwise, let us suppose that the blacklist contains two elements (\textit{BlackList=[mail1, mail2]}), VeriGraph will build the Formula~\ref{anti-spam_configuration2}. In this case, VeriGraph is imposing that the \textit{inInBlackList()} function returns \textit{TRUE} if \textit{$(emailFrom == mail1)$} or \textit{$(emailFrom == mail2)$} is \textit{TRUE}.
 	\begin{figure}[h]
 		{\footnotesize
 			\begin{subequations}
@@ -201,7 +166,7 @@ The set of blacklist email addresses is configured through a public function (e.
 
 
 \paragraph{NAT model}
-A different type of function is a NAT, which needs the notion of internal and external networks. This kind of information is modelled by means of a function (\textit{isPrivateAddress}) that checks if an address is registered as private or not. Private addresses are configured when the VNF chain model is initialized. As example of configuration, let us suppose that end-hosts \textit{nodeA} and \textit{nodeB} are internal nodes, hence VeriGraph must add Formula~\ref{nat_configuration1} among its constraint to verify. Here the \textit{isPrivateAddress()} function returns \textit{TRUE} if both \textit{$( address == nodeA\_addr)$} and \textit{$(address == nodeB\_addr)$} are \textit{TRUE}.
+A different type of function is a NAT, which needs the notion of internal and external networks. This kind of information is modelled by means of a function (\textit{isPrivateAddress}) that checks if an address is registered as private or not. Private addresses are configured when the VNF chain model is initialized. As example of configuration, let us suppose that end-hosts \textit{nodeA} and \textit{nodeB} are internal nodes, hence VeriGraph must add Formula~\ref{nat_configuration1} among its constraint to verify. Here the \textit{isPrivateAddress()} function returns \textit{TRUE} if \textit{$( address == nodeA\_addr)$} or \textit{$(address == nodeB\_addr)$} is \textit{TRUE}.
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
@@ -209,7 +174,7 @@ A different type of function is a NAT, which needs the notion of internal and ex
 			\begin{align}
 				\begin{split}
 					\label{nat_configuration1}
-					(isPrivateAddress(address) == (& address == nodeA\_addr \wedge \\
+					(isPrivateAddress(address) == (& address == nodeA\_addr \vee \\
 					& address == nodeB\_addr)), \forall address
 				\end{split}
 			\end{align}
@@ -217,7 +182,9 @@ A different type of function is a NAT, which needs the notion of internal and ex
 	}%
 \end{figure}
 
-In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_constr1} states for an internal node which initiates a communication with an external node. In this case, the NAT sends a packet (\textit{$p_0$}) to an external address (\textit{$\neg isPrivateAddress(p_{0}.dst)$}), if and only if it has previously received a packet (\textit{$p_1$}) from an internal node (\textit{$isPrivateAddress(p_{1}.src)$}). The received and sent packets must be equal for all fields, except for the \textit{src}, which must be equal to the NAT public address (\textit{$ip\_nat$}).\\
+In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_constr1} states for an internal node which initiates a communication with an external node. In this case, the NAT sends a packet (\textit{$p_0$}) to an external address (\textit{$\neg isPrivateAddress(p_{0}.dest)$}), if and only if it has previously received a packet (\textit{$p_1$}) from an internal node (\textit{$isPrivateAddress(p_{1}.src)$}). The received and sent packets must be equal for all fields, except for the \textit{src}, which must be equal to the NAT public address (\textit{$ip\_nat$}).\\
+
+
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
@@ -225,11 +192,11 @@ In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_cons
 			\begin{align}
 			\begin{split}
 			\label{nat_constr1}
-			(se& nd(nat, n_{0}, p_{0}, t_{0}) \wedge \neg isPrivateAddress(p_{0}.dst)) \implies p_{0}.src = ip\_nat \\
-			& \wedge \exists (n_{1}, p_{1}, t_{1}) \: | \: (t_{1} < t_{0} \wedge recv(n_{1}, nat, p_{1}, t_{1}) \wedge isPrivateAddress(p_{1}.src) \\
-			& \wedge p_{1}.origin = p_{0}.origin \wedge p_{1}.dst = p_{0}.dst \wedge p_{1}.seq\_no = p_{0}.seq\_no \\
+			(se& nd(nat, n_{0}, p_{0}) \wedge \neg isPrivateAddress(p_{0}.dest)) \implies p_{0}.src = ip\_nat \\
+			& \wedge \exists (n_{1}, p_{1}) \: | \: recv(n_{1}, nat, p_{1}) \wedge isPrivateAddress(p_{1}.src) \\
+			& \wedge p_{1}.origin = p_{0}.origin \wedge p_{1}.dest = p_{0}.dest \wedge p_{1}.seq\_no = p_{0}.seq\_no \\
 			& \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \wedge p_{1}.url = p_{0}.url), \\
-			& \forall (n_{0}, p_{0}, t_{0})
+			& \forall (n_{0}, p_{0})
 			\end{split} \\
 %			\end{align}
 %		\end{subequations}
@@ -242,13 +209,13 @@ In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_cons
 %			\begin{align}
 			\begin{split}
 			\label{nat_constr2}
-			(se& nd(nat, n_{0}, p_{0}, t_{0}) \wedge isPrivateAddress(p_{0}.dst)) \implies \neg isPrivateAddress(p_{0}.src) \\
-			& \wedge \exists  (n_{1}, p_{1}, t_{1}) \: | \: (t_{1} < t_{0} \wedge recv(n_{1}, nat, p_{1}, t_{1}) \wedge \neg isPrivateAddress(p_{1}.src) \\
-			& \wedge p_{1}.dst = ip\_nat \wedge p_{1}.src = p_{0}.src \wedge p_{1}.origin = p_{0}.origin \\
+			(se& nd(nat, n_{0}, p_{0}) \wedge isPrivateAddress(p_{0}.dest)) \implies \neg isPrivateAddress(p_{0}.src) \\
+			& \wedge \exists  (n_{1}, p_{1}) \: | \: (recv(n_{1}, nat, p_{1}) \wedge \neg isPrivateAddress(p_{1}.src) \\
+			& \wedge p_{1}.dest = ip\_nat \wedge p_{1}.src = p_{0}.src \wedge p_{1}.origin = p_{0}.origin \\
 			& \wedge p_{1}.seq\_no = p_{0}.seq\_no \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \\
-			& \wedge p_{1}.url = p_{0}.url) \wedge \exists (n_{2}, p_{2}, t_{2}) \: | \: (t_{2} < t_{1} \wedge recv(n_{2}, nat, p_{2}, t_{2}) \\
-			& \wedge isPrivateAddress(p_{2}.src) \wedge p_{2}.dst = p_{1}.src \wedge p_{2}.dst = p_{0}.src \\
-			& \wedge p_{2}.src = p_{0}.dest), \forall (n_{0}, p_{0}, t_{0})
+			& \wedge p_{1}.url = p_{0}.url) \wedge \exists (n_{2}, p_{2}) \: | \:  recv(n_{2}, nat, p_{2}) \\
+			& \wedge isPrivateAddress(p_{2}.src) \wedge p_{2}.dest = p_{1}.src  \\
+			& \wedge p_{2}.src = p_{0}.dest), \forall (n_{0}, p_{0})
 			\end{split}
 			\end{align}
 		\end{subequations}
@@ -256,9 +223,10 @@ In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_cons
 	\caption{NAT model.}
 	\label{nat_model}
 \end{figure}
-On the other hand, the traffic from the external network to the private is modelled by Formula ~\ref{nat_constr2}. In this case, if the NAT is sending a packet to an internal address (\textit{$isPrivateAddress(p_{0}.dst)$}), this packet (\textit{$p_0$}) must have an external address as its source (\textit{$\neg isPrivateAddress(p_{0}.src)$}). Moreover, \textit{$p_0$} must be preceded by another packet (\textit{$p_1$}), which is, in turn, received by the NAT and it is equal to \textit{$p_0$} for all the other fields. It is worth noting that, generally, a communication between internal and external nodes cannot be started by the external node in presence of a NAT. As a consequence, this condition is expressed in the Formula~\ref{nat_constr2} by imposing that \textit{$p_1$} must be preceded by another packet \textit{$p_2$} (\textit{$(t_{2} < t_{1} \wedge recv(n_{2}, nat, p_{2}, t_{2})$}), sent to the NAT from an internal node (\textit{$isPrivateAddress(p_{2}.src)$}).
 
-\paragraph{Web Cache model} A simple version of web cache can be modelled with three formulas (Formulas~\ref{cache_constr1},~\ref{cache_constr2} and~\ref{cache_constr3}), where we have a notion of internal addresses (\textit{$isInternal$} function), which are configured when the chain model is created. VeriGraph follows a similar approach to the NAT model (Formula~\ref{nat_configuration1}) for configuring the internal nodes. For instance, if the internal network is composed of two nodes \textit{nodeA} and \textit{nodeB}, VeriGraph will give an interpretation to the \textit{isInternal} function by means of Formula~\ref{web-cache_configuration1}.
+On the other hand, the traffic from the external network to the private is modelled by Formula ~\ref{nat_constr2}. In this case, if the NAT is sending a packet to an internal address (\textit{$isPrivateAddress(p_{0}.dest)$}), this packet (\textit{$p_0$}) must have an external address as its source (\textit{$\neg isPrivateAddress(p_{0}.src)$}). Moreover, \textit{$p_0$} must be preceded by another packet (\textit{$p_1$}), which is, in turn, received by the NAT and it is equal to \textit{$p_0$} for all the other fields. It is worth noting that, generally, a communication between internal and external nodes cannot be started by the external node in presence of a NAT. As a consequence, this condition is expressed in the Formula~\ref{nat_constr2} by imposing that \textit{$p_1$} must be preceded by another packet \textit{$p_2$} (\textit{$ recv(n_{2}, nat, p_{2}$}), sent to the NAT from an internal node (\textit{$isPrivateAddress(p_{2}.src)$}).
+
+\paragraph{Web Cache model} A simple version of web cache can be modelled with five formulas (Fig. \ref{cache_model}), where we have a notion of internal addresses (\textit{$isInternal$} function), which are configured when the chain model is created. VeriGraph follows a similar approach to the NAT model (Formula~\ref{nat_configuration1}) for configuring the internal nodes. For instance, if the internal network is composed of two nodes \textit{nodeA} and \textit{nodeB}, VeriGraph will give an interpretation to the \textit{isInternal} function by means of Formula~\ref{web-cache_configuration1}.
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
@@ -266,7 +234,7 @@ On the other hand, the traffic from the external network to the private is model
 			\begin{align}
 				\begin{split}
 					\label{web-cache_configuration1}
-					(isInternal(node) == (& node == nodeA \wedge \\
+					(isInternal(node) == (& node == nodeA \vee \\
 					& node == nodeB)), \forall node
 				\end{split}
 			\end{align}
@@ -274,34 +242,44 @@ On the other hand, the traffic from the external network to the private is model
 	}%
 \end{figure}
 
-This model was designed to work with web end-hosts (i.e., web client and server). In details, formula~\ref{cache_constr1} states that: a packet sent from the cache to a node belonging to the external network (\textit{$\neg isInternal(n_{0})$}), implies a previous HTTP request packet (\textit{$p_{0}.proto = HTTP\_REQ$}) and received from an internal node, which cannot be served by the cache (\textit{$\neg isInCache(p_{0}.url, t_{0})$}), otherwise the request would have not been forwarded towards the external network. 
+This model was designed to work with web end-hosts (i.e., web client and server). In details, formula~\ref{cache_constr1} states that: a packet sent from the cache to a node belonging to the external network (\textit{$\neg isInternal(n_{0})$}), implies a previous HTTP request packet (\textit{$p_{0}.proto = HTTP\_REQ$}) is received from an internal node, which cannot be served by the cache (\textit{$\neg isInCache(p_{0}.url)$}), otherwise the request would have not been forwarded towards the external network. 
 
 \begin{figure}[h]
+
 	{\footnotesize
 		\begin{subequations}
 			%Web cache model:
 			\begin{align}
 			\begin{split}
 			\label{cache_constr1}
-			(send(cache&, n_{0}, p_{0}, t_{0}) \wedge \neg isInternal(n_{0})) \implies \neg isInCache(p_{0}.url, t_{0}) \\
-			& \wedge p_{0}.proto = HTTP\_REQ \wedge \exists (t_{1}, n_{1}) \: | \: (t_{1} < t_{0} \\
-			& \wedge isInternalNode(n_{1}) \wedge recv(n_{1}, cache, p_{0}, t_{1})), \\
-			& \forall (n_{0}, p_{0}, t_{0})
+			(send(cache&, n_{0}, p_{0}) \wedge \neg isInternal(n_{0})) \implies \neg isInCache(p_{0}.url) \\
+			& \wedge p_{0}.proto = HTTP\_REQ \wedge \exists ( n_{1}) \: | \:  \\
+			&  isInternalNode(n_{1}) \wedge recv(n_{1}, cache, p_{0})), \\
+			& \forall (n_{0}, p_{0})
 			\end{split} \\
 			\begin{split}
 			\label{cache_constr2}
-			(send(cache&, n_{0}, p_{0}, t_{0}) \wedge isInternal(n_{0})) \implies isInCache(p_{0}.url, t_{0}) \\
-			& \wedge p_{0}.proto = HTTP\_RESP \wedge p_{0}.src = p_{1}.dst \wedge p_{0}.dst = p_{1}.src \wedge \\
-			& \wedge \exists  (p_{1}, t_{1}) \: | \: (t_{1} < t_{0} \wedge p_{1}.proto = HTTP\_REQ  \\
-			& \wedge p_{1}.url = p_{0}.url \wedge recv(n_{0}, cache, p_{1}, t_{1})), \\
-			& \forall (n_{0}, p_{0}, t_{0})
+			(send(cache&, n_{0}, p_{0}) \wedge isInternal(n_{0})) \implies isInCache(p_{0}.url) \\
+			& \wedge p_{0}.proto = HTTP\_RESP \wedge p_{0}.dest = p_{1}.src \wedge \\
+			& \wedge \exists  (p_{1}) \: | \:  p_{1}.url = p_{0}.url \wedge\\
+			&  recv(n_{0}, cache, p_{1})), \forall (n_{0}, p_{0})			
+			\end{split} \\
+			\begin{split}
+			\label{cache_constr4}
+			(recv(n_{0},ca&che, p_{0}) \wedge isInternal(n_{0})) \implies  \\
+			&  p_{0}.proto = HTTP\_REQ , \forall (n_{0}, p_{0})			
+			\end{split} \\
+			\begin{split}
+			\label{cache_constr5}
+			(recv( n_{0},ca&che, p_{0}) \wedge \neg isInternal(n_{0})) \implies \\
+			&  p_{0}.proto = HTTP\_RESP \wedge p_{1}.dest = p_{0}.src \wedge \\
+			& \exists  (p_{1}) \: | \: send( cache,n_{0}, p_{1})), \forall (n_{0}, p_{0})			
 			\end{split} \\
 			\begin{split}
 			\label{cache_constr3}
-			isInCache&(u_{0}, t_{0}) \implies \exists (t_{1}, t_{2}, p_{1}, p_{2}, n_{1}, n_{1}) \: | \: (t_{1} < t_{2} \wedge t_{1} < t_{0} \wedge t_{2} < t_{0} \\
-			& \wedge recv(n_{1}, cache, p_{1}, t_{1}) \wedge recv(n_{2}, cache, p_{2}, t_{2}) \wedge p_{1}.proto = HTTP\_REQ \\
-			& \wedge p_{1}.url = u_{0} \wedge p_{2}.proto = HTTP\_RESP \wedge p_{2}.url = u_{0} \wedge isInternal(n_{2})) \\
-			& \forall (u_{0}, t_{0})
+			isInCache&(u_{0}) \implies \exists (p_{1}, n_{1}) \: | \:  \\
+			& recv(n_{1}, cache, p_{1})  \wedge p_{1}.url = u_{0} \wedge \neg isInternal(n_{1})) \\
+			& \forall (u_{0})
 			\end{split}
 			\end{align}
 			\end{subequations}
@@ -310,11 +288,11 @@ This model was designed to work with web end-hosts (i.e., web client and server)
 			\label{cache_model}
 \end{figure}
 
-Formula~\ref{cache_constr2} states that a packet sent from the cache to the internal network contains a \texttt{HTTP\_RESPONSE} for an URL which was in cache when the request has been received. We also state that the packet received from the internal network is a \texttt{HTTP\_REQUEST} and the target URL is the same as the response (\textit{$p_{1}.protocol = HTTP\_REQ \wedge p_{1}.url = p_{0}.url$}). 
+Formula~\ref{cache_constr2} states that a packet sent from the cache to the internal network contains a \texttt{HTTP\_RESPONSE} for an URL which was in cache when the request has been received. We also state that the packet's  target URL  received from the internal network is the same as the response (\textit{$p_{1}.url = p_{0}.url$}). This is followed by Formula~\ref{cache_constr4}, which states the received packet from the internal node must be a  \texttt{HTTP\_REQUEST}. On the other hand a packet received from the external node must be a  \texttt{HTTP\_RESPONSE} message and there must be another packet sent from the cache to that node(Formula~\ref{cache_constr5}).
 
-The final formula (Formula~\ref{cache_constr3}) expresses a constraint that the \textit{isInCache()} function must respect. In particular, we state that a given URL ($u_{0}$) is in cache at time $t_{0}$ if (and only if) a request packet was received at time $t_{1}$ (where $t_{1} < t_{0}$) for that URL and a subsequent packet was received at time $t_{2}$ (where $t_{2} < t_{0} \wedge t_{2} > t_{1}$) carrying the corresponding \texttt{HTTP\_RESPONSE}.
+The final formula (Formula~\ref{cache_constr3}) expresses a constraint that the \textit{isInCache()} function must respect. In particular, we state that a given URL ($u_{0}$) is in cache if (and only if) a request packet was received for that URL from the external network.
 
-\paragraph{ACL firewall model} An ACL firewall is a simple firewall that drops packets based on its internal Access Control List (ACL), configured when the chain model is initialized. In particular the ACL list is managed through the uninterpreted function \textit{$acl\_func()$}. A possible interpretation is given by VeriGraph though the Formula~\ref{acl-firewall_configuration1}, when the ACL list contains two entries, like for example \textit{$ACL = [<src_1, dst_1>,<src_2,dst_2>]$}.
+\paragraph{ACL firewall model} An ACL firewall is a simple firewall that drops packets based on its internal Access Control List (ACL), configured when the chain model is initialized. In particular the ACL list is managed through the uninterpreted function \textit{$acl\_func()$}. A possible interpretation is given by VeriGraph through the Formula~\ref{acl-firewall_configuration1}, when the ACL list contains two entries, like for example \textit{$ACL = [<src_1, dest_1>,<src_2,dest_2>]$}.
 	\begin{figure}[h]
 		{\footnotesize
 			\begin{subequations}
@@ -322,8 +300,8 @@ The final formula (Formula~\ref{cache_constr3}) expresses a constraint that the 
 				\begin{align}
 					\begin{split}
 						\label{acl-firewall_configuration1}
-						(acl\_func(a, b) == \;& ((a == src_1 \wedge b == dst_1 ) \; \vee \\
-						& (a == src_2 \wedge b == dst_2))), \forall a, b
+						(acl\_func(a, b) == \;& ((a == src_1 \wedge b == dest_1 ) \; \vee \\
+						& (a == src_2 \wedge b == dest_2))), \forall a, b
 					\end{split}
 				\end{align}
 			\end{subequations}
@@ -338,9 +316,9 @@ Hence, if an ACL firewall sends a packet, this implies that the firewall has pre
 			\begin{align}
 				\begin{split}
 					\label{acl-fw_constr1}
-					(send(fw, n_{0}, p_{0}, t_{0})) \implies (&\exists (t_{1}, n_{1}) | t_{1} < t_{0} \wedge recv(n_{1}, fw, p_{0}, t_{1}) \wedge \\
-					&\neg acl\_func(p_{0}.src, p_{0}.dst)), \\
-					& \forall (n_{0}, p_{0}, t_{0})
+					(send(fw, n_{0}, p_{0})) \implies (&\exists ( n_{1}) |  recv(n_{1}, fw, p_{0}) \wedge \\
+					&\neg acl\_func(p_{0}.src, p_{0}.dest)), \\
+					& \forall (n_{0}, p_{0})
 				\end{split}
 			\end{align}
 		\end{subequations}
@@ -350,32 +328,153 @@ Hence, if an ACL firewall sends a packet, this implies that the firewall has pre
 \end{figure}
 
 
-\paragraph{Learning firewall model} The learning firewall behaviour follows the fundamental principals of network forwarding: if the firewall is sending a packet, this implies that the function has previously received that packet (Formula~\ref{learning-fw_constr1}). However the forwarding decisions of a learning firewall depend on an internal Access Control List: each ACL entry specifies a pair of addresses allowed to exchange packets and are configured through the same mechanism defined for the ACL firewall model (Formula~\ref{acl-firewall_configuration1}). The ACL entries define also the direction of the allowed traffic flows, which is, for instance, if the ACL list contains an entry like \textit{$<nodeA\_addr, nodeB\_addr>$}, the learning firewall will forward packet from node \textit{A} to \textit{B}, but no the vice-versa. The traffic in the opposite direction (i.e., from \textit{B} to \textit{A}) is allowed if and only if node \textit{A} has previously opened a connection toward \textit{B} (that is \textit{A} has sent a packet to \textit{B} - Formula~\ref{learning-fw_constr2}):
+\paragraph{Field modifier}
+Field modifier function is in charge of simple task - packet field modification. In other words, this network function let's to forward the packets by changing the fields available in the List \ref{fields} except the ones shown in Formula~\ref{field_constr1}. $predicatesOnPktFields$ is set to true and depending on modifications introduced by the user on the packet fields, this predicate will be appended with the updated fields of the packet. 
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
-			%Antispam model:
 			\begin{align}
 				\begin{split}
-					\label{learning-fw_constr1}
-					(send(fw, n_{0}, p_{0}, t_{0})) \implies (&\exists (t_{1}, n_{1}) | \; t_{1} < t_{0} \wedge recv(n_{1}, fw, p_{0}, t_{1})),\forall (n_{0}, p_{0}, t_{0})
-				\end{split}
-			\end{align}
-			%	\end{subequations}
-			%	\begin{subequations}
-			\begin{align}
-				\begin{split}
-					\label{learning-fw_constr2}
-					(send(fw, n_{0}, & p_{0}, t_{0})  \wedge \neg acl\_func(p_{0}.src, p_{0}.dst)) \implies (\exists ( n_{1},t_{1}) \; | \; send(fw, n_{1}, p_{1},t_{1}) \wedge \\
-					& t_{1} + 1 < t_{0} \wedge acl\_func(p_{1}.src, p_{1}.dst) \wedge  p_{0}.src = p_{1}.dst \wedge  p_{0}.dst = p_{1}.src \wedge \\
-					& p_{0}.src\_port = p_{1}.dst\_port \wedge p_{0}.dst\_port = p_{1}.src\_port), \\
-					& \forall (n_{0}, p_{0}, t_{0})
+					\label{field_constr1}
+					(send(modifier, n_{0}, p_{0})) \implies (&\exists ( n_{1}, p_{1}) |  recv(n_{1}, modifier, p_{1}) \wedge predicatesOnPktFields \wedge \\
+					&   p_{1}.encrypted = p_{0}.encrypted \wedge p_{1}.origin = p_{0}.origin \wedge \\  
+					&  \wedge  p_{1}.inner\_src = p_{0}.inner\_src \wedge p_{1}.inner\_dest = p_{0}.inner\_dest \wedge \\
+					& p_{1}.orig\_body = p_{0}.orig\_body \wedge p_{1}.src = p_{0}.src,\\
+					& \forall (n_{0}, p_{0})
 				\end{split}
 			\end{align}
 		\end{subequations}
 	}%
-	\caption{Learning Firewall model}
-	\label{learning-fw_model}
+	\caption{Field modifier model}
+	\label{field_model}
+\end{figure}
+
+\paragraph{IDS}
+Intrusion detection system (IDS) function monitors a network for malicious activity or policy violations. We model the simplest IDS network function that also acts like an intrusion prevention system function which is best compared to a firewall. In general, this function performs the similar reasoning as in the case of Anti-spam model, where in this case blacklist contains the set of "suspicious" strings that the body of the packet may carry. Let us suppose that the blacklist contains two elements (\textit{BlackList=[keylogger, Brutus]}), VeriGraph will build the Formula~\ref{ids_configuration2}. In this case, VeriGraph is imposing that the \textit{inInBlackList()} function returns \textit{TRUE} if \textit{$(body == keylogger)$} or \textit{$(body == Brutus)$} is \textit{TRUE}. 
+
+\begin{figure}[h]
+		{\footnotesize
+			\begin{subequations}
+				\begin{align}
+					\begin{split}
+						\label{ids_configuration2}
+						(isInBlackList(body) == (& body == keylogger) \; \vee \\
+						& (body == Brutus)), \forall body
+					\end{split}
+				\end{align}
+			\end{subequations}
+		}%
 \end{figure}
 
 
+Formula \ref{ids_constr1} states that IDS forwards a packet whose protocol is \texttt{HTTP\_REQUEST} or \texttt{HTTP\_RESPONSE} only if this packet is received and does not contain blacklisted string in the body of the packet.
+\begin{figure}[h]
+	{\footnotesize
+		\begin{subequations}
+			\begin{align}
+				\begin{split}
+					\label{ids_constr1}
+					(send(ids, n_{0}, p_{0}) & \wedge (p_{0}.protocol = HTTP\_RES \vee \\
+					& p_{0}.protocol = HTTP\_REQ)) \implies \\
+					& \exists (n_{1}) \: | \:  recv(n_{1}, ids, p_{0}) \wedge \neg isInBlackList(p_{0}.body), \\
+					& \forall n_{0}, p_{0}
+				\end{split} \\
+				\begin{split}
+					\label{ids_constr2}
+					(send(ids, n_{0}, p_{0})& \implies  \\
+					& (p_{0}.protocol = HTTP\_RES \vee  p_{0}.protocol = HTTP\_REQ) \\ 
+					& (nodeHasAddr(ids, p_{0}.src) \\
+					& \forall n_{0}, p_{0}
+				\end{split}
+			\end{align}
+		\end{subequations}
+	}%
+	\caption{Anti-spam model.}
+	\label{anti-spam_model}
+\end{figure}
+
+\paragraph{VPN access}
+VPN access function enables a user to establish virtual network connection and exchange private encrypted messages. This network function model needs the same NAT model's  notion of internal and external networks. This kind of information is modelled by means of a function (\textit{isPrivateAddress}). This network node sends packets towards a VPN exit function or receive from it. If the inner source address ($p_{0}.inner\_src$) of the encapsulated packet is not equal to null, the packets are sent only if a packet ($p_1$) was received. More importantly the source/destination address of that packet must be equal to the inner source/destination of the packet being sent, the \textit{encrypted} field is set to false and the rest of the fields must be equal. In this scenario VPN access function encloses a packet within another, that has IP source of \textit{vpnAccessIp} and destination of \textit{vpnExitIp}. However, the inner destination address needs to be different then \textit{vpnAccessIp} and finally the \textit{encrypted} field needs to be set to true, since the data is first encrypted and encapsulated before it is sent to the remote VPN exit server (Formula~\ref{access_constr1}). 
+
+
+\begin{figure}[]
+	{\footnotesize
+		\begin{subequations}
+			\begin{align}
+			\begin{split}
+			\label{access_constr1}
+			(se& nd(access, n_{0}, p_{0}) \wedge p_{0}.inner\_src = null) \implies isPrivateAddress(p_{0}.dest) \\
+			& p_{0}.encrypted \neq true \wedge \exists (n_{1}, p_{1}) \: | \: recv(n_{1}, access, p_{1}) \wedge p_{1}.src = vpnExitIp \\
+			& \wedge p_{1}.encrypted = true \wedge p_{1}.dest = vpnAccessIp \wedge p_{1}.inner\_src = p_{0}.src \\
+			& \wedge p_{1}.inner\_dest = p_{0}.dest \wedge p_{1}.seq = p_{0}.seq \wedge p_{1}.body = p_{0}.body \\
+			& \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \wedge p_{1}.url = p_{0}.url), \\
+			& \wedge p_{1}.origin = p_{0}.origin   \wedge p_{1}.options = p_{0}.options \wedge p_{1}.origin\_body = p_{0}.origin\_body , \\
+			& \forall (n_{0}, p_{0})
+			\end{split}
+			\end{align}
+		\end{subequations}
+	}%
+	\caption{VPN access model.}
+	\label{nat_model}
+\end{figure}
+
+In order to send a packet in an opposite direction, the packet's destination address needs to belong to an internal network ($isPrivateAddress(p_{0}.inner\_src)$) and the content must be decrypted. Moreover, there must be a packet ($p_1$) received whose source address is equal to a \textit{vpnExitIP} and destination address of this network node. Apart from this, the packet needs to be decapsulated ($p_{1}.dest =  p_{0}.inner\_dest\wedge p_{1}.src = p_{0}.inner\_src$) by copying all the other fields of the received packet, as it was shown in Formula~\ref{access_constr2}.
+
+\begin{figure}[]
+	{\footnotesize
+		\begin{subequations}
+			\begin{align}\
+			\begin{split}
+			\label{access_constr2}
+			(se& nd(access, n_{0}, p_{0}) \wedge p_{0}.inner\_src \neq null) \implies isPrivateAddress(p_{0}.inner\_src) \\
+			& \wedge p_{0}.src = vpnAccessIp \wedge p_{0}.dest = vpnExitIp \wedge p_{0}.inner\_dest \neq vpnAccessIp \\
+			& \wedge p_{0}.encrypted = true \wedge \exists (n_{1}, p_{1}) \: | \: recv(n_{1}, access, p_{1}) \wedge p_{1}.src = p_{0}.inner\_src \\
+			& \wedge p_{1}.encrypted \neq true \wedge p_{1}.dest =  p_{0}.inner\_dest \wedge p_{1}.inner\_src = null \\
+			& \wedge p_{1}.inner\_dest = null \wedge p_{1}.seq = p_{0}.seq \wedge p_{1}.body = p_{0}.body \\
+			& \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \wedge p_{1}.url = p_{0}.url) \\
+			& \wedge p_{1}.origin = p_{0}.origin   \wedge p_{1}.options = p_{0}.options \wedge p_{1}.origin\_body = p_{0}.origin\_body , \\
+			& \forall (n_{0}, p_{0})
+			\end{split}
+			\end{align}
+		\end{subequations}
+	}%
+	\caption{VPN access model.}
+	\label{vpn_access}
+\end{figure}
+
+
+\paragraph{VPN exit}
+VPN exit function is used in parallel with VPN access function, whose models are identical except in this case a packet ($p_0$) is sent to an internal network only if there is a packet sent by VPN access function ($p_{1}.src = vpnAccessIp$) and the packet being sent from this network function towards to the VPN access needs to have \textit{vpnAccessIp} on its destination address field ($ p_{0}.dest = vpnAccessIp$). It is evident from the Fig. \ref{vpn_exit} all the other fields of the packet being sent must be equal to the packet that was received.
+
+
+\begin{figure}[h]
+	{\footnotesize
+		\begin{subequations}
+			\begin{align}
+			\begin{split}
+			\label{exit_constr1}
+			(se& nd(exit, n_{0}, p_{0}) \wedge p_{0}.inner\_src = null) \implies isPrivateAddress(p_{0}.src) \\
+			&  p_{0}.encrypted \neq true \wedge \exists (n_{1}, p_{1}) \: | \: recv(n_{1}, access, p_{1}) \wedge p_{1}.src = vpnAccessIp \\
+			& \wedge p_{1}.encrypted = true \wedge p_{1}.dest = vpnExitIp \wedge p_{1}.inner\_src = p_{0}.src \\
+			& \wedge p_{1}.inner\_dest = p_{0}.dest \wedge p_{1}.seq = p_{0}.seq \wedge p_{1}.body = p_{0}.body \\
+			& \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \wedge p_{1}.url = p_{0}.url), \\
+			& \wedge p_{1}.origin = p_{0}.origin   \wedge p_{1}.options = p_{0}.options \wedge p_{1}.origin\_body = p_{0}.origin\_body , \\
+			& \forall (n_{0}, p_{0})
+			\end{split} \\
+			\begin{split}
+			\label{exit_constr2}
+			(se& nd(exit, n_{0}, p_{0}) \wedge p_{0}.inner\_src \neq null) \implies isPrivateAddress(p_{0}.inner\_src) \\
+			& \wedge p_{0}.src = vpnExitIp \wedge p_{0}.dest = vpnAccessIp \wedge p_{0}.inner\_dest \neq vpnExitIp \\
+			& \wedge p_{0}.encrypted = true \wedge \exists (n_{1}, p_{1}) \: | \: recv(n_{1}, access, p_{1}) \wedge p_{1}.src = p_{0}.inner\_src \\
+			& \wedge p_{1}.encrypted \neq true \wedge p_{1}.dest =  p_{0}.inner\_dest \wedge p_{1}.inner\_src = null \\
+			& \wedge p_{1}.inner\_dest = null \wedge p_{1}.seq = p_{0}.seq \wedge p_{1}.body = p_{0}.body \\
+			& \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \wedge p_{1}.url = p_{0}.url) \\
+			& \wedge p_{1}.origin = p_{0}.origin   \wedge p_{1}.options = p_{0}.options \wedge p_{1}.origin\_body = p_{0}.origin\_body , \\
+			& \forall (n_{0}, p_{0})
+			\end{split}
+			\end{align}
+		\end{subequations}
+	}%
+	\caption{VPN exit model.}
+	\label{vpn_exit}
+\end{figure}
