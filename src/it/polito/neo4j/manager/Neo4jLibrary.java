@@ -17,14 +17,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
@@ -35,17 +31,12 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PathExpanders;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.traversal.Paths;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.polito.neo4j.jaxb.Antispam;
 import it.polito.neo4j.jaxb.Cache;
@@ -69,7 +60,6 @@ import it.polito.neo4j.jaxb.Vpnaccess;
 import it.polito.neo4j.jaxb.Vpnexit;
 import it.polito.neo4j.jaxb.Webclient;
 import it.polito.neo4j.jaxb.Webserver;
-import it.polito.neo4j.manager.Neo4jDBInteraction.NodeType;
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.service.VerigraphLogger;
 import it.polito.neo4j.exceptions.DuplicateNodeException;
@@ -1321,7 +1311,6 @@ public class Neo4jLibrary implements Neo4jDBInteraction
 
     public Graph updateGraph(Graph graph, long graphId) throws MyNotFoundException,DuplicateNodeException,MyInvalidObjectException, MyInvalidIdException{
         Transaction tx = graphDB.beginTx();
-        Node nodo;
         Node graph_old;
 
         try{
@@ -1345,7 +1334,6 @@ public class Neo4jLibrary implements Neo4jDBInteraction
 
             //modify neighbours ids inserting ids relationship
 
-
             for(it.polito.neo4j.jaxb.Node tmpnodo : graph.getNode()){
                 Map<String, Neighbour> neighs = addNeighbours(tmpnodo, graph);
 
@@ -1354,7 +1342,6 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                     neig.setId(n.getId());
 
                 }
-
 
             }
 
@@ -1457,6 +1444,7 @@ public class Neo4jLibrary implements Neo4jDBInteraction
     }
 
     public it.polito.neo4j.jaxb.Paths findAllPathsBetweenTwoNodes(long graphId, String srcName, String dstName, String direction) throws MyNotFoundException{
+        vlogger.logger.info("findAllPathsBetweenTwoNodes");
         Transaction tx = graphDB.beginTx();
         Set<String> pathPrinted = new HashSet<>();
 
@@ -1472,11 +1460,14 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                     tx.failure();
                     throw new DataNotFoundException("Destination node "+dst+" not exists");
                 }
-            PathFinder<Path> finder = GraphAlgoFactory.allSimplePaths(PathExpanders.forTypeAndDirection(RelationType.PathRelationship, Direction.valueOf(direction.toUpperCase())), MAX_DEPTH);
 
-            for (Path p : finder.findAllPaths(src, dst))
+            //ALLSIMPLEPATHS DOES NOT ALLOW TO PUT RESTRICTION ON THE NODE TO (OR DO NOT TO) TRAVERSE.
+            //E.G. PATHS CONTAINS ENDHOSTS AND SERVERS BETWEEN SOURCE AND DESTINATION
+            //          PathFinder<Path> finder = GraphAlgoFactory.allSimplePaths(PathExpanders.forTypeAndDirection(RelationType.PathRelationship, Direction.valueOf(direction.toUpperCase())), MAX_DEPTH);
+            PathFinder<Path> finder = GraphAlgoFactory.shortestPath(PathExpanders.forTypeAndDirection(RelationType.PathRelationship, Direction.valueOf(direction.toUpperCase())), MAX_DEPTH);
+            Iterable<Path> paths = finder.findAllPaths(src, dst);
+            for (Path p : selectPathsWithoutEndhosts(paths))
             {
-
                 pathPrinted.add(Paths.simplePathToString(p, "name"));
             }
         }
@@ -1493,6 +1484,30 @@ public class Neo4jLibrary implements Neo4jDBInteraction
         else
             paths.getPath().addAll(pathPrinted);
         return paths;
+    }
+
+    private HashSet<Path> selectPathsWithoutEndhosts (Iterable<Path> paths) {
+        HashSet<Path> host_free_paths = new HashSet<Path>();
+        boolean skip = false;
+        for(Path path : paths){
+            for(Node node : path.nodes()){
+                if(node.equals(path.startNode()) || node.equals(path.endNode()))
+                    continue;
+                if(node.getProperty("functionalType").toString().compareTo(FunctionalTypes.WEBSERVER.toString())==0 ||
+                        node.getProperty("functionalType").toString().compareTo(FunctionalTypes.MAILSERVER.toString())==0 ||
+                        node.getProperty("functionalType").toString().compareTo(FunctionalTypes.ENDHOST.toString())==0){
+                    skip=true;
+                    break;
+                }
+                if(!skip){
+                    host_free_paths.add(path);
+                    skip = false;
+                }
+            }
+
+        }
+
+        return host_free_paths;
     }
 
     public it.polito.neo4j.jaxb.Node getNodeByName(String name, long graphId) throws MyNotFoundException {
