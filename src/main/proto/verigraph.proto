@@ -1,3 +1,13 @@
+/* This Protocol Buffer has been updated for supporting TOSCA-based objects.
+ * The only granularity for executing CRUD operations is at the TopologyTemplate level.
+ *
+ * The names of the objects are assigned according to the TOSCA standard, and can be
+ * mapped as follows in the Verigraph domain:
+ * TopologyTemplate -> Graph
+ * NodeTemplate -> Node
+ * RelationshipTemplate -> Neighbour (partial)
+*/
+
 syntax = "proto3";
 
 package verigraph;
@@ -6,7 +16,7 @@ option java_multiple_files = true;
 option java_package = "it.polito.verigraph.grpc";
 option java_outer_classname = "VerigraphProto";
 
-// The service definition.
+/** gRPC */
 service Verigraph {
   // Obtains a list of graphs
   rpc GetGraphs (GetRequest) returns (stream GraphGrpc) {}
@@ -45,8 +55,24 @@ service Verigraph {
   rpc DeleteNeighbour (RequestID) returns (Status) {}
   // Updates a neighbour
   rpc UpdateNeighbour (NeighbourGrpc) returns (NewNeighbour) {}
+  
+  /** TOSCA gRPC */
+  // Obtain a list of topology templates
+  rpc GetTopologyTemplates (GetRequest) returns (stream TopologyTemplateGrpc) {}
+  // Obtain a topology template
+  rpc GetTopologyTemplate (ToscaRequestID) returns (TopologyTemplateGrpc) {}
+  // Create a TopologyTemplate
+  rpc CreateTopologyTemplate (TopologyTemplateGrpc) returns (NewTopologyTemplate) {}
+  // Delete a TopologyTemplate
+  rpc DeleteTopologyTemplate (ToscaRequestID) returns (Status) {}
+  // Update a TopologyTemplate
+  rpc UpdateTopologyTemplate (TopologyTemplateGrpc) returns (NewTopologyTemplate) {}
+  // Verify a ToscaPolicy
+  rpc VerifyToscaPolicy (ToscaPolicy) returns (ToscaVerificationGrpc) {}
 }
 
+
+/** Messages */
 message GetRequest {
 }
 
@@ -151,4 +177,87 @@ string errorMessage = 5;
 message Status{
 bool success = 1;
 string errorMessage = 2;
+}
+
+/** TOSCA Messages */
+message ToscaRequestID {
+  string idTopologyTemplate = 1;
+}
+
+message TopologyTemplateGrpc{
+  string id = 1; 
+  string name = 2;
+  repeated NodeTemplateGrpc nodeTemplate = 3;
+  repeated RelationshipTemplateGrpc relationshipTemplate = 4;
+  string errorMessage = 5;
+}
+
+message NewTopologyTemplate{
+  bool success = 1;
+  TopologyTemplateGrpc topologyTemplate = 2;
+  string errorMessage = 3;
+}
+
+message NodeTemplateGrpc{
+  string id = 1;
+  string name = 2;
+  enum Type {
+    antispam = 0;
+    cache = 1;
+    dpi = 2;
+    endhost = 3;
+    endpoint = 4;
+    fieldmodifier = 5;
+    firewall = 6;
+    mailclient = 7;
+    mailserver = 8;
+    nat = 9;
+    vpnaccess = 10;
+    vpnexit = 11;
+    webclient = 12;
+    webserver = 13;
+  }
+  Type type = 3;
+  ToscaConfigurationGrpc configuration = 4;
+  string errorMessage = 5;
+}
+
+message RelationshipTemplateGrpc{
+  string idSourceNodeTemplate = 1;
+  string idTargetNodeTemplate = 2;
+  string id = 3;
+  string name = 4;
+  string errorMessage = 5;
+}
+
+message ToscaPolicy{
+  string idTopologyTemplate = 1;
+  string source = 2;
+  string destination = 3;
+  enum PolicyType {
+    reachability = 0;
+    isolation = 1;
+    traversal = 2;
+  }
+  PolicyType type = 4;
+  string middlebox = 5;
+}
+
+message ToscaConfigurationGrpc{
+  string id = 1;
+  string description = 2;
+  string configuration = 3;
+}
+
+message ToscaTestGrpc {
+  repeated NodeTemplateGrpc nodeTemplate = 1;
+  string result = 2;
+}
+
+message ToscaVerificationGrpc{
+  bool successOfOperation = 1;
+  string result = 2;
+  string comment = 3;
+  repeated ToscaTestGrpc test = 4;
+  string errorMessage = 5;
 }

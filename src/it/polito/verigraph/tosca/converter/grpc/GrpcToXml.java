@@ -5,12 +5,6 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
-import it.polito.verigraph.exception.BadRequestException;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
-import it.polito.verigraph.tosca.MappingUtils;
 import it.polito.tosca.jaxb.Configuration;
 import it.polito.tosca.jaxb.Definitions;
 import it.polito.tosca.jaxb.TEntityTemplate.Properties;
@@ -20,6 +14,12 @@ import it.polito.tosca.jaxb.TRelationshipTemplate.SourceElement;
 import it.polito.tosca.jaxb.TRelationshipTemplate.TargetElement;
 import it.polito.tosca.jaxb.TServiceTemplate;
 import it.polito.tosca.jaxb.TTopologyTemplate;
+import it.polito.verigraph.exception.BadRequestException;
+import it.polito.verigraph.grpc.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaConfigurationGrpc;
+import it.polito.verigraph.tosca.MappingUtils;
 
 public class GrpcToXml {
 

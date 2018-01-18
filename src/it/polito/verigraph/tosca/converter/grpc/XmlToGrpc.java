@@ -8,18 +8,18 @@ import javax.xml.bind.JAXBException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import it.polito.verigraph.exception.BadRequestException;
-import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
-import it.polito.verigraph.tosca.MappingUtils;
-import it.polito.verigraph.tosca.XmlParsingUtils;
 import it.polito.tosca.jaxb.TNodeTemplate;
 import it.polito.tosca.jaxb.TRelationshipTemplate;
 import it.polito.tosca.jaxb.TServiceTemplate;
+import it.polito.verigraph.exception.BadRequestException;
+import it.polito.verigraph.exception.DataNotFoundException;
+import it.polito.verigraph.grpc.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.NodeTemplateGrpc.Type;
+import it.polito.verigraph.grpc.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaConfigurationGrpc;
+import it.polito.verigraph.tosca.MappingUtils;
+import it.polito.verigraph.tosca.XmlParsingUtils;
 
 public class XmlToGrpc {
 

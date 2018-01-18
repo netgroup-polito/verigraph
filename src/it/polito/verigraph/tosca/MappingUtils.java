@@ -1,7 +1,8 @@
 package it.polito.verigraph.tosca;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.InjectableValues;
@@ -9,25 +10,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-import it.polito.verigraph.grpc.server.Service;
-import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TDocumentation;
+import it.polito.tosca.jaxb.TServiceTemplate;
+import it.polito.verigraph.grpc.ToscaConfigurationGrpc;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Test;
 import it.polito.verigraph.model.Verification;
-import it.polito.tosca.jaxb.Definitions;
-import it.polito.tosca.jaxb.TDocumentation;
-import it.polito.tosca.jaxb.TServiceTemplate;
 import it.polito.verigraph.tosca.converter.xml.GraphToXml;
 import it.polito.verigraph.tosca.converter.yaml.GraphToYaml;
 import it.polito.verigraph.tosca.deserializer.XmlConfigurationDeserializer;
 import it.polito.verigraph.tosca.serializer.XmlConfigSerializer;
 import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.VerificationYaml;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MappingUtils {
 
@@ -180,7 +176,7 @@ public class MappingUtils {
 
 		return toscaConfig;
 	}
-	
+
 	/** Return a Tosca Configuration from a ConfigurationGrpc
 	 * 
 	 * Used for: grpc-->xml 

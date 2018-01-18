@@ -14,27 +14,25 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import it.polito.verigraph.grpc.GetRequest;
+import it.polito.verigraph.grpc.NewTopologyTemplate;
+import it.polito.verigraph.grpc.NodeTemplateGrpc;
 import it.polito.verigraph.grpc.Status;
-import it.polito.verigraph.grpc.tosca.NewTopologyTemplate;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaPolicy;
-import it.polito.verigraph.grpc.tosca.ToscaRequestID;
-import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaVerigraphGrpc.ToscaVerigraphBlockingStub;
-import it.polito.verigraph.tosca.XmlParsingUtils;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaPolicy;
+import it.polito.verigraph.grpc.ToscaRequestID;
+import it.polito.verigraph.grpc.ToscaTestGrpc;
+import it.polito.verigraph.grpc.ToscaVerificationGrpc;
+import it.polito.verigraph.grpc.VerigraphGrpc;
 import it.polito.verigraph.tosca.YamlParsingUtils;
-import it.polito.verigraph.tosca.converter.grpc.GrpcToXml;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToYaml;
 import it.polito.verigraph.tosca.converter.grpc.ToscaGrpcUtils;
-import it.polito.verigraph.tosca.converter.grpc.XmlToGrpc;
 import it.polito.verigraph.tosca.converter.grpc.YamlToGrpc;
 
 
 public class ToscaClient {
 
 	private final ManagedChannel channel;
-	private final ToscaVerigraphBlockingStub blockingStub;
+	private final VerigraphGrpc.VerigraphBlockingStub blockingStub;
 	private static final Logger logger = Logger.getLogger(ToscaClient.class.getName());
 	private static FileHandler fh;
 
@@ -45,7 +43,7 @@ public class ToscaClient {
 	/** Construct client for accessing toscaVerigraph server using the existing channel. */
 	public ToscaClient(ManagedChannelBuilder<?> channelBuilder) {
 		channel = channelBuilder.build();
-		blockingStub = ToscaVerigraphGrpc.newBlockingStub(channel);
+		blockingStub = VerigraphGrpc.newBlockingStub(channel);
 		setUpLogger();
 	}
 
@@ -196,19 +194,19 @@ public class ToscaClient {
 		ToscaVerificationGrpc response;
 		try {
 			System.out.println("[verifyToscaPolicy] Sending ToscaPolicy...");
-			response = blockingStub.verifyPolicy(policy);
+			response = blockingStub.verifyToscaPolicy(policy);
 			if(!response.getErrorMessage().equals("")){
 				System.out.println("[verifyToscaPolicy] Error in operation: " + response.getErrorMessage());
 			}
 			System.out.println("[verifyToscaPolicy] Result: " + response.getResult());
 			System.out.println("[verifyToscaPolicy] Comment: " + response.getComment());
-			/*//uncomment if you want to print the paths
-            for(ToscaTestGrpc test : response.getTestList()){
-            	System.out.println("Test : "+test.getResult()+". Traversed nodes:");
-            	for(NodeTemplateGrpc node : test.getNodeTemplateList()){
-            		System.out.println("Node "+node.getName());
-            }
-            }*/
+
+			for(ToscaTestGrpc test : response.getTestList()){
+				System.out.println("Traversed nodes:");
+				for(NodeTemplateGrpc node : test.getNodeTemplateList()){
+					System.out.println("Node "+node.getName());
+				}
+			}
 			return response;
 		} catch (StatusRuntimeException e) {
 			warning("[verifyToscaPolicy] RPC failed: " + e.getStatus());
@@ -221,13 +219,13 @@ public class ToscaClient {
 		ToscaClient client = new ToscaClient("localhost" , 50051);
 
 		try {        	
-		/*	//XML PARSING
+			/*	//XML PARSING
 			TopologyTemplateGrpc fileTopology = XmlToGrpc.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph/tosca_examples/DummyServiceTemplate.xml");*/
 
 			//YAML PARSING
 			TopologyTemplateGrpc fileTopology = YamlToGrpc.obtainTopologyTemplateGrpc("D:\\GIT_repository\\verigraph/tosca_examples/DummyServiceTemplate.yaml");
 
-		/*	//DELETE TESTING
+			/*	//DELETE TESTING
 			Status response = client.deleteTopologyTemplate("270");*/
 
 			//CREATE TESTING
@@ -240,9 +238,9 @@ public class ToscaClient {
 			/*	//GET TESTING
 			TopologyTemplateGrpc received = client.getTopologyTemplate(created.getTopologyTemplate().getId());*/
 
-			/*	//POLICY TESTING
-			ToscaPolicy mypolicy = ToscaGrpcUtils.createToscaPolicy("host1", "host2", "reachability", null, "33");
-			ToscaVerificationGrpc myverify = client.verifyPolicy(mypolicy);*/
+			//POLICY TESTING
+			ToscaPolicy mypolicy = ToscaGrpcUtils.createToscaPolicy("host1", "host2", "reachability", null, created.getTopologyTemplate().getId());
+			ToscaVerificationGrpc myverify = client.verifyPolicy(mypolicy);
 
 			//Print all Topology on server
 			ToscaGrpcUtils.printTopologyTemplates(client.getTopologyTemplates());

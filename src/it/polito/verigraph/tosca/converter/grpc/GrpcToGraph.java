@@ -10,10 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.polito.verigraph.exception.BadRequestException;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
+import it.polito.verigraph.grpc.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaConfigurationGrpc;
 import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;

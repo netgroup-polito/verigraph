@@ -2,12 +2,12 @@ package it.polito.verigraph.tosca.converter.grpc;
 
 import java.util.Map;
 
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaTestGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
+import it.polito.verigraph.grpc.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaConfigurationGrpc;
+import it.polito.verigraph.grpc.ToscaTestGrpc;
+import it.polito.verigraph.grpc.ToscaVerificationGrpc;
 import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;

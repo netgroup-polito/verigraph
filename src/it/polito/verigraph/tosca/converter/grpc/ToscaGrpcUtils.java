@@ -2,10 +2,10 @@ package it.polito.verigraph.tosca.converter.grpc;
 
 import java.util.List;
 
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaPolicy;
+import it.polito.verigraph.grpc.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaPolicy;
 
 public class ToscaGrpcUtils {
 

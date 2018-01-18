@@ -9,35 +9,27 @@
 package it.polito.verigraph.grpc.server;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+
 import it.polito.verigraph.grpc.ConfigurationGrpc;
 import it.polito.verigraph.grpc.GraphGrpc;
 import it.polito.verigraph.grpc.NeighbourGrpc;
 import it.polito.verigraph.grpc.NodeGrpc;
+import it.polito.verigraph.grpc.NodeGrpc.FunctionalType;
 import it.polito.verigraph.grpc.TestGrpc;
 import it.polito.verigraph.grpc.VerificationGrpc;
-import it.polito.verigraph.grpc.NodeGrpc.FunctionalType;
 import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Test;
 import it.polito.verigraph.model.Verification;
-//new import
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaTestGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
 
 
 public class GrpcUtils {

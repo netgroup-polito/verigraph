@@ -10,11 +10,11 @@ import javax.xml.bind.JAXBException;
 
 import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc.Type;
-import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaConfigurationGrpc;
+import it.polito.verigraph.grpc.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.NodeTemplateGrpc.Type;
+import it.polito.verigraph.grpc.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaConfigurationGrpc;
 import it.polito.verigraph.tosca.YamlParsingUtils;
 import it.polito.verigraph.tosca.yaml.beans.NodeTemplateYaml;
 import it.polito.verigraph.tosca.yaml.beans.RelationshipTemplateYaml;

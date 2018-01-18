@@ -14,9 +14,9 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import it.polito.neo4j.jaxb.FunctionalTypes;
 import it.polito.verigraph.exception.BadRequestException;
-import it.polito.verigraph.grpc.tosca.NodeTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.RelationshipTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.RelationshipTemplateGrpc;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
 import it.polito.verigraph.tosca.deserializer.YamlConfigurationDeserializer;
 import it.polito.verigraph.tosca.yaml.beans.AntispamConfigurationYaml;
 import it.polito.verigraph.tosca.yaml.beans.AntispamNode;
