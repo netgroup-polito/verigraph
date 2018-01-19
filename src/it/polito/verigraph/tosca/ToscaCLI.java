@@ -20,7 +20,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.OutputKeys;
@@ -35,18 +34,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.sun.research.ws.wadl.ObjectFactory;
 
+import it.polito.tosca.jaxb.Configuration;
+import it.polito.tosca.jaxb.Definitions;
+import it.polito.tosca.jaxb.TDefinitions;
 import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.DataNotFoundException;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaPolicy;
+import it.polito.verigraph.grpc.ToscaTestGrpc;
+import it.polito.verigraph.grpc.ToscaVerificationGrpc;
 import it.polito.verigraph.grpc.client.ToscaClient;
-import it.polito.verigraph.grpc.tosca.NewTopologyTemplate;
-import it.polito.verigraph.grpc.tosca.TopologyTemplateGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaPolicy;
-import it.polito.verigraph.grpc.tosca.ToscaRequestID;
-import it.polito.verigraph.grpc.tosca.ToscaTestGrpc;
-import it.polito.verigraph.grpc.tosca.ToscaVerificationGrpc;
-import it.polito.verigraph.tosca.classes.Configuration;
-import it.polito.verigraph.tosca.classes.Definitions;
-import it.polito.verigraph.tosca.classes.TDefinitions;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToXml;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToYaml;
 import it.polito.verigraph.tosca.converter.grpc.XmlToGrpc;
@@ -58,21 +55,26 @@ public class ToscaCLI {
 	
 	private static final String helper = "./tosca_support/CLIhelper.txt";
 	
-	//Static service constants
-	private static final String host = "localhost";
-	private static final int port = 8080;
-	private static final String baseUri = "http://" + host + ":" + String.valueOf(port) + "/verigraph/api/graphs";
+	//Service parameters.
+	private String host;
+	private int port;
+	
+	//New media type for yaml rest request
 	private static final MediaType yamlMedia = new MediaType("application", "x-yaml");
+	private static final String defaultHost = "localhost";
+	private static final int defaultRestPort = 8080;
+	private static final int defaultGrpcPort = 50051;
 	
 	//Input validation patterns
 	private static final Pattern yamlSource = Pattern.compile(".*\\.yaml$");
 	private static final Pattern xmlSource = Pattern.compile(".*\\.xml");
 	private static final Pattern jsonSource = Pattern.compile(".*\\.json$");
-	private static final Pattern configOpt = Pattern.compile("-use|-format", Pattern.CASE_INSENSITIVE);
+	private static final Pattern configOpt = Pattern.compile("-use|-format|-port|-host", Pattern.CASE_INSENSITIVE);
 	private static final Pattern useOpt = Pattern.compile("grpc|rest", Pattern.CASE_INSENSITIVE);
 	private static final Pattern formatOpt = Pattern.compile("yaml|json|xml", Pattern.CASE_INSENSITIVE);
 	private static final Pattern policies = Pattern.compile("reachability|isolation|traversal", Pattern.CASE_INSENSITIVE);
 	
+	//Configuration parameters
 	private Boolean useRest;
 	private String mediatype;
 	private Client restClient;
@@ -81,6 +83,8 @@ public class ToscaCLI {
 	public ToscaCLI(){
 		//Variables representing the client environment
 		this.useRest = true;
+		this.port = defaultRestPort;
+		this.host = defaultHost;
 		this.mediatype = MediaType.APPLICATION_XML;	
 		this.restClient = null;
 		this.grpcClient = null;
@@ -89,13 +93,21 @@ public class ToscaCLI {
 	
 	public static void main(String[] args) {
 		ToscaCLI myclient = new ToscaCLI();
-		myclient.clientStart();
-		//Checks?
+		try {
+			myclient.clientStart();
+		} catch (Exception e) {
+			System.out.println("-- Unexpected error, service closing.");
+			e.printStackTrace();
+		}
 		return;
 	}
 	
-
+	//Build base Uri for REST service
+	private String buildBaseUri() {
+		return "http://" + this.host + ":" + String.valueOf(this.port) + "/verigraph/api/graphs";
+	}
 	
+	//Function iterating getting user commands.
 	public void clientStart(){
     	System.out.println("++ Welcome to Verigraph Verification Serivice...");
     	System.out.println("++ Type HELP for instructions on client use...");
@@ -114,7 +126,7 @@ public class ToscaCLI {
     			reader = new Scanner(commandline);
     			
     			switch (reader.next().toUpperCase()) {
-    				case "GETALL": //gettopologyTemplates
+    				case "GETALL": 
     					if(useRest) this.restGetAll(reader);
     					else this.grpcGetAll(reader);
     					break;
@@ -206,7 +218,8 @@ public class ToscaCLI {
 							grpcClient.shutdown();
 							grpcClient = null;
 						}
-						restClient = ClientBuilder.newClient();;
+						restClient = ClientBuilder.newClient();
+						this.port = defaultRestPort;
 						useRest = true;
 					}
 					else {
@@ -219,6 +232,7 @@ public class ToscaCLI {
 							restClient = null;
 						}
 						grpcClient = new ToscaClient(host, port);
+						this.port = defaultGrpcPort;
 						useRest = false;
 					}
 				}else {
@@ -232,6 +246,27 @@ public class ToscaCLI {
 					else if(reader.next().toLowerCase().equals("yaml")) mediatype = "application/x-yaml";
 				}else {
 					System.out.println("-- Unrecognized values for option -format, accepted formats are: json, xml, yaml.");
+				}
+				break;
+			case "-host":
+				if(reader.hasNext()) {
+					this.host = reader.next();
+				}
+				else {
+					System.out.println("-- Provide a valid hostname.");
+				}
+				break;
+			case "-port":
+				if(reader.hasNextInt()) {
+					int oldvalue = this.port;
+					this.port = reader.nextInt();
+					if(0 > this.port || 65535 < this.port) {
+						System.out.println("-- The provided port number is not valid, port has not been modified.");
+						this.port = oldvalue;
+					}
+				}
+				else {
+					System.out.println("-- Provide a port as an integer.");
 				}
 				break;
 			default:
@@ -250,7 +285,7 @@ public class ToscaCLI {
 				restClient = ClientBuilder.newClient();
 
 			// targeting the graphs resource
-			WebTarget target = restClient.target(baseUri);
+			WebTarget target = restClient.target(this.buildBaseUri());
 
 			// Performing the request and reading the response
 			Response res = target.request(mediatype).get();
@@ -277,7 +312,7 @@ public class ToscaCLI {
 			}
 
 			// Targeting the specified graph resource
-			WebTarget target = restClient.target(baseUri + "/" + String.valueOf(reader.nextLong()));
+			WebTarget target = restClient.target(this.buildBaseUri() + "/" + String.valueOf(reader.nextLong()));
 
 			// Performing the request and reading the response
 			Response res = target.request(mediatype).get();
@@ -308,7 +343,7 @@ public class ToscaCLI {
 				restClient = ClientBuilder.newClient();
 
 			// Targeting the resource
-			WebTarget target = restClient.target(baseUri);
+			WebTarget target = restClient.target(this.buildBaseUri());
 
 			// Performing the request and reading the response
 			Builder mypost = target.request(mediatype);
@@ -347,7 +382,7 @@ public class ToscaCLI {
 		}
 		
 		// Targeting the specified graph resource
-		WebTarget target = restClient.target(baseUri + "/" + String.valueOf(reader.nextLong()));
+		WebTarget target = restClient.target(this.buildBaseUri() + "/" + String.valueOf(reader.nextLong()));
 
 		// Performing the request and reading the response
 		Response res = target.request(mediatype).delete();
@@ -371,7 +406,7 @@ public class ToscaCLI {
 				restClient = ClientBuilder.newClient();
 
 			// Targeting the resource
-			WebTarget target = restClient.target(baseUri + "/" + reader.next());
+			WebTarget target = restClient.target(this.buildBaseUri() + "/" + reader.next());
 			
 			// Getting file content
 			String content = readFile(reader);
@@ -438,7 +473,7 @@ public class ToscaCLI {
 				restClient = ClientBuilder.newClient();
 
 			// Targeting the resource
-			WebTarget target = restClient.target(baseUri + "/" + graphId + "/policy")
+			WebTarget target = restClient.target(this.buildBaseUri() + "/" + graphId + "/policy")
 					.queryParam("source", source)
 					.queryParam("destination", destination)
 					.queryParam("type", whichpolicy);
