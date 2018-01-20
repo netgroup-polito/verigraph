@@ -7,6 +7,6 @@
         "type": "object"
     },
     "minItems": 0,
-    "maxItems":0,
+    "maxItems":7,
     "uniqueItems": true
 }

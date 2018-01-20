@@ -6,6 +6,8 @@ package it.polito.verigraph.scalability.tests;
  */
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 import com.microsoft.z3.Context;
@@ -320,12 +322,14 @@ public class Test_10Caches {
     {
         Test_10Caches model = new Test_10Caches();
         model.resetZ3();
-        
+        Long time_reachability=(long) 0;
+        Date start_time_reachability = Calendar.getInstance().getTime();
         IsolationResult ret =model.check.checkIsolationProperty(model.a,model.b);
+        time_reachability = time_reachability +(Calendar.getInstance().getTime().getTime() - start_time_reachability.getTime());
         //model.printVector(ret.assertions);
         if (ret.result == Status.UNSATISFIABLE){
            System.out.println("UNSAT"); // Nodes a and b are isolated
-        }else{
+        } if (ret.result == Status.SATISFIABLE){
             System.out.println("SAT ");
             System.out.println(ret.model);
 //            System.out.print( "Model -> ");model.printModel(ret.model);
@@ -333,6 +337,7 @@ public class Test_10Caches {
 //          System.out.println("Last hop -> " +ret.last_hop);
 //          System.out.println("Last send_time -> " +ret.last_send_time);
 //          System.out.println( "Last recv_time -> " +ret.last_recv_time);
-        }
+        }else{System.out.println("UNKNOWN");}
+        System.out.print("Verification time: "+ time_reachability + "ms -> " + (time_reachability/1000) + "s");
     }
 }

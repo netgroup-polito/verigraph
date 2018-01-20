@@ -35,6 +35,7 @@ public class Checker {
     Solver solver;
     ArrayList<BoolExpr> constraints;
     public BoolExpr [] assertions;
+    public BoolExpr [] unsat_core;
     public Status result;
     public Model model;
 
@@ -103,12 +104,16 @@ public class Checker {
 
         result = this.solver.check();
         model = null;
+        unsat_core=null;
         assertions = this.solver.getAssertions();
         if (result == Status.SATISFIABLE){
             model = this.solver.getModel();
         }
+        if(result == Status.UNSATISFIABLE){
+            unsat_core=solver.getUnsatCore();
+        }
         this.solver.pop();
-        return new IsolationResult(ctx,result, p0, n_0, t_1, t_0, nctx, assertions, model);
+        return new IsolationResult(ctx,result, p0, n_0, t_1, t_0, nctx, assertions, model,unsat_core);
     }
 
 

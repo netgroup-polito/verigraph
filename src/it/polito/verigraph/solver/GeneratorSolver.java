@@ -214,7 +214,7 @@ public class GeneratorSolver{
         //System.out.println("Configuration Device");
         for(Map.Entry<String,Object> cd : mo.entrySet()){
             String name=cd.getKey();
-            String type=(scenario.chn.get(name)).get("functional_type");
+            //String type=(scenario.chn.get(name)).get("functional_type");
             String address=(scenario.chn.get(name)).get("address");
             Object model=cd.getValue();
             if(model instanceof PolitoEndHost){
@@ -256,26 +256,32 @@ public class GeneratorSolver{
                     vlogger.logger.info("Configuration endhost "+name+"empty");
                 }
             }else if(model instanceof PolitoCache){
-
+                try{
                 List<String> list_tmp=scenario.config_array.get(name);
                 for(int i=0; i<list_tmp.size(); i++){
+                    vlogger.logger.info("Cache "+list_tmp.get(i));
                     if(!scenario.nodes_addresses.contains(list_tmp.get(i)))
+                        vlogger.logger.info("Cache removed nodes "+list_tmp.get(i));
                         list_tmp.remove(i);
                 }
                 List<String> list=trimIp(list_tmp);
+                for(String tmp: list)
+                    vlogger.logger.info("Cache trimIp " + tmp);
                 if(list!=null){
-                    PolitoCache cache=(PolitoCache)cd.getValue();
                     NetworkObject [] array_no=listToNetworkArguments(list);
+                    for(NetworkObject tmp : array_no)
+                        vlogger.logger.info(tmp.getZ3Node().toString());
+                    vlogger.logger.info("Cache 3:"+array_no.length);
                     ((PolitoCache)cd.getValue()).installCache(array_no);
                 }
                 else{
                     vlogger.logger.info("Cache "+name+" empty");
                 }
+                }catch(Exception e){vlogger.logger.info("Exception message :"+e.getMessage() ); e.printStackTrace();}
             }else if(model instanceof PolitoAntispam){
                 List<String> list_tmp=scenario.config_array.get(name);
                 List<String> list=trimIp(list_tmp);
                 if(list!=null){
-                    PolitoAntispam antispam=(PolitoAntispam)cd.getValue();
                     int[] blackList=listToIntArguments(list);
                     ((PolitoAntispam)cd.getValue()).addBlackList(blackList);
                 }
@@ -369,7 +375,7 @@ public class GeneratorSolver{
             }else if(model instanceof PolitoIDS){
                 List<String> list=scenario.config_array.get(name);
                 if(!list.isEmpty()){
-                    PolitoIDS dpi=(PolitoIDS)cd.getValue();
+//                    PolitoIDS dpi=(PolitoIDS)cd.getValue();
                     int[] blackList=listToIntArguments(list);
                     ((PolitoIDS)cd.getValue()).installIDS(blackList);
                 }

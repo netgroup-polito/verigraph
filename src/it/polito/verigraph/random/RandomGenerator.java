@@ -25,7 +25,6 @@ class RandomGenerator {
 
     private HashMap<String,GraphGen> graphs;
     private HashMap<String,PolicyGen> policies;
-    private HashMap<String,Set<PolicyGen>> policiesByGraphName;
 
     public RandomGenerator() {
         long seed=new Date().getTime();
@@ -41,7 +40,6 @@ class RandomGenerator {
         // initialize hash maps
         graphs = new HashMap<String,GraphGen>();
         policies = new HashMap<String,PolicyGen>();
-        policiesByGraphName = new HashMap<String,Set<PolicyGen>>();
 
         // create graphs and policies
         int numGraphs = random.nextInt(1)+1; // at least 1 graph
@@ -93,8 +91,8 @@ class RandomGenerator {
             try {
                 // Serialize Java object info JSON file under the examples folders
                 mapper.writeValue(file, g);
-//                String str =mapper.writeValueAsString(g);
-//                System.out.println(str);
+                //                String str =mapper.writeValueAsString(g);
+                //                System.out.println(str);
             } catch (IOException e) {
                 e.printStackTrace();
                 return;
@@ -109,9 +107,11 @@ class RandomGenerator {
                 System.out.println("Node ID: "+ node.getId());
                 System.out.println("Node NAME: "+ node.getName());
                 System.out.println("Node TYPE: "+ node.getFunctional_type().toString());
-                if(node.getConfiguration().getConfiguration()!=null)
-                    System.out.println("Node CONF: "+ node.getConfiguration().getConfiguration().toString());
-                System.out.println("Node CONF_DESC: "+ node.getConfiguration().getDescription());
+                if(node.getConfiguration()!=null)
+                    if(node.getConfiguration().getConfiguration()!=null){
+                        System.out.println("Node CONF: "+ node.getConfiguration().getConfiguration().toString());
+                        System.out.println("Node CONF_DESC: "+ node.getConfiguration().getDescription());
+                    }
                 System.out.println("Node NEIGHBOUR: ");
                 if(node.getNeighbours() != null)
                     for(Neighbour n : node.getNeighbours().values()){

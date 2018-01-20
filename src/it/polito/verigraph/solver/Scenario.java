@@ -65,6 +65,7 @@ public class Scenario {
         //for each node a map is created in order to insert the map in chn
         for(int i=0; i<nodes.size(); i++){
             String name=nodes.get(i).getName();
+            vlogger.logger.info("Nodes in the network: " + name);  //TO BE REMOVED
             nodes_names.add(name);
             String type=nodes.get(i).getFunctional_type().toLowerCase();
             nodes_types.add(type);
@@ -170,6 +171,7 @@ public class Scenario {
                     if(list_tmp!=null){
                         for(String s : list_tmp){
                             resource.add("ip_"+s);
+                            vlogger.logger.info(s);
                         }
                     }
                 } catch (JsonGenerationException e) {
@@ -244,8 +246,7 @@ public class Scenario {
             break;
         }
         case "FIELDMODIFIER":{
-            Map<String, String> map=new LinkedHashMap();
-
+            Map<String, String> map=new LinkedHashMap<String, String>();
             if(!configuration.toString().equals(empty)){
                 ObjectMapper mapper=new ObjectMapper();
 

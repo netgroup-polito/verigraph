@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Vector;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -118,18 +117,18 @@ class GraphGen extends Graph {
 
     private Configuration createConfiguration (String nodename, String functype, boolean nextBoolean) { //TODO complete configurations
 
-        Configuration conf;
+        Configuration conf=null;
         JsonNodeFactory nodeFactory = JsonNodeFactory.instance;
         ObjectNode conf_node = nodeFactory.objectNode();
         ArrayNode conf_array = nodeFactory.arrayNode();
         switch(functype){
         case "ENDHOST":
             if(!nextBoolean){
-                conf_node.put("url", "www.facebook.com");
+                conf_node.put("url", "www.deepweb.com");
                 conf_node.put("body", "weapons");
                 conf_node.put("email_from", "spam@polito.it");
             } else{
-                conf_node.put("url", "www.deepweb.com");
+                conf_node.put("url", "www.facebook.com");
                 conf_node.put("body", "cats");
                 conf_node.put("email_from", "verigraph@polito.it");
             }
@@ -137,10 +136,10 @@ class GraphGen extends Graph {
             conf = new Configuration(nodename, "Endhost configuration", conf_array);
             break;
         case "MAILSERVER":
-            conf = new Configuration(nodename, "Mail Server configuration", conf_array);
+            //conf = new Configuration(nodename, "Mail Server configuration", conf_array);
             break;
         case "WEBSERVER":
-            conf = new Configuration(nodename, "Web Sever configuration", conf_array);
+            //conf = new Configuration(nodename, "Web Sever configuration", conf_array);  //do not print
             break;
         case "ANTISPAM":
             if(!nextBoolean){
@@ -160,11 +159,22 @@ class GraphGen extends Graph {
             conf = new Configuration(nodename, "DPI configuration", conf_array);
             break;
         case "FIELDMODIFIER":
+            if(!nextBoolean){
+                //conf_node.put("url", "www.facebook.com");
+                conf_node.put("body", "weapon");
+                conf_node.put("email_from", "spam@polito.it");
+                conf_array.add(conf_node);
+            }
             conf = new Configuration(nodename, "FieldModifier configuration", conf_array);
             break;
         case "FIREWALL":
             if(!nextBoolean){
-
+                //DROPS ANY PACKET
+                for(Node client : clientNodes){
+                    for(Node server : serverNodes)
+                        conf_node.put(client.getName(), server.getName());
+                }
+                conf_array.add(conf_node);
             }
             conf = new Configuration(nodename, "Firewall configuration", conf_array);
             break;
@@ -195,7 +205,6 @@ class GraphGen extends Graph {
         //HashMap<Long, LinkGen> possibleLinks = new HashMap<Long,LinkGen>();
 
         HashMap<Long, Neighbour> neighbourfromnode;
-        HashMap<Long, Neighbour> neighbourfromneighbour;
         Neighbour node;
         // create links for each client
         for (Node client: clientNodes) {
@@ -222,7 +231,6 @@ class GraphGen extends Graph {
         //create links for each server
         for (Node server: serverNodes) {
             neighbourfromnode= new HashMap<Long,Neighbour>();
-            neighbourfromneighbour= new HashMap<Long,Neighbour>();
             // connect the server via a bidirectional link to a randomly chosen middlebox
             m = random.nextInt(middleNodes.length);
             node = new Neighbour(middleNodes[m].getId(), middleNodes[m].getName());
