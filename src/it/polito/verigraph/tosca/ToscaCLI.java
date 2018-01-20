@@ -218,8 +218,8 @@ public class ToscaCLI {
 							grpcClient.shutdown();
 							grpcClient = null;
 						}
-						restClient = ClientBuilder.newClient();
 						this.port = defaultRestPort;
+						restClient = ClientBuilder.newClient();
 						useRest = true;
 					}
 					else {
@@ -231,8 +231,8 @@ public class ToscaCLI {
 							restClient.close();
 							restClient = null;
 						}
-						grpcClient = new ToscaClient(host, port);
 						this.port = defaultGrpcPort;
+						grpcClient = new ToscaClient(host, port);
 						useRest = false;
 					}
 				}else {
