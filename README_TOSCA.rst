@@ -48,41 +48,40 @@ In particular, a ``RelationshipTemplate`` from a ``NodeTemplate`` X to a ``NodeT
 
 Complete examples of NF-FGs (in YAML and XML) can be found `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/examples/tosca>`__.
 
-By deploying the **tosca_support** branch of Verigraph with these `instructions <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README.rst>`__, TOSCA support is already seamlessly integrated with the **VeriGraph** provided APIs.
+By deploying the **tosca_support** branch of Verigraph with these `instructions <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README.rst>`__, TOSCA support is already seamlessly integrated with the **Verigraph** provided APIs.
 
-Below are detailed the extensions made to the RESTful APIs and gRPC:
+Below are detailed the extensions made to the RESTful and gRPC APIs:
 
 **gRPC**
 
-VeriGraph gRPC implementation support TOSCA YAML and XML representation at the Graph resource level.
-The messages used to send/receive information from/to server/client are the `following <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/tosca_verigraph.proto>`__:
+Verigraph gRPC implementation supports TOSCA YAML and XML representation with Graph granularity. The messages used to send/receive information from/to the server/client are specified in the `protocol buffer <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/verigraph.proto>`_:
 
-- ``TopologyTemplateGrpc``: it represents the *Graph*.
-- ``NodeTemplateGrpc``: it represents the Node without its *Neighbours*.
-- ``RelationshipTemplateGrpc``: it represents the *Neighbours* within each *Node*.
-- ``NewTopologyTemplate``: it contains the exact *Graph* created/updated by Verigraph.
-- ``ToscaRequestID``: used to identify a specific *Graph*.
-- ``ToscaConfigurationGrpc``: it contains the configuration of a *Node*.
-- ``ToscaPolicyGrpc``: used to perform a verification.
-- ``ToscaVerificationGrpc``: used to return the result of a verification.
-- ``ToscaTestGrpc``: it contains a path of *Nodes* used as result of a verification.
+- ``TopologyTemplateGrpc``: represents the *Graph*
+- ``NodeTemplateGrpc``: represents the Node without its *Neighbours*
+- ``RelationshipTemplateGrpc``: represents the *Neighbours* within each *Node*
+- ``NewTopologyTemplate``: contains the exact *Graph* created/updated by Verigraph
+- ``ToscaRequestID``: used to identify a specific *Graph*
+- ``ToscaConfigurationGrpc``: contains the configuration of a *Node*
+- ``ToscaPolicyGrpc``: used to perform a verification
+- ``ToscaVerificationGrpc``: used to return the result of a verification
+- ``ToscaTestGrpc``: contains a path of *Nodes* used as result of a verification
 
-In order to obtain a gRPC object starting from file there can be use the following static methods:
+In order to obtain a gRPC object starting from file the following static methods can be used:
 
-- ``XmlToGrpc.obtainTopologyTemplateGrpc(String)`` returns a TopologyTemplateGrpc from a TOSCA compliant XML filepath.
-- ``XmlParsingUtils.writeDefinitionsString(Definitions)`` returns a string that contains an XML printable format of the Definions.
-- ``YamlToGrpc.obtainTopologyTemplateGrpc(String)`` returns a TopologyTemplateGrpc from a TOSCA compliant YAML filepath.
-- ``YamlParsingUtils.writeServiceTemplateYamlString(ServiceTemplateYaml)`` returns a string that contains a YAML printable format of the ServiceTemplateYaml.
-- Moreover, other converting utility methods can be found in the package ``it.polito.verigraph.tosca.converter``.
+- ``XmlToGrpc.obtainTopologyTemplateGrpc(String)`` returns a TopologyTemplateGrpc from a TOSCA-compliant XML filepath
+- ``XmlParsingUtils.writeDefinitionsString(Definitions)`` returns a string that contains an XML printable format of the Definitions
+- ``YamlToGrpc.obtainTopologyTemplateGrpc(String)`` returns a TopologyTemplateGrpc from a TOSCA compliant YAML filepath
+- ``YamlParsingUtils.writeServiceTemplateYamlString(ServiceTemplateYaml)`` returns a string that contains a YAML printable format of the ServiceTemplateYaml
+- Moreover, other converting utility methods can be found in the package ``it.polito.verigraph.tosca.converter``
 
-The previous messages are used with the `following <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/tosca_verigraph.proto>`__ gRPC to perform the CRUD operation on Graphs and to verify a specific policy:
+The previous messages are used with the gRPC methods (specified in the `protocol buffer <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/verigraph.proto>`_) to perform CRUD operations on Graphs and to verify a specific policy:
 
-- ``GetTopologyTemplates(GetRequest)``: returns a list that contains all the *Graphs* stored in Verigraph (as *TopologyTemplateGrpc*).
-- ``GetTopologyTemplate(ToscaRequestID)``: returns the *Graph* with the specific ID provided (as *TopologyTemplateGrpc*).
-- ``CreateTopologyTemplate(TopologyTemplateGrpc)``: sends to Verigraph a *Graph* (as *TopologyTemplateGrpc*) and returns the *Graph* (as *NewTopologyTemplate*) as it has been created by Verigraph.
-- ``DeleteTopologyTemplate(ToscaRequestID)``: deletes the *Graph* with the specific ID provided from Verigraph.
-- ``UpdateTopologyTemplate(TopologyTemplateGrpc)``: sends to Verigraph an update of the *Graph* (as *TopologyTemplateGrpc*) and returns the *Graph* updated (as *NewTopologyTemplate*).
-- ``VerifyPolicy(ToscaPolicy)``: send a *ToscaPolicy* to Verigraph and returns a *ToscaVerificationGrpc* that contains the result.
+- ``GetTopologyTemplates(GetRequest)``: returns a list that contains all the *Graphs* stored in Verigraph (as *TopologyTemplateGrpc*)
+- ``GetTopologyTemplate(ToscaRequestID)``: returns the *Graph* with the specific ID provided (as *TopologyTemplateGrpc*)
+- ``CreateTopologyTemplate(TopologyTemplateGrpc)``: sends to Verigraph a *Graph* (as *TopologyTemplateGrpc*) and returns the *Graph* (as *NewTopologyTemplate*) as it has been created by Verigraph
+- ``DeleteTopologyTemplate(ToscaRequestID)``: deletes the *Graph* with the specific ID provided from Verigraph
+- ``UpdateTopologyTemplate(TopologyTemplateGrpc)``: sends to Verigraph an update of the *Graph* (as *TopologyTemplateGrpc*) and returns the *Graph* updated (as *NewTopologyTemplate*)
+- ``VerifyPolicy(ToscaPolicy)``: send a *ToscaPolicy* to Verigraph and returns a *ToscaVerificationGrpc* that contains the result
 
 
 **REST**
@@ -101,4 +100,4 @@ The previous messages are used with the `following <https://github.com/netgroup-
  - ``GET``: given a graph, a source node and a destination node; a list of all the possible paths is returned (``Content-Type: application/json``), otherwise (``Content-type: application/{x-yaml, xml}``) a set of *ServiceTemplates* (Graphs) is returned, each one representing a possible path between the selected source node and destination node
 
 ``/graphs/{graphId}/policy``
- - ``GET``: returns the result of a verification (in JSON, X-YAML or XML, specifying the feasible paths with the same format of the ``GET`` on ``/graphs/{graphId}/paths``
+ - ``GET``: returns the result of a verification (in JSON, X-YAML or XML), specifying the feasible paths with the same format of the ``GET`` on ``/graphs/{graphId}/paths``
