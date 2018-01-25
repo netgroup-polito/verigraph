@@ -1,26 +1,39 @@
-FROM ubuntu:latest
+# Ubuntu 14.04 for compatibility with Z3 4.5.0
+FROM ubuntu:14.04
+
+# Change these environment variables to select other versions
+ENV UBUNTU_VERSION 14.04
+ENV Z3_VERSION 4.5.0
 
 RUN apt-get -y update && apt-get -y upgrade
-RUN apt-get -y install openjdk-8-jdk wget
-RUN apt-get -y install libgomp1
-RUN apt-get -y install unzip
 
-RUN mkdir /usr/src/verigraph/
+# Not needed for Ubuntu version greater than 16.04 (OpenJDK already included in default repositories)
+RUN apt-get -y install software-properties-common
+RUN add-apt-repository ppa:openjdk-r/ppa && apt-get -y update
 
-RUN mkdir /usr/src/verigraph/z3
-RUN wget https://github.com/Z3Prover/z3/releases/download/z3-4.5.0/z3-4.5.0-x64-ubuntu-14.04.zip -O /tmp/z3-4.5.0-x64-ubuntu-14.04.zip
-RUN cd /tmp && unzip z3-4.5.0-x64-ubuntu-14.04.zip
-RUN cp -Rv /tmp/z3-4.5.0-x64-ubuntu-14.04/bin/* /usr/src/verigraph/z3
+# Install OpenJDK, wget, libgomp1 (needed by Z3) and unzip
+RUN apt-get -y install openjdk-8-jdk wget libgomp1 unzip
 
-ADD ./service_lib /usr/src/verigraph/service_lib
-ADD ./jsonschema /usr/src/verigraph/jsonschema
-ADD service.jar /usr/src/verigraph/
-ADD server.properties /usr/src/verigraph
+# Install Z3
+RUN mkdir /z3
+RUN wget https://github.com/Z3Prover/z3/releases/download/z3-$Z3_VERSION/z3-$Z3_VERSION-x64-ubuntu-$UBUNTU_VERSION.zip -O /tmp/z3-$Z3_VERSION-x64-ubuntu-$UBUNTU_VERSION.zip
+RUN cd /tmp && unzip z3-$Z3_VERSION-x64-ubuntu-$UBUNTU_VERSION.zip
+RUN cp -Rv /tmp/z3-$Z3_VERSION-x64-ubuntu-$UBUNTU_VERSION/bin/* /z3
 
-ENV LD_LIBRARY_PATH="/usr/src/verigraph/z3:${LD_LIBRARY_PATH}"
+# Add files needed to run gRPC Verigraph server to container
+RUN mkdir /verigraph
+ADD ./service_lib /verigraph/service_lib
+ADD ./jsonschema /verigraph/jsonschema
+ADD service.jar /verigraph/
+ADD server.properties /verigraph
 
-WORKDIR /usr/src/verigraph/
+# Set environment variable for loading Z3 native library
+ENV LD_LIBRARY_PATH="/z3:${LD_LIBRARY_PATH}"
 
+WORKDIR /verigraph
+
+# Make port 50051 (used by Verigraph gRPC server) available to the world outside this container
 EXPOSE 50051
 
-CMD java -cp /usr/src/verigraph/service_lib/*:. -jar ./service.jar
+# Start Verigraph gRPC server process
+CMD java -cp /verigraph/service_lib/*:. -jar ./service.jar

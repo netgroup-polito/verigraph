@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project verigraph with libraries in sub-folder">
+<project default="create_run_jar" name="Create Runnable Jar for gRPC server">
     <property name="dir.workspace" value="."/>
-    <property name="dir.docker" value="${dir.workspace}/docker/gRPC/test"/>
+    <property name="dir.docker" value="${dir.workspace}/docker/gRPC"/>
     <property name="dir.m2" value ="../../.m2"/>
     <target name="create_run_jar">
         <jar destfile="${dir.docker}/service.jar">
