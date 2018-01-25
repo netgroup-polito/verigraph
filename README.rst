@@ -4,7 +4,7 @@
    :format: latex
 ..
 
-Let’s look at how to deploy **Verigraph** on Apache Tomcat. If you’re only interested in creating gRPC API, you can skip this section and go `here <https://github.com/netgroup-polito/verigraph/blob/master/README_gRPC.md>`_ (though you might find it useful if Tomcat is not yet installed!). **Verigraph** REST and gRPC services can be deployed also on **Docker** containers as documented `here <https://github.com/netgroup-polito/verigraph/blob/tosca_support/docker/README.rst>`_. **Verigraph** also supports **OASIS TOSCA** network service descriptors for performing verifications; more informations can be found `here <https://github.com/netgroup-polito/verigraph/blob/tosca_support/README_TOSCA.rst>`_.
+Let’s look at how to deploy **Verigraph** on Apache Tomcat. If you’re only interested in creating gRPC API, you can skip this section and go `here <https://github.com/netgroup-polito/verigraph/blob/master/README_gRPC.md>`_ (though you might find it useful if Tomcat is not yet installed!). **Verigraph** REST and gRPC services can be deployed also on **Docker** containers as documented `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/docker/README.rst>`_. **Verigraph** also supports **OASIS TOSCA** network service descriptors for performing verifications; more informations can be found `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_TOSCA.rst>`_.
 
 How to deploy **Verigraph** on Apache Tomcat:
 
