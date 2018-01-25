@@ -37,6 +37,7 @@ Follow these instructions to build separate Docker images for its REST service a
 **Changing the versions of Ubuntu, Tomcat, Z3**
 
 If you want to change the Ubuntu, Tomcat and Z3 versions bundled in the images, you can change the following in the Dockerfiles (both for gRPC and REST):
+
 - ``FROM ubuntu:version_tag``: replace *version_tag* with your chosen Ubuntu version
 - ``ENV UBUNTU_VERSION x.x``: replace *x.x* with your chosen Ubuntu version
 - ``ENV TOMCAT_VERSION x.x.x``: replace *x.x.x* with your chosen Tomcat version
