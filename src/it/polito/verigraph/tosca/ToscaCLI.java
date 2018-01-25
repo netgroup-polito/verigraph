@@ -53,7 +53,7 @@ import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 public class ToscaCLI {
 	
-	private static final String helper = "./tosca_support/CLIhelper.txt";
+	private static final String helper = "./README_CLI.txt";
 	
 	//Service parameters.
 	private String host;
@@ -316,7 +316,7 @@ public class ToscaCLI {
 
 			// Performing the request and reading the response
 			Response res = target.request(mediatype).get();
-			this.readResponseRest("GETALL", res);
+			this.readResponseRest("GET", res);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
