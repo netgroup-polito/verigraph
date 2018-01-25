@@ -4,7 +4,7 @@
    :format: latex
 ..
 
-The **Verigraph** services can be run on Docker containers by using the Dockerfiles bundled in the project.
+The **Verigraph** services can be run on **Docker** containers by using the Dockerfiles bundled in the project.
 
 Follow these instructions to build separate Docker images for its REST service and gRPC service:
 
@@ -32,3 +32,14 @@ Follow these instructions to build separate Docker images for its REST service a
 - With a terminal navigate to the folder containing the gRPC Dockerfile ``/verigraph/docker/gRPC``
 - After having started the Docker daemon, run the following command: ``docker build -t verigraph_grpc .``
 - Now that the image is built, you can run it from anywhere. For example for running the image in a local container: ``docker run -p 50051:50051 verigraph_grpc``
+
+
+**Changing the versions of Ubuntu, Tomcat, Z3**
+
+If you want to change the Ubuntu, Tomcat and Z3 versions bundled in the images, you can change the following in the Dockerfiles (both for gRPC and REST):
+- ``FROM ubuntu:version_tag``: replace *version_tag* with your chosen Ubuntu version
+- ``ENV UBUNTU_VERSION x.x``: replace *x.x* with your chosen Ubuntu version
+- ``ENV TOMCAT_VERSION x.x.x``: replace *x.x.x* with your chosen Tomcat version
+- ``ENV Z3_VERSION x.x.x``: replace *x.x.x* with your chosen Z3 version
+
+Please notice that by default Verigraph uses Z3 4.5.0 which is already compiled and tested with Ubuntu 14.04.
