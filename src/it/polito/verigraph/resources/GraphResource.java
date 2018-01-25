@@ -51,20 +51,20 @@ public class GraphResource {
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
     @ApiOperation(httpMethod = "GET",
-            value = "Returns all graphs",
-            notes = "Returns an array of graphs",
-            response = Response.class,
-            responseContainer = "List")
+        value = "Returns all graphs",
+        notes = "Returns an array of graphs",
+        response = Response.class,
+        responseContainer = "List")
     @ApiResponses(value = {
-            @ApiResponse(
-                    code = 200,
-                    message = "All the graphs have been returned in the message body",
-                    response = Graph.class,
-                    responseContainer = "List"),
-            @ApiResponse(
-                    code = 500,
-                    message = "Internal server error",
-                    response = ErrorMessage.class)})
+        @ApiResponse(
+            code = 200,
+            message = "All the graphs have been returned in the message body",
+            response = Graph.class,
+            responseContainer = "List"),
+        @ApiResponse(
+            code = 500,
+            message = "Internal server error",
+            response = ErrorMessage.class)})
     public Response getGraphs(@Context HttpHeaders headers) throws JsonProcessingException, MyNotFoundException {
         if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
             List<Definitions> definitions = topologyTemplateService.getAllTopologyTemplates();
@@ -84,16 +84,16 @@ public class GraphResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
     @ApiOperation(httpMethod = "POST",
-            value = "Creates a graph",
-            notes = "Creates a single graph",
-            response = Response.class)
+        value = "Creates a graph",
+        notes = "Creates a single graph",
+        response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Invalid graph supplied", response = ErrorMessage.class),
-            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
-            @ApiResponse(code = 201, message = "Graph successfully created", response = Graph.class)})
+        @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
+        @ApiResponse(code = 201, message = "Graph successfully created", response = Graph.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "name", value = "User's name", required = true, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "email", value = "User's email", required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "id", value = "User ID", required = true, dataType = "long", paramType = "query")})
+        @ApiImplicitParam(name = "name", value = "User's name", required = true, dataType = "string", paramType = "query"),
+        @ApiImplicitParam(name = "email", value = "User's email", required = false, dataType = "string", paramType = "query"),
+        @ApiImplicitParam(name = "id", value = "User ID", required = true, dataType = "long", paramType = "query")})
     public Response addGraph(@Context HttpHeaders headers, @ApiParam(value = "New graph object", required = true) Graph graph,
                              @Context UriInfo uriInfo) throws JAXBException, IOException, MyInvalidIdException {
         if (headers.getMediaType() != null) {
@@ -129,16 +129,15 @@ public class GraphResource {
     @Path("/{graphId}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
     @ApiOperation(httpMethod = "GET",
-            value = "Returns a graph",
-            notes = "Returns a single graph",
-            response = Response.class)
+        value = "Returns a graph",
+        notes = "Returns a single graph",
+        response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Invalid graph id", response = ErrorMessage.class),
-            @ApiResponse(code = 404, message = "Graph not found", response = ErrorMessage.class),
-            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
-            @ApiResponse(code = 200, message = "The requested graph has been returned in the message body", response = Graph.class)})
+        @ApiResponse(code = 404, message = "Graph not found", response = ErrorMessage.class),
+        @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
+        @ApiResponse(code = 200, message = "The requested graph has been returned in the message body", response = Graph.class)})
     public Response getGraph(@Context HttpHeaders headers, @ApiParam(value = "Graph id", required = true) @PathParam("graphId") long graphId,
-                             @Context UriInfo uriInfo)
-            throws JAXBException, IOException {
+                            @Context UriInfo uriInfo) throws JAXBException, IOException {
         if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
             Definitions topologyTemplate = topologyTemplateService.getTopologyTemplate(graphId);
             GenericEntity<Definitions> entity = new GenericEntity<Definitions>(topologyTemplate) {}; // Anonymous class
@@ -150,31 +149,28 @@ public class GraphResource {
         } else {
             return Response.ok().entity(graphService.getGraph(graphId)).build();
         }
-        //        graph.addLink(getUriForSelf(uriInfo, graph), "self");
-        //        graph.addLink(getUriForNodes(uriInfo, graph), "nodes");
+        //graph.addLink(getUriForSelf(uriInfo, graph), "self");
+        //graph.addLink(getUriForNodes(uriInfo, graph), "nodes");
     }
 
     @PUT
     @Path("/{graphId}")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
     @ApiOperation(httpMethod = "PUT", value = "Edits a graph", notes = "Edits a single graph", response = Response.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Invalid graph object", response = ErrorMessage.class),
-            @ApiResponse(code = 403, message = "Invalid graph id", response = ErrorMessage.class),
-            @ApiResponse(code = 404, message = "Graph not found", response = ErrorMessage.class),
-            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
-    public Response updateGraph(
-            @Context HttpHeaders headers,
-            @ApiParam(value = "Graph id", required = true)
-            @PathParam("graphId") long id,
-            @ApiParam(value = "Updated graph object", required = true) Graph graph)
-            throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
-
+        @ApiResponse(code = 400, message = "Invalid graph object", response = ErrorMessage.class),
+        @ApiResponse(code = 403, message = "Invalid graph id", response = ErrorMessage.class),
+        @ApiResponse(code = 404, message = "Graph not found", response = ErrorMessage.class),
+        @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
+    public Response updateGraph(@Context HttpHeaders headers, @ApiParam(value = "Graph id", required = true) @PathParam("graphId") long id,
+                                @ApiParam(value = "Updated graph object", required = true) Graph graph)
+                                throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
         if (headers.getMediaType().equals(MediaType.APPLICATION_XML_TYPE)) {
             graph.setId(id);
             Graph newGraph = graphService.updateGraph(graph);
             Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
-            GenericEntity<Definitions> entity = new GenericEntity<Definitions>(newTopologyTemplate) {
-            }; // Anonymous class
+            GenericEntity<Definitions> entity = new GenericEntity<Definitions>(newTopologyTemplate) {}; // Anonymous class
             return Response.ok().type(MediaType.APPLICATION_XML_TYPE).entity(entity).build();
         } else if (headers.getMediaType().equals(new MediaType("application", "x-yaml"))) {
             graph.setId(id);
@@ -194,9 +190,10 @@ public class GraphResource {
     @DELETE
     @Path("/{graphId}")
     @ApiOperation(httpMethod = "DELETE", value = "Deletes a graph", notes = "Deletes a signle graph")
-    @ApiResponses(value = {@ApiResponse(code = 403, message = "Invalid graph id", response = ErrorMessage.class),
-            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
-            @ApiResponse(code = 204, message = "Graph successfully deleted")})
+    @ApiResponses(value = {
+        @ApiResponse(code = 403, message = "Invalid graph id", response = ErrorMessage.class),
+        @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
+        @ApiResponse(code = 204, message = "Graph successfully deleted")})
     public void deleteGraph(@ApiParam(value = "Graph id", required = true) @PathParam("graphId") long id) {
         graphService.removeGraph(id);
     }
@@ -205,19 +202,19 @@ public class GraphResource {
     @Path("/{graphId}/policy")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
     @ApiOperation(httpMethod = "GET",
-            value = "Verifies a given policy in a graph",
-            notes = "In order to verify a given policy (e.g. 'reachability') all nodes of the desired graph must have a valid configuration.")
+        value = "Verifies a given policy in a graph",
+        notes = "In order to verify a given policy (e.g. 'reachability') all nodes of the desired graph must have a valid configuration.")
     @ApiResponses(value = {
-            @ApiResponse(code = 403,
-                    message = "Invalid graph id or invalid configuration for source and/or destination node",
-                    response = ErrorMessage.class),
-            @ApiResponse(code = 404,
-                    message = "Graph not found or source node not found or destination node not found or configuration for source and/or destination node not available",
-                    response = ErrorMessage.class),
-            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
+        @ApiResponse(code = 403,
+            message = "Invalid graph id or invalid configuration for source and/or destination node",
+            response = ErrorMessage.class),
+        @ApiResponse(code = 404,
+            message = "Graph not found or source node not found or destination node not found or configuration for source and/or destination node not available",
+            response = ErrorMessage.class),
+        @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
     public Response verifyGraph(@Context HttpHeaders headers, @ApiParam(value = "Graph id", required = true) @PathParam("graphId") long graphId,
-                                    @ApiParam(value = "'source' and 'destination' must refer to names of existing nodes in the same graph, 'type' refers to the required verification between the two (e.g. 'reachability')", required = true) @BeanParam VerificationBean verificationBean)
-            throws MyInvalidDirectionException, JsonParseException, JsonMappingException, JAXBException, IOException {
+                                @ApiParam(value = "'source' and 'destination' must refer to names of existing nodes in the same graph, 'type' refers to the required verification between the two (e.g. 'reachability')", required = true) @BeanParam VerificationBean verificationBean)
+                                throws MyInvalidDirectionException, JsonParseException, JsonMappingException, JAXBException, IOException {
 
         Verification verification = verificationService.verify(graphId, verificationBean);
 
@@ -243,21 +240,20 @@ public class GraphResource {
 
     @GET
     @Path("/{graphId}/paths")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
     @ApiOperation(httpMethod = "GET", value = "Retrieve all paths between two nodes")
     @ApiResponses(value = {
-            @ApiResponse(code = 403,
-                message = "Invalid graph id or invalid configuration for source and/or destination node",
-                response = ErrorMessage.class),
-            @ApiResponse(code = 404,
-                message = "Graph not found or source node not found or destination node not found or configuration for source and/or destination node not available",
-                response = ErrorMessage.class),
-            @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
+        @ApiResponse(code = 403,
+            message = "Invalid graph id or invalid configuration for source and/or destination node",
+            response = ErrorMessage.class),
+        @ApiResponse(code = 404,
+            message = "Graph not found or source node not found or destination node not found or configuration for source and/or destination node not available",
+            response = ErrorMessage.class),
+        @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class)})
     public Response getPaths(@Context HttpHeaders headers, @ApiParam(value = "Graph id", required = true) @PathParam("graphId") long graphId,
-                                     @ApiParam(value = "'source' must refer to name of existing nodes in the same graph",
-                                             required = true) @QueryParam("source") String srcName,
-                                     @ApiParam(value = "'destination' must refer to name of existing nodes in the same graph",
-                                             required = true) @QueryParam("destination") String dstName)
-            throws MyInvalidDirectionException, JsonParseException, JsonMappingException, JAXBException, IOException {
+                            @ApiParam(value = "'source' must refer to name of existing nodes in the same graph", required = true) @QueryParam("source") String srcName,
+                            @ApiParam(value = "'destination' must refer to name of existing nodes in the same graph", required = true) @QueryParam("destination") String dstName)
+                            throws MyInvalidDirectionException, JsonParseException, JsonMappingException, JAXBException, IOException {
 
         List<List<Node>> paths = verificationService.getPaths(graphId, srcName, dstName);
 

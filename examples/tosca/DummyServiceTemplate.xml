@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Definitions id="exampleDefinition"
+	name="Example of service described with modified Tosca" xmlns="http://docs.oasis-open.org/tosca/ns/2011/12"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://www.example.com/servicetemplates/ExampleService"
+	xs:schemaLocation="http://docs.oasis-open.org/tosca/TOSCA/v1.0/os/schemas/TOSCA-v1.0.xsd">
+
+	<Extensions>
+		<Extension
+			namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinitions"
+			mustUnderstand="yes" />
+	</Extensions>
+
+	<Import importType=" http://docs.oasis-open.org/tosca/ns/2011/12"
+		namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
+		location="../tosca_support/ToscaVerigraphDefinitions.xml" />
+
+
+	<ServiceTemplate id="0" name="prova">
+
+		<TopologyTemplate id="10" name="dummyTopology">
+			<NodeTemplate id="100" name="fw" type="FirewallType">
+				<Properties>
+					<Configuration confID="100" confDescr="ciao">
+						 <firewallConfiguration>
+							<elements>
+								<source>webeserver1</source>
+								<destination>host2</destination>
+							</elements>
+						</firewallConfiguration>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+
+			<NodeTemplate id="101" name="webeserver1" type="WebserverType">
+				<Properties>
+					<Configuration confID="101" confDescr="Configurazione Server">
+						<webserverConfiguration>
+							<name>My web Server 1</name>
+						</webserverConfiguration>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+
+			<NodeTemplate id="102" name="host2" type="EndhostType" >
+				<Properties>
+					<Configuration>
+						<endhostConfiguration url="www.facebook.com" protocol="HTTP_REQUEST"/>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+
+			<NodeTemplate id="103" name="host1" type="EndhostType" >
+				<Properties>
+					<Configuration>
+						<endhostConfiguration url="www.google.com" destination="server1" protocol="HTTP_REQUEST"/>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+
+			<NodeTemplate id="104" name="antispamNode1" type="AntispamType">
+				<Properties>
+					<Configuration>
+						<antispamConfiguration>
+							<source>host1</source>
+							<source>host2</source>
+						</antispamConfiguration>
+					</Configuration>
+				</Properties>
+			</NodeTemplate>
+
+
+			<RelationshipTemplate id="1001" name="fwToServ1" type="linkedTo">
+				<SourceElement ref="100" />
+				<TargetElement ref="101" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="1002" name="serv1ToFw" type="linkedTo">
+				<SourceElement ref="101" />
+				<TargetElement ref="100" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="1003" name="fwToHost1" type="linkedTo">
+				<SourceElement ref="100" />
+				<TargetElement ref="103" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="1004" name="fwToHost2" type="linkedTo">
+				<SourceElement ref="100" />
+				<TargetElement ref="102" />
+			</RelationshipTemplate>
+
+
+			<RelationshipTemplate id="1005" name="Host2Tofw" type="linkedTo">
+				<SourceElement ref="102" />
+				<TargetElement ref="100" />
+			</RelationshipTemplate>
+
+			<RelationshipTemplate id="1006" name="Host1Tofw" type="linkedTo">
+				<SourceElement ref="103" />
+				<TargetElement ref="100" />
+			</RelationshipTemplate>
+
+
+		</TopologyTemplate>
+
+	</ServiceTemplate>
+
+</Definitions>
