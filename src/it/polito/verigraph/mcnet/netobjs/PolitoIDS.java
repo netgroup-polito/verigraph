@@ -23,9 +23,6 @@ import it.polito.verigraph.mcnet.components.NetworkObject;
 
 public class PolitoIDS extends NetworkObject {
 
-    public static final int DROGA = 1; //no go
-    public static final int GATTINI = 2;  //go
-
     Context ctx;
     List<BoolExpr> constraints = new ArrayList<BoolExpr>();
     DatatypeExpr politoIDS;

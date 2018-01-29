@@ -30,23 +30,23 @@ public class Test_Scalability_FW_FM_DPI {
 
     public Checker check;
     public Context ctx;
-    public PolitoEndHost client;//, server;
-    public PolitoWebServer server;
+    public PolitoEndHost client, server;
+//    public PolitoWebServer server;
     public AclFirewall[] fws; 
     public PolitoFieldModifier[] fms;
     public PolitoIDS[] dpis;
 
     public Test_Scalability_FW_FM_DPI(int num){
         HashMap<String, String> options = new HashMap<>();
-        options.put("proof", "true");
-        options.put("model", "true");
-        options.put("unsat_core", "true");
-        ctx = new Context(options);
+//        options.put("proof", "true");
+//        options.put("model", "true");
+//        options.put("unsat_core", "true");
+//        ctx = new Context(options);
+        ctx = new Context();
 
         fws = new AclFirewall[num];
         fms = new PolitoFieldModifier[num];
         dpis = new PolitoIDS[num];
-        //ctx = new Context();
 
         String[] name = new String[(num*3)+2];
         String[] address = new String[(num*3)+2];
@@ -67,7 +67,7 @@ public class Test_Scalability_FW_FM_DPI {
         Network net = new Network (ctx,new Object[]{nctx});
 
         client = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("client"), net, nctx});
-        server = new PolitoWebServer(ctx, new Object[]{nctx.nm.get("server"), net, nctx});
+        server = new PolitoEndHost(ctx, new Object[]{nctx.nm.get("server"), net, nctx});
         for(int i = 0; i< num; i++){
             fws[i]= new AclFirewall(ctx, new Object[]{nctx.nm.get("fw"+i), net, nctx});
             fms[i]= new PolitoFieldModifier(ctx, new Object[]{nctx.nm.get("fm"+i), net, nctx});
@@ -93,8 +93,8 @@ public class Test_Scalability_FW_FM_DPI {
                 als.get(i).add(nctx.am.get("ip_client"));
                 adm.add(new Tuple<>(client, als.get(i)));
             }else if (i == als.size() -1){ // 3*num+1
-                als.get(1).add(nctx.am.get("ip_server"));
-                adm.add(new Tuple<>(server, als.get(1)));
+                als.get(i).add(nctx.am.get("ip_server"));
+                adm.add(new Tuple<>(server, als.get(i)));
             }
         }
         net.setAddressMappings(adm);
@@ -224,27 +224,27 @@ public class Test_Scalability_FW_FM_DPI {
 
         }
 
-        int[] s = {1} ;
+        int[] s = {1,2,3,5} ;
         ArrayList<Tuple<DatatypeExpr,DatatypeExpr>> acl = new ArrayList<Tuple<DatatypeExpr,DatatypeExpr>>();
+//        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_client"),nctx.am.get("ip_server")));
         acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_fw1"),nctx.am.get("ip_server")));
+        PacketModel packet_modified = new PacketModel();
+        packet_modified.setBody(100);
 
                 for(int i=0;i<dpis.length; i++){
                     dpis[i].installIDS(s);
-                   // fws[i].addAcls(acl);
-                    fms[i].installFieldModifier(Optional.empty());
+                    fws[i].addAcls(acl);
+                    fms[i].installFieldModifier(Optional.of(packet_modified));
                 }
 
-//        dpis[0].installIDS(s);
-//        fws[0].addAcls(acl);
-//        fms[0].installFieldModifier(Optional.empty());
 
         PacketModel packet = new PacketModel();
         packet.setEmailFrom(3);
         packet.setBody(5);
         packet.setProto(nctx.HTTP_REQUEST);
         packet.setIp_dest(nctx.am.get("ip_server"));
-        client.installAsWebClient(nctx.am.get("ip_server"), packet);
-//        server.installAsWebServer(new PacketModel());
+        client.installEndHost(packet);
+        server.installAsWebServer(new PacketModel());
 
         check = new Checker(ctx,nctx,net);
     }
@@ -277,25 +277,30 @@ public class Test_Scalability_FW_FM_DPI {
 
     public static void main(String[] args) throws Z3Exception
     {
-        Test_Scalability_FW_FM_DPI model = new Test_Scalability_FW_FM_DPI(2);
+        for(int i=2; i<7;i++){
+            System.out.println("Iteration with "+ ((i*3)+2)+" nodes");
+        Test_Scalability_FW_FM_DPI model = new Test_Scalability_FW_FM_DPI(i);
         model.resetZ3();
         Long time_reachability=(long) 0;
         Date start_time_reachability = Calendar.getInstance().getTime();
         IsolationResult ret =model.check.checkIsolationProperty(model.client,model.server);
         time_reachability = time_reachability +(Calendar.getInstance().getTime().getTime() - start_time_reachability.getTime());
-        model.printVector(ret.assertions);
+//        model.printVector(ret.assertions);
         if (ret.result == Status.UNSATISFIABLE){
             System.out.println("UNSAT"); // Nodes a and b are isolated
-           model.printVector(ret.unsat_core);
+//           model.printVector(ret.unsat_core);
         } else if (ret.result == Status.SATISFIABLE){
             System.out.println("SAT ");
-            System.out.println(ret.model);
+//            System.out.println(ret.model);
             //            System.out.print( "Model -> ");model.printModel(ret.model);
             //          System.out.println( "Violating packet -> " +ret.violating_packet);
             //          System.out.println("Last hop -> " +ret.last_hop);
             //          System.out.println("Last send_time -> " +ret.last_send_time);
             //          System.out.println( "Last recv_time -> " +ret.last_recv_time);
-        }else{System.out.println("UNKNOWN");}
-        System.out.print("Verification time: "+ time_reachability + "ms -> " + (time_reachability/1000) + "s");
+        }else{
+            System.out.println("UNKNOWN");
+            }
+        System.out.println("Verification time: "+ time_reachability + "ms");
+        }
     }
 }
