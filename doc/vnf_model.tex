@@ -1,5 +1,5 @@
 
-The VNF catalogue supported by VeriGraph is composed of several network function models, which are: End-host, Mail Server/Client, Web Client/Server, Anti-spam, NAT, Web Cache, ACL firewall. Here we describe the formulas that model the functional behaviour of each function in catalog.
+The VNF catalogue supported by VeriGraph is composed of several network function models, which are: End-host, Mail Server/Client, Web Client/Server, Anti-spam, NAT, Web Cache, ACL firewall, Field modifier, IDS, VPN gateways. Here we describe the formulas that model the functional behaviour of each function in catalog.
 
 
 \paragraph{End-host model}
@@ -27,9 +27,9 @@ An end-host is a network node which sends packets towards a destination and rece
 	\label{end-host_model}
 \end{figure}
 \\
-This is a basic version of an endpoint in the service graph, which can be configured to behave as end-host-based model (i.e., servers and clients). VeriGraph support end-host configurations to specify which traffic flow an end-host sends, without changing its model (e.g., a client can generate packet with specific port number, destination address etc.). Initially $predicatesOnPktFields$ is set to true and depending on the packet model configured by the user, this predicate will be appended with the assigned fields of the packet. 
+This is a basic version of an endpoint in the service graph, which can be configured to behave as end-host-based model (i.e., servers and clients). VeriGraph support end-host configurations to specify which traffic flow an end-host sends, without changing its model (e.g., a client can generate packet with specific port number, destination address etc.). Initially $predicatesOnPktFields$ is set to true and depending on the packet model configured by the user, this predicate will be appended with the assigned fields of the packet. For instance, if the protocol of the packet $p$ is set to \textit{POP3\_REQUEST} then $predicatesOnPktFields=predicatesOnPktFields \wedge p.proto=POP3\_REQUEST $.
 
-\paragraph{Mail Server model} A mail server is a complex form of end-host which can function as POP3 or SMTP server. In fact, this kind of server can generate only \textit{POP3\_RESPONSE} or \textit{SMTP\_RESPONSE} messages addressed to a mail client, but the type of the response depends on the type of the mail server. For instance POP3 mail server is modelled for sending only \textit{POP3\_RESPONSE} (Formula~\ref{mail-server_constr1}) and  receiving just \textit{POP3\_REQUEST} messages (Formula~\ref{mail-server_constr4}). In particular, a packet from a mail server is sent only if previously a \textit{POP3\_REQUEST} was received (Formula~\ref{mail-server_constr2}). The same applies for an SMTP server. These set of formulas will be appended to the solver depending on the type of the end-host used in a test scenario. 
+\paragraph{Mail Server model} A mail server is a complex form of end-host which can function as POP3 or SMTP server. In fact, this kind of server can generate only \textit{POP3\_RESPONSE} or \textit{SMTP\_RESPONSE} messages addressed to a mail client, but the type of the response depends on the type of the mail server. For instance POP3 mail server is modelled for sending only \textit{POP3\_RESPONSE} (Formula~\ref{mail-server_constr1}) and  receiving just \textit{POP3\_REQUEST} messages (Formula~\ref{mail-server_constr4}). In particular, a packet  from a mail server is sent only if a \textit{POP3\_REQUEST} was received (Formula~\ref{mail-server_constr2}). The same applies for an SMTP server. These set of formulas will be appended to the solver depending on the type of the end-host used in a test scenario. 
 \begin{figure}[h]
 	{\footnotesize
 		\begin{subequations}
@@ -195,8 +195,8 @@ In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_cons
 			(se& nd(nat, n_{0}, p_{0}) \wedge \neg isPrivateAddress(p_{0}.dest)) \implies p_{0}.src = ip\_nat \\
 			& \wedge \exists (n_{1}, p_{1}) \: | \: recv(n_{1}, nat, p_{1}) \wedge isPrivateAddress(p_{1}.src) \\
 			& \wedge p_{1}.origin = p_{0}.origin \wedge p_{1}.dest = p_{0}.dest \wedge p_{1}.seq\_no = p_{0}.seq\_no \\
-			& \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \wedge p_{1}.url = p_{0}.url), \\
-			& \forall (n_{0}, p_{0})
+			& \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \wedge p_{1}.url = p_{0}.url) \\
+			& \wedge p_{1}.inner\_src = p_{0}.inner\_src) \wedge p_{1}.inner\_dest = p_{0}.inner\_dest), \forall (n_{0}, p_{0})
 			\end{split} \\
 %			\end{align}
 %		\end{subequations}
@@ -210,10 +210,10 @@ In details, the NAT behaviour is modelled by two formulas. Formula~\ref{nat_cons
 			\begin{split}
 			\label{nat_constr2}
 			(se& nd(nat, n_{0}, p_{0}) \wedge isPrivateAddress(p_{0}.dest)) \implies \neg isPrivateAddress(p_{0}.src) \\
-			& \wedge \exists  (n_{1}, p_{1}) \: | \: (recv(n_{1}, nat, p_{1}) \wedge \neg isPrivateAddress(p_{1}.src) \\
-			& \wedge p_{1}.dest = ip\_nat \wedge p_{1}.src = p_{0}.src \wedge p_{1}.origin = p_{0}.origin \\
+			& \wedge \exists  (n_{1}, p_{1}) \: | \: (recv(n_{1}, nat, p_{1})   \wedge p_{1}.inner\_dest = p_{0}.inner\_dest \wedge p_{1}.dest = ip\_nat \\
+			& \wedge \neg isPrivateAddress(p_{1}.src) \wedge p_{1}.src = p_{0}.src \wedge p_{1}.origin = p_{0}.origin \\
 			& \wedge p_{1}.seq\_no = p_{0}.seq\_no \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \\
-			& \wedge p_{1}.url = p_{0}.url) \wedge \exists (n_{2}, p_{2}) \: | \:  recv(n_{2}, nat, p_{2}) \\
+			& \wedge p_{1}.url = p_{0}.url \wedge p_{1}.inner\_src = p_{0}.inner\_src) ) \wedge \exists (n_{2}, p_{2}) \: | \:  recv(n_{2}, nat, p_{2}) \\
 			& \wedge isPrivateAddress(p_{2}.src) \wedge p_{2}.dest = p_{1}.src  \\
 			& \wedge p_{2}.src = p_{0}.dest), \forall (n_{0}, p_{0})
 			\end{split}
@@ -242,7 +242,7 @@ On the other hand, the traffic from the external network to the private is model
 	}%
 \end{figure}
 
-This model was designed to work with web end-hosts (i.e., web client and server). In details, formula~\ref{cache_constr1} states that: a packet sent from the cache to a node belonging to the external network (\textit{$\neg isInternal(n_{0})$}), implies a previous HTTP request packet (\textit{$p_{0}.proto = HTTP\_REQ$}) is received from an internal node, which cannot be served by the cache (\textit{$\neg isInCache(p_{0}.url)$}), otherwise the request would have not been forwarded towards the external network. 
+This model was designed to work with web end-hosts (i.e., web client and server). In details, formula~\ref{cache_constr1} states that: a packet sent from the cache to a node belonging to the external network (\textit{$\neg isInternal(n_{0})$}), implies a previous HTTP request packet (\textit{$p_{0}.proto = HTTP\_REQUEST$}) is received from an internal node, which cannot be served by the cache (\textit{$\neg isInCache(p_{0}.url)$}), otherwise the request would have not been forwarded towards the external network. 
 
 \begin{figure}[h]
 
@@ -253,26 +253,26 @@ This model was designed to work with web end-hosts (i.e., web client and server)
 			\begin{split}
 			\label{cache_constr1}
 			(send(cache&, n_{0}, p_{0}) \wedge \neg isInternal(n_{0})) \implies \neg isInCache(p_{0}.url) \\
-			& \wedge p_{0}.proto = HTTP\_REQ \wedge \exists ( n_{1}) \: | \:  \\
+			& \wedge p_{0}.proto = HTTP\_REQUEST \wedge \exists ( n_{1}) \: | \:  \\
 			&  isInternalNode(n_{1}) \wedge recv(n_{1}, cache, p_{0})), \\
 			& \forall (n_{0}, p_{0})
 			\end{split} \\
 			\begin{split}
 			\label{cache_constr2}
 			(send(cache&, n_{0}, p_{0}) \wedge isInternal(n_{0})) \implies isInCache(p_{0}.url) \\
-			& \wedge p_{0}.proto = HTTP\_RESP \wedge p_{0}.dest = p_{1}.src \wedge \\
+			& \wedge p_{0}.proto = HTTP\_RESPONSE \wedge p_{0}.dest = p_{1}.src \wedge \\
 			& \wedge \exists  (p_{1}) \: | \:  p_{1}.url = p_{0}.url \wedge\\
 			&  recv(n_{0}, cache, p_{1})), \forall (n_{0}, p_{0})			
 			\end{split} \\
 			\begin{split}
 			\label{cache_constr4}
 			(recv(n_{0},ca&che, p_{0}) \wedge isInternal(n_{0})) \implies  \\
-			&  p_{0}.proto = HTTP\_REQ , \forall (n_{0}, p_{0})			
+			&  p_{0}.proto = HTTP\_REQUEST , \forall (n_{0}, p_{0})			
 			\end{split} \\
 			\begin{split}
 			\label{cache_constr5}
 			(recv( n_{0},ca&che, p_{0}) \wedge \neg isInternal(n_{0})) \implies \\
-			&  p_{0}.proto = HTTP\_RESP \wedge p_{1}.dest = p_{0}.src \wedge \\
+			&  p_{0}.proto = HTTP\_RESPONSE \wedge p_{1}.dest = p_{0}.src \wedge \\
 			& \exists  (p_{1}) \: | \: send( cache,n_{0}, p_{1})), \forall (n_{0}, p_{0})			
 			\end{split} \\
 			\begin{split}
@@ -338,8 +338,8 @@ Field modifier function is in charge of simple task - packet field modification.
 					\label{field_constr1}
 					(send(modifier, n_{0}, p_{0})) \implies (&\exists ( n_{1}, p_{1}) |  recv(n_{1}, modifier, p_{1}) \wedge predicatesOnPktFields \wedge \\
 					&   p_{1}.encrypted = p_{0}.encrypted \wedge p_{1}.origin = p_{0}.origin \wedge \\  
-					&  \wedge  p_{1}.inner\_src = p_{0}.inner\_src \wedge p_{1}.inner\_dest = p_{0}.inner\_dest \wedge \\
-					& p_{1}.orig\_body = p_{0}.orig\_body \wedge p_{1}.src = p_{0}.src,\\
+					& p_{1}.src = p_{0}.src \wedge p_{1}.inner\_dest = p_{0}.inner\_dest \wedge \\
+					& p_{1}.orig\_body = p_{0}.orig\_body \wedge p_{1}.inner\_src = p_{0}.inner\_src ,\\
 					& \forall (n_{0}, p_{0})
 				\end{split}
 			\end{align}
@@ -374,15 +374,15 @@ Formula \ref{ids_constr1} states that IDS forwards a packet whose protocol is \t
 			\begin{align}
 				\begin{split}
 					\label{ids_constr1}
-					(send(ids, n_{0}, p_{0}) & \wedge (p_{0}.protocol = HTTP\_RES \vee \\
-					& p_{0}.protocol = HTTP\_REQ)) \implies \\
+					(send(ids, n_{0}, p_{0}) & \wedge (p_{0}.protocol = HTTP\_RESPONSE \vee \\
+					& p_{0}.protocol = HTTP\_REQUEST)) \implies \\
 					& \exists (n_{1}) \: | \:  recv(n_{1}, ids, p_{0}) \wedge \neg isInBlackList(p_{0}.body), \\
 					& \forall n_{0}, p_{0}
 				\end{split} \\
 				\begin{split}
 					\label{ids_constr2}
 					(send(ids, n_{0}, p_{0})& \implies  \\
-					& (p_{0}.protocol = HTTP\_RES \vee  p_{0}.protocol = HTTP\_REQ) \\ 
+					& (p_{0}.protocol = HTTP\_RESPONSE \vee  p_{0}.protocol = HTTP\_REQUEST) \\ 
 					& (nodeHasAddr(ids, p_{0}.src) \\
 					& \forall n_{0}, p_{0}
 				\end{split}
@@ -394,15 +394,15 @@ Formula \ref{ids_constr1} states that IDS forwards a packet whose protocol is \t
 \end{figure}
 
 \paragraph{VPN access}
-VPN access function enables a user to establish virtual network connection and exchange private encrypted messages. This network function model needs the same NAT model's  notion of internal and external networks. This kind of information is modelled by means of a function (\textit{isPrivateAddress}). This network node sends packets towards a VPN exit function or receive from it. If the inner source address ($p_{0}.inner\_src$) of the encapsulated packet is not equal to null, the packets are sent only if a packet ($p_1$) was received. More importantly the source/destination address of that packet must be equal to the inner source/destination of the packet being sent, the \textit{encrypted} field is set to false and the rest of the fields must be equal. In this scenario VPN access function encloses a packet within another, that has IP source of \textit{vpnAccessIp} and destination of \textit{vpnExitIp}. However, the inner destination address needs to be different then \textit{vpnAccessIp} and finally the \textit{encrypted} field needs to be set to true, since the data is first encrypted and encapsulated before it is sent to the remote VPN exit server (Formula~\ref{access_constr1}). 
+VPN access function enables a user to establish virtual network connection and exchange private encrypted messages. This network function model needs the same NAT model's  notion of internal and external networks. This kind of information is modelled by means of a function (\textit{isPrivateAddress}). This network node sends/receives packets towards a VPN exit function or back to the internal network. In order to send a packet towards an internal network whose inner source field is equal to null ($p_{0}.inner\_src=null$), the destination address of this packet must belong to private addresses and the packet must not be encrypted ($p_{0}.encrypted \neq true$). Moreover, there must another packet ($ p_{1}$) received whose source address is equal to the VPN exit, directed to the current VPN access network function ($p_{1}.dest = vpnAccessIp$). Since the VPN gateways exchange encrypted packets, this field of the received packet must be set to true and the rest of the fields must be equal (Formula~\ref{access_constr1}).
 
 
-\begin{figure}[]
+
+\begin{figure}[!h]
 	{\footnotesize
 		\begin{subequations}
 			\begin{align}
 			\begin{split}
-			\label{access_constr1}
 			(se& nd(access, n_{0}, p_{0}) \wedge p_{0}.inner\_src = null) \implies isPrivateAddress(p_{0}.dest) \\
 			& p_{0}.encrypted \neq true \wedge \exists (n_{1}, p_{1}) \: | \: recv(n_{1}, access, p_{1}) \wedge p_{1}.src = vpnExitIp \\
 			& \wedge p_{1}.encrypted = true \wedge p_{1}.dest = vpnAccessIp \wedge p_{1}.inner\_src = p_{0}.src \\
@@ -415,12 +415,10 @@ VPN access function enables a user to establish virtual network connection and e
 		\end{subequations}
 	}%
 	\caption{VPN access model.}
-	\label{nat_model}
+	\label{access_constr1}
 \end{figure}
 
-In order to send a packet in an opposite direction, the packet's destination address needs to belong to an internal network ($isPrivateAddress(p_{0}.inner\_src)$) and the content must be decrypted. Moreover, there must be a packet ($p_1$) received whose source address is equal to a \textit{vpnExitIP} and destination address of this network node. Apart from this, the packet needs to be decapsulated ($p_{1}.dest =  p_{0}.inner\_dest\wedge p_{1}.src = p_{0}.inner\_src$) by copying all the other fields of the received packet, as it was shown in Formula~\ref{access_constr2}.
-
-\begin{figure}[]
+\begin{figure}[!h]
 	{\footnotesize
 		\begin{subequations}
 			\begin{align}\
@@ -441,6 +439,10 @@ In order to send a packet in an opposite direction, the packet's destination add
 	\caption{VPN access model.}
 	\label{vpn_access}
 \end{figure}
+
+
+In order to send a packet in an opposite direction with inner source field is different then null value ($p_{0}.inner\_src \neq null$), there must be another not encrypted packet ($\wedge p_{1}.encrypted \neq true $) received  from an internal network whose inner source and the destination fields being equal to a null. Apart from this, the sending packet needs to be decapsulated ($p_{1}.dest =  p_{0}.inner\_dest\wedge p_{1}.src = p_{0}.inner\_src$) by copying all the other fields of the received packet, as it was shown in Formula~\ref{access_constr2}.
+
 
 
 \paragraph{VPN exit}

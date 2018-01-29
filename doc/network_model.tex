@@ -18,7 +18,7 @@ VeriGraph models the network as a set of network nodes that send and receive pac
 	\item \textit{origin} represents the network node that has originally created the packet;
 	\item \textit{origin\_body} takes trace of the original content body of the packet, while \textit{body} is the current body (that could be modified traversing the chain);
 	\item \textit{seq} is the sequence number of this packet;
-	\item \textit{proto} represents the protocol type and it can assume as values: \textit{HTTP\_REQUEST, HTTP\_RESPONSE, POP3\_REQUEST, POP3\_RESPONSE, SMTP\_REQUEST, SMTP\_RESPONSE}. This set of values must be extended when the VNF catalog is enriched with new functions that use other protocols (e.g., DNS server, VPN gateways and other);
+	\item \textit{proto} represents the protocol type and it can assume as values: \textit{HTTP\_REQUEST, HTTP\_RESPONSE, POP3\_REQUEST, POP3\_RESPONSE, SMTP\_REQUEST, SMTP\_RESPONSE}. This set of values must be extended when the VNF catalog is enriched with new functions that use other protocols (e.g., DNS server and other);
 	\item \textit{emailFrom} states for the email address that has sent a POP3 or SMTP message and it is modelled as an integer;
 	\item\textit{url} states for the web content of a HTTP message and it is modelled as an integer;
 	\item \textit{options} are the options values for the current packet.
@@ -76,16 +76,64 @@ In order to verify the correctness of reachability properties in presence of suc
 		\begin{subequations}
 			\begin{align}
 				\begin{split}
-				\exists (n_{0}, n_{1}, p_{0}, p_{1}) \; |&  \; (send(src, n_{1}, p_{1}) \wedge nodeHasAddr(src, p_{1}.src) \wedge \\
-				&  nodeHasAddr(dest, p_{1}.dest) \wedge   \\
-				&  recv(n_{0}, dest, p_{0}) \wedge nodeHasAddr(dest, p_{0}.dest) \\
-				& \wedge p_{1}.origin == p_{0}.origin )
+				\exists (n_{0}, p_{0}) \; |&  \;  recv(n_{0}, dest, p_{0})  \wedge p_{0}.origin == src \\
 				\end{split}
 			\end{align}
 			\label{formula}
 		\end{subequations}}
 \end{figure}
 \\
-Here we are modeling the case of a source node (\textit{$src$}) that is sending a packet (\textit{$p_{1}$}) to a destination node (\textit{$dest$}) (\textit{$send(src, n_{1}, p_{1})$}), of which we want to check the reachability between each other. The sent packet is delivered to the first chain node (\textit{$n_{1}$}) that connect source and destination nodes and must also have the address of the \textit{$src$} node as source address (\textit{$nodeHasAddr(src, p_{1}.src)$}). As we have already explained, the destination node may receive a different packet from the one sent, because VNFs could modify the sent packet in its trip towards the destination. Thus we have to impose that the destination node receives a new packet (\textit{$p_{0}$}) from the last chain node (\textit{$n_{0}$}): the received packet  must have the address of the \textit{$dest$} node as destination, but it must have anyway the same origin of the sent packet (\textit{$p_{1}.origin == p_{0}.origin $}).
+Here we are modeling the case of a source node (\textit{$src$}) that is sending a packet to a destination node (\textit{$dest$})  of which we want to check the reachability between each other. As we have already explained, the destination node may receive a different packet from the one sent, because VNFs could modify the sent packet in its trip towards the destination. Thus we have to impose that the destination node receives a new packet (\textit{$p_{0}$}) from the last chain node (\textit{$n_{0}$}): the received packet  must have the source node as origin (\textit{$p_{0}.origin == src $}).
 
+Network model includes extra constraints for supporting the VPN gateway. In this case, if there is a packet with inner source field equal to an address that is different from null ($p_{0}.inner\_src \neq null$) being sent, then the corresponding inner destination field of the packet must not be a null (\ref{vpn1}). The same applies for received packets (\ref{vpn4}). In all the other scenarios these two fields must be a null (\ref{vpn2},\ref{vpn3},\ref{vpn4},\ref{vpn5}). The last formula (\ref{vpn7}) in the network model indicates that the encrypted packet ($p_{1}.encrypted = true$) can be received and the other encrypted packet forwarded to a node ($n_{1}$) only if the other fields of the packets are identical.
 
+\begin{figure}[h]
+	{\footnotesize
+		\begin{subequations}
+			%MailServer model:
+			\begin{align}
+				\begin{split}
+					\label{vpn1}
+					(se& nd(n_{0},  n_{1}, p_{0}) \wedge p_{0}.inner\_src \neq null ) \implies  (p_{0}.inner\_src \neq p_{0}.inner\_dest ), \\
+					& \forall (n_{0},n_{1}, p_{0})
+				\end{split} \\							
+				\begin{split}
+					\label{vpn2}
+					(se& nd(n_{0},  n_{1}, p_{0}) \wedge p_{0}.inner\_src = null ) \implies  (p_{0}.inner\_src = p_{0}.inner\_dest ), \\
+					& \forall (n_{0},n_{1}, p_{0})
+				\end{split}\\	
+				\begin{split}
+					\label{vpn3}
+					(se& nd(n_{0},  n_{1}, p_{0}) \wedge p_{0}.inner\_dest = null ) \implies  (p_{0}.inner\_src = p_{0}.inner\_dest), \\
+					& \forall (n_{0},n_{1}, p_{0})
+				\end{split} \\
+				\begin{split}
+					\label{vpn4}
+					(re& cv(n_{0},  n_{1}, p_{0}) \wedge p_{0}.inner\_src \neq null ) \implies  (p_{0}.inner\_src \neq p_{0}.inner\_dest), \\
+					& \forall (n_{0},n_{1}, p_{0})
+				\end{split} \\
+				\begin{split}
+					\label{vpn5}
+					(re& cv(n_{0},  n_{1}, p_{0}) \wedge p_{0}.inner\_src = null ) \implies  (p_{0}.inner\_src = p_{0}.inner\_dest), \\
+					& \forall (n_{0},n_{1}, p_{0})
+				\end{split} \\
+				\begin{split}
+					\label{vpn6}
+					(re& cv(n_{0},  n_{1}, p_{0}) \wedge p_{0}.inner\_dest = null ) \implies  (p_{0}.inner\_src = p_{0}.inner\_dest), \\
+					& \forall (n_{0},n_{1}, p_{0})
+				\end{split} 			\\
+				\begin{split}
+					\label{vpn7}
+					(se& nd(n_{0}, n_{1}, p_{0}) \wedge p_{0}.encrypted = true \wedge recv(n_{2}, n_{0}, p_{1}) \wedge p_{1}.encrypted = true) \implies \\
+			& \wedge p_{1}.inner\_src = p_{0}.inner\_src \wedge p_{1}.inner\_dest = p_{0}.inner\_dest\\
+			&  \wedge p_{1}.seq = p_{0}.seq \wedge p_{1}.body = p_{0}.body \wedge p_{1}.origin\_body = p_{0}.origin\_body\\
+			& \wedge p_{1}.proto = p_{0}.proto \wedge p_{1}.emailFrom = p_{0}.emailFrom \wedge p_{1}.url = p_{0}.url), \\
+			& \wedge p_{1}.origin = p_{0}.origin   \wedge p_{1}.options = p_{0}.options  , \\
+			& \forall (n_{0},n_{1}, n_{2},p_{0},p_{1})
+				\end{split} 
+			\end{align}
+		\end{subequations}
+	}% 
+	\caption{VPN gateway model.}
+	\label{mail-server_model}
+\end{figure}
