@@ -251,6 +251,11 @@ public class ToscaCLI {
 			case "-host":
 				if(reader.hasNext()) {
 					this.host = reader.next();
+					if(grpcClient != null) {
+						grpcClient.shutdown();
+						grpcClient = new ToscaClient(host, port);
+						System.out.println("++ Host configuration changed restarting grpc client...");
+					}
 				}
 				else {
 					System.out.println("-- Provide a valid hostname.");
@@ -258,11 +263,16 @@ public class ToscaCLI {
 				break;
 			case "-port":
 				if(reader.hasNextInt()) {
-					int oldvalue = this.port;
-					this.port = reader.nextInt();
-					if(0 > this.port || 65535 < this.port) {
+					int newvalue = reader.nextInt();
+					if(0 > newvalue || 65535 < newvalue) {
 						System.out.println("-- The provided port number is not valid, port has not been modified.");
-						this.port = oldvalue;
+					}else {
+						this.port = newvalue;
+						if(grpcClient != null) {
+							grpcClient.shutdown();
+							grpcClient = new ToscaClient(host, port);
+							System.out.println("++ Port configuration changed restarting grpc client...");
+						}
 					}
 				}
 				else {

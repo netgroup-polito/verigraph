@@ -24,7 +24,7 @@
 					<Configuration confID="100" confDescr="ciao">
 						 <firewallConfiguration>
 							<elements>
-								<source>webeserver1</source>
+								<source>webserver1</source>
 								<destination>host2</destination>
 							</elements>
 						</firewallConfiguration>
@@ -32,7 +32,7 @@
 				</Properties>
 			</NodeTemplate>
 
-			<NodeTemplate id="101" name="webeserver1" type="WebserverType">
+			<NodeTemplate id="101" name="webserver1" type="WebserverType">
 				<Properties>
 					<Configuration confID="101" confDescr="Configurazione Server">
 						<webserverConfiguration>
