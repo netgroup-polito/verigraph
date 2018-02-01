@@ -36,6 +36,7 @@ public class Checker {
     ArrayList<BoolExpr> constraints;
     public BoolExpr [] assertions;
     public BoolExpr [] unsat_core;
+    public String reason_unknown;
     public Status result;
     public Model model;
 
@@ -69,11 +70,9 @@ public class Checker {
         addConstraints();
 
         Expr p0 = ctx.mkConst("check_isolation_p0_"+src.getZ3Node()+"_"+dest.getZ3Node(), nctx.packet);
-        Expr p1 = ctx.mkConst("check_isolation_p1_"+src.getZ3Node()+"_"+dest.getZ3Node(), nctx.packet);
+        //Expr p1 = ctx.mkConst("check_isolation_p1_"+src.getZ3Node()+"_"+dest.getZ3Node(), nctx.packet);
         Expr n_0 =ctx.mkConst("check_isolation_n_0_"+src.getZ3Node()+"_"+dest.getZ3Node(), nctx.node);
-        Expr n_1 =ctx.mkConst("check_isolation_n_1_"+src.getZ3Node()+"_"+dest.getZ3Node(), nctx.node);
-        IntExpr t_0 = ctx.mkIntConst("check_isolation_t0_"+src.getZ3Node()+"_"+dest.getZ3Node());
-        IntExpr t_1 = ctx.mkIntConst("check_isolation_t1_"+src.getZ3Node()+"_"+dest.getZ3Node());
+        //Expr n_1 =ctx.mkConst("check_isolation_n_1_"+src.getZ3Node()+"_"+dest.getZ3Node(), nctx.node);
 
         //Constraint1 recv(n_0,destNode,p0,t_0)
         this.solver.add((BoolExpr)nctx.recv.apply(n_0, dest.getZ3Node(), p0));
@@ -105,6 +104,7 @@ public class Checker {
         result = this.solver.check();
         model = null;
         unsat_core=null;
+        reason_unknown = "No reason";
         assertions = this.solver.getAssertions();
         if (result == Status.SATISFIABLE){
             model = this.solver.getModel();
@@ -112,8 +112,11 @@ public class Checker {
         if(result == Status.UNSATISFIABLE){
             unsat_core=solver.getUnsatCore();
         }
+        if(result == Status.UNKNOWN){
+            reason_unknown = solver.getReasonUnknown();
+        }
         this.solver.pop();
-        return new IsolationResult(ctx,result, p0, n_0, t_1, t_0, nctx, assertions, model,unsat_core);
+        return new IsolationResult(ctx,result, p0, n_0, nctx, assertions, model,unsat_core, reason_unknown);
     }
 
 

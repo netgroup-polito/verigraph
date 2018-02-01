@@ -26,19 +26,19 @@ public class IsolationResult {
     public NetContext nctx;
     public Status result;
     public Model model;
-    public Expr violating_packet,last_hop,last_send_time,last_recv_time,t_1;
+    public Expr violating_packet,last_hop;
     public BoolExpr [] assertions;
     public BoolExpr [] unsat_core;
+    public String reason_unknown;
 
-    public IsolationResult(Context ctx,Status result, Expr violating_packet, Expr last_hop, Expr last_send_time, Expr last_recv_time,NetContext nctx, BoolExpr[] assertions, Model model, BoolExpr[] unsat){
+    public IsolationResult(Context ctx,Status result, Expr violating_packet, Expr last_hop, NetContext nctx, BoolExpr[] assertions, Model model, BoolExpr[] unsat, String unknown){
         this.ctx = ctx;
         this.result = result;
         this.violating_packet = violating_packet;
         this.last_hop = last_hop;
         this.model = model;
-        this.last_send_time = last_send_time;
-        this.last_recv_time = last_recv_time;
         this.assertions = assertions;
-        unsat_core=unsat;
+        this.unsat_core=unsat;
+        this.reason_unknown=unknown;
     }
 }
