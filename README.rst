@@ -239,7 +239,7 @@ Verigraph target:
 10. Insert the condition for the installation of the new object created
     in it.polito.verigraph.mcnet.netobj using the data structure where
     you put the configurations of the element (config array or config
-    obj);
+    obj) in it.polito.neo4j.manager.Neo4jLibrary class;
 
 11. Restart the web service.
 

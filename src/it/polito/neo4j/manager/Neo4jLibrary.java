@@ -340,6 +340,63 @@ public class Neo4jLibrary implements Neo4jDBInteraction
         }
         case "FIELDMODIFIER":{
             vlogger.logger.info("It is a FIELMODIFIER");
+            String destination=c.getFieldmodifier().getDestination();
+            String body=c.getFieldmodifier().getBody();
+            String email_from=c.getFieldmodifier().getEmailFrom();
+            ProtocolTypes protocol=c.getFieldmodifier().getProtocol();
+            String options=c.getFieldmodifier().getOptions();
+            String url=c.getFieldmodifier().getUrl();
+            BigInteger sequence=c.getFieldmodifier().getSequence();
+            if(destination!=null){
+                Node dest=graphDB.createNode(NodeType.Fieldmodifier);
+                dest.setProperty("destination", destination);
+                Relationship d=dest.createRelationshipTo(newConf,  RelationType.ElementRelationship);
+                d.setProperty("id", newConf.getId());
+                d.setProperty("name", "destination");
+            }
+            if(body!=null){
+                Node b=graphDB.createNode(NodeType.Fieldmodifier);
+                b.setProperty("body", body);
+                Relationship bo=b.createRelationshipTo(newConf,  RelationType.ElementRelationship);
+                bo.setProperty("id", newConf.getId());
+                bo.setProperty("name", "body");
+            }
+            if(email_from!=null){
+                Node email=graphDB.createNode(NodeType.Fieldmodifier);
+                email.setProperty("email_from", email_from);
+                Relationship e_from=email.createRelationshipTo(newConf,  RelationType.ElementRelationship);
+                e_from.setProperty("id", newConf.getId());
+                e_from.setProperty("name", "email_from");
+            }
+            if(protocol!=null){
+                String protocollo=c.getFieldmodifier().getProtocol().value();
+                Node proto=graphDB.createNode(NodeType.Fieldmodifier);
+                proto.setProperty("protocol", protocollo);
+                Relationship p=proto.createRelationshipTo(newConf,  RelationType.ElementRelationship);
+                p.setProperty("id", newConf.getId());
+                p.setProperty("name", "protocol");
+            }
+            if(options!=null){
+                Node opt=graphDB.createNode(NodeType.Fieldmodifier);
+                opt.setProperty("options", options);
+                Relationship o=opt.createRelationshipTo(newConf,  RelationType.ElementRelationship);
+                o.setProperty("id", newConf.getId());
+                o.setProperty("name", "options");
+            }
+            if(url!=null){
+                Node u=graphDB.createNode(NodeType.Fieldmodifier);
+                u.setProperty("url", url);
+                Relationship ur=u.createRelationshipTo(newConf,  RelationType.ElementRelationship);
+                ur.setProperty("id", newConf.getId());
+                ur.setProperty("name", "url");
+            }
+            if(sequence != null && !sequence.equals(BigInteger.ZERO)){
+                Node seq=graphDB.createNode(NodeType.Fieldmodifier);
+                seq.setProperty("sequence", sequence);
+                Relationship seque=seq.createRelationshipTo(newConf,  RelationType.ElementRelationship);
+                seque.setProperty("id", newConf.getId());
+                seque.setProperty("name", "sequence");
+            }
 
             break;
 
@@ -836,8 +893,58 @@ public class Neo4jLibrary implements Neo4jDBInteraction
 
                     case "FIELDMODIFIER":{
 
-                        Fieldmodifier field=new Fieldmodifier();
+                        /*Fieldmodifier field=new Fieldmodifier();
                         c.setFieldmodifier(field);
+                        break;*/
+                        Iterable<Relationship> confs= conf.getRelationships(RelationType.ElementRelationship);
+                        Iterator<Relationship> confsIt = confs.iterator();
+                        Fieldmodifier field=new Fieldmodifier();
+                        String destination=new String();
+                        String body=new String();
+                        String email_from=new String();
+                        String protocol=new String();
+                        String options=new String();
+                        String url=new String();
+                        BigInteger sequence=null;
+                        while(confsIt.hasNext()){
+                            Relationship relConf = confsIt.next();
+                            Node element = relConf.getStartNode();
+                            if(element.hasLabel(NodeType.Fieldmodifier)){
+                                String type=relConf.getProperty("name").toString();
+                                if(type.compareTo("destination")==0){
+                                    destination=element.getProperty("destination").toString();
+                                }else 
+                                    if(type.compareTo("body")==0){
+                                        body=element.getProperty("body").toString();
+                                    }else
+                                        if(type.compareTo("email_from")==0){
+                                            email_from=element.getProperty("email_from").toString();
+                                        }else
+                                            if(type.compareTo("protocol")==0){
+                                                protocol=element.getProperty("protocol").toString();
+                                            }else
+                                                if(type.compareTo("options")==0){
+                                                    options=element.getProperty("options").toString();
+                                                }else
+                                                    if(type.compareTo("url")==0){
+                                                        url=element.getProperty("url").toString();
+                                                    }else
+                                                        if(type.compareTo("sequence")==0){
+                                                            sequence=new BigInteger((byte[]) element.getProperty("sequence"));
+                                                        }
+
+                            }
+                        }
+
+                        field.setBody(body);
+                        field.setDestination(destination);
+                        field.setEmailFrom(email_from);
+                        field.setOptions(options);
+                        field.setSequence(sequence);
+                        field.setUrl(url);
+                        if(!protocol.isEmpty())
+                            field.setProtocol(ProtocolTypes.fromValue(protocol));
+                        c.setFieldmodifier(field);;
                         break;
                     }
                     case "MAILCLIENT":{

@@ -341,17 +341,81 @@ public class GraphToNeo4j {
             configuration.setEndhost(endhost);
             break;
         }
-        case "ENDPOINT":{
-            configuration.setName(node.getFunctional_type().toLowerCase());
-            Endpoint endpoint=new Endpoint();
-            configuration.setEndpoint(endpoint);
-            break;
-        }
-        case "FIELDMODIFIER":{
+        /* case "FIELDMODIFIER":{
 
             configuration.setName(node.getFunctional_type());
             Fieldmodifier fieldmodifier=new  Fieldmodifier();
             configuration.setFieldmodifier(fieldmodifier);
+            break;
+        }*/
+        case "FIELDMODIFIER":{
+            configuration.setName(node.getFunctional_type().toLowerCase());
+            Fieldmodifier fieldmodifier=new Fieldmodifier();
+
+            if(!nodes.toString().equals(empty)){
+                ObjectMapper mapper=new ObjectMapper();
+                java.util.Map<String, String> map=new LinkedHashMap();
+                String input;
+                Matcher matcher = Pattern.compile("\\[([^\\]]*)\\]").matcher(nodes.toString());
+                if(matcher.find()){
+                    input=matcher.group(1);
+                }else
+                    input=nodes.toString();
+
+                try{
+                    map=mapper.readValue(input, java.util.LinkedHashMap.class);
+                    for(java.util.Map.Entry<String, String> m : map.entrySet()){
+                        switch(m.getKey()){
+                            case "body":{
+                                fieldmodifier.setBody(m.getValue());
+                                break;
+                            }
+                            case"sequence":{
+                                fieldmodifier.setSequence(new BigInteger(m.getValue()));
+                                break;
+                            }
+                            case "protocol":{
+                                fieldmodifier.setProtocol(ProtocolTypes.fromValue(m.getValue()));
+                                break;
+                            }
+                            case "email_from":{
+                                fieldmodifier.setEmailFrom(m.getValue());
+                                break;
+                            }
+                            case "url":{
+                                fieldmodifier.setUrl(m.getValue());
+                                break;
+                            }
+                            case "option":{
+                                fieldmodifier.setOptions(m.getValue());
+                                break;
+                            }
+                            case "destination":{
+                                fieldmodifier.setDestination(m.getValue());
+                                break;
+                            }
+                        }
+                    }
+
+                }catch(JsonGenerationException e) {
+                    e.printStackTrace();
+                } catch (JsonMappingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            else{
+                vlogger.logger.info("FieldModifer " +node.getName()+" empty");
+
+            }
+            configuration.setFieldmodifier(fieldmodifier);
+            break;
+        }
+        case "ENDPOINT":{
+            configuration.setName(node.getFunctional_type().toLowerCase());
+            Endpoint endpoint=new Endpoint();
+            configuration.setEndpoint(endpoint);
             break;
         }
 

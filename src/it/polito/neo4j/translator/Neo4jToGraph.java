@@ -90,7 +90,6 @@ public class Neo4jToGraph {
         switch(configuration.getName().toUpperCase()){
         case "FIREWALL":{
             ObjectMapper mapper=new ObjectMapper();
-            JsonNode root=mapper.createObjectNode();
             ArrayNode child=mapper.createArrayNode();
             if(configuration.getFirewall().getElements()!=null){
                 for(Elements e : configuration.getFirewall().getElements()){
@@ -149,7 +148,6 @@ public class Neo4jToGraph {
         case "ENDHOST":{
 
             ObjectMapper mapper=new ObjectMapper();
-            JsonNode root=mapper.createObjectNode();
             ArrayNode child=mapper.createArrayNode();
 
             Map<String, String> map=new HashMap<String, String>();
@@ -193,6 +191,53 @@ public class Neo4jToGraph {
             conf.setConfiguration(child);
             break;
         }
+
+        case "FIELDMODIFIER":{
+//            ObjectMapper mapper=new ObjectMapper();
+//            ArrayNode child=mapper.createArrayNode();
+//            conf.setConfiguration(child);
+//            break;
+            ObjectMapper mapper=new ObjectMapper();
+            ArrayNode child=mapper.createArrayNode();
+
+            Map<String, String> map=new HashMap<String, String>();
+
+            if(configuration.getFieldmodifier().getBody()!=null)
+                map.put("body", configuration.getFieldmodifier().getBody());
+
+            if(configuration.getFieldmodifier().getDestination()!=null)
+                map.put("destination", configuration.getFieldmodifier().getDestination());
+
+            if(configuration.getFieldmodifier().getEmailFrom()!=null)
+                map.put("email_from", configuration.getFieldmodifier().getEmailFrom());
+
+            if(configuration.getFieldmodifier().getOptions()!=null)
+                map.put("options", configuration.getFieldmodifier().getOptions());
+
+            if(configuration.getFieldmodifier().getUrl()!=null)
+                map.put("url", configuration.getFieldmodifier().getUrl());
+
+            if(configuration.getFieldmodifier().getProtocol()!=null)
+                map.put("protocol", configuration.getFieldmodifier().getProtocol().toString());
+
+            if((configuration.getFieldmodifier().getSequence()) != null && !(configuration.getFieldmodifier().getSequence()).equals(BigInteger.ZERO))
+                map.put("sequence", new String(configuration.getFieldmodifier().getSequence().toByteArray()));
+
+            JsonNode element=mapper.createObjectNode();
+            if(!map.isEmpty()){
+                for(Map.Entry<String, String> s : map.entrySet()){
+                    if((s.getKey()).compareTo("sequence")==0)
+                        ((ObjectNode)element).put(s.getKey(), s.getValue());
+                    if(!(s.getValue().compareTo("")==0))
+                        ((ObjectNode)element).put(s.getKey(), s.getValue());
+
+                }
+                child.add(element);
+            }
+            conf.setConfiguration(child);
+            break;
+        }
+
         case "ENDPOINT":{
             ObjectMapper mapper=new ObjectMapper();
             ArrayNode child=mapper.createArrayNode();
@@ -203,12 +248,6 @@ public class Neo4jToGraph {
             break;
         }
 
-        case "FIELDMODIFIER":{
-            ObjectMapper mapper=new ObjectMapper();
-            ArrayNode child=mapper.createArrayNode();
-            conf.setConfiguration(child);
-            break;
-        }
         case "MAILCLIENT":{
             Map<String, String> map=new HashMap<String, String>();
             ObjectMapper mapper=new ObjectMapper();
