@@ -25,6 +25,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -53,7 +54,7 @@ import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 public class ToscaCLI {
 	
-	private static final String helper = "./README_CLI.txt";
+	private static final String helper = "./src/it/polito/verigraph/tosca/README_CLI.txt";
 	
 	//Service parameters.
 	private String host;
@@ -241,9 +242,10 @@ public class ToscaCLI {
 				break;
 			case "-format":
 				if(reader.hasNext(formatOpt)) {
-					if(reader.next().toLowerCase().equals("json")) mediatype = MediaType.APPLICATION_JSON;
-					else if(reader.next().toLowerCase().equals("xml")) mediatype = MediaType.APPLICATION_XML;
-					else if(reader.next().toLowerCase().equals("yaml")) mediatype = "application/x-yaml";
+					String command = reader.next();
+					if(command.toLowerCase().equals("json")) mediatype = MediaType.APPLICATION_JSON;
+					else if(command.toLowerCase().equals("xml")) mediatype = MediaType.APPLICATION_XML;
+					else if(command.toLowerCase().equals("yaml")) mediatype = "application/x-yaml";
 				}else {
 					System.out.println("-- Unrecognized values for option -format, accepted formats are: json, xml, yaml.");
 				}
@@ -286,6 +288,12 @@ public class ToscaCLI {
 
 	}
 	
+	//Utility function used only to print exception message
+	public void handleError(Exception e) {
+		System.out.println(e.getLocalizedMessage());
+		return;
+	}
+	
 	
 	// RESTful service interface CRUD and Verify functions
 	public void restGetAll(Scanner reader) {
@@ -302,8 +310,7 @@ public class ToscaCLI {
 			this.readResponseRest("GETALL", res);
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			handleError(e);
 		}
 		return;
 	}
@@ -329,8 +336,7 @@ public class ToscaCLI {
 			this.readResponseRest("GET", res);
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			handleError(e);
 		}
 
 	}
@@ -338,7 +344,6 @@ public class ToscaCLI {
 	
 	
 	public void restCreate(Scanner reader) {
-		// TODO (?) handling of -x/j/y option to choose the mediatype
 
 		try {
 			// Getting file content
@@ -372,8 +377,7 @@ public class ToscaCLI {
 
 			this.readResponseRest("CREATE", res);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			handleError(e);
 		}
 
 		return;
@@ -382,21 +386,25 @@ public class ToscaCLI {
 	
 	
 	public void restDelete(Scanner reader) {
-		// Build a new client if it does not exist
-		if (restClient == null)
-			restClient = ClientBuilder.newClient();
-		
-		if (!reader.hasNextLong()) {
-			System.out.println("-- Provide the integer Id of the graph you want to delete.");
-			return;
-		}
-		
-		// Targeting the specified graph resource
-		WebTarget target = restClient.target(this.buildBaseUri() + "/" + String.valueOf(reader.nextLong()));
+		try {
+			// Build a new client if it does not exist
+			if (restClient == null)
+				restClient = ClientBuilder.newClient();
+			
+			if (!reader.hasNextLong()) {
+				System.out.println("-- Provide the integer Id of the graph you want to delete.");
+				return;
+			}
+			
+			// Targeting the specified graph resource
+			WebTarget target = restClient.target(this.buildBaseUri() + "/" + String.valueOf(reader.nextLong()));
 
-		// Performing the request and reading the response
-		Response res = target.request(mediatype).delete();
-		this.readResponseRest("DELETE", res);
+			// Performing the request and reading the response
+			Response res = target.request(mediatype).delete();
+			this.readResponseRest("DELETE", res);
+		} catch (Exception e) {
+			handleError(e);
+		}
 
 		return;	
 	}
@@ -443,8 +451,7 @@ public class ToscaCLI {
 			this.readResponseRest("UPDATE", res);
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			handleError(e);
 		}
 		
 	}
@@ -494,8 +501,7 @@ public class ToscaCLI {
 			Response res = target.request(mediatype).get();
 			this.readResponseRest("VERIFY", res);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			handleError(e);
 		}
 		
 		
@@ -536,8 +542,8 @@ public class ToscaCLI {
 				
 			}
 
-		}catch (Exception ex) {
-			ex.printStackTrace(); //TODO check for unhandled exceptions
+		}catch (Exception e) {
+			handleError(e);
 		}
 		
 	}
@@ -576,8 +582,7 @@ public class ToscaCLI {
 			}
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			handleError(e);
 		}
 	}
 	
@@ -606,9 +611,8 @@ public class ToscaCLI {
 				break;
 			}
 
-		} catch (DataNotFoundException | ClassCastException | BadRequestException | IOException | JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			handleError(e);
 		}
 
 		return;
@@ -629,8 +633,7 @@ public class ToscaCLI {
 			grpcClient.deleteTopologyTemplate(reader.next());
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			handleError(e);
 		}
 		
 		return;
@@ -669,9 +672,8 @@ public class ToscaCLI {
 				}
 				break;
 			}
-		} catch (DataNotFoundException | ClassCastException | BadRequestException | IOException | JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch(Exception e) {
+			handleError(e);
 		}
 	}
 	
@@ -725,27 +727,10 @@ public class ToscaCLI {
 					grpcClient = new ToscaClient(host, port);
 				
 				//Sending verification request
-				ToscaVerificationGrpc result = grpcClient.verifyPolicy(policyBuilder.build());
+				grpcClient.verifyPolicy(policyBuilder.build());
 				
-				if(result.getErrorMessage().equals("")) {
-					System.out.println("++ Verification result: " + result.getResult());
-					System.out.println("++ Verification comment: " + result.getComment());
-					List<ToscaTestGrpc> tests = result.getTestList();
-					if(!tests.isEmpty()) {
-						System.out.println("++ Followed paths: \n");
-						// TODO complete this part
-//					for(ToscaTestGrpc test : tests) {
-//						test.getNodeTemplateList()
-//					}
-					}
-					
-				}else {
-					System.out.println("-- Something went wrong: " + result.getErrorMessage());
-					return;
-				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				handleError(e);
 			}
 			
 			return;
@@ -756,7 +741,6 @@ public class ToscaCLI {
 	
 	
 	public void readResponseRest(String responseOf, Response res) {		
-		
 		switch(responseOf) {
 		case "GETALL":
 			switch (res.getStatus()) {
@@ -864,12 +848,14 @@ public class ToscaCLI {
 		}
 		
 		if(res.hasEntity()) {
-			System.out.println(prettyFormat(res.readEntity(String.class)));
+			String responseBody = prettyFormat(res.readEntity(String.class));
+			if(responseBody != null) System.out.println(responseBody);
 		}
 		else {
 			System.out.println("++ No content in the message body");
 		}
 		
+		return;
 	}
 	
 	
@@ -933,8 +919,7 @@ public class ToscaCLI {
 				System.out.println("-- An error occurred reading the input file!");
 				ex.printStackTrace();
 			}catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				handleError(e);
 			}finally {
 				if(filereader != null) filereader.close();
 			}
@@ -949,6 +934,7 @@ public class ToscaCLI {
 	
 	public String prettyFormat(String input) {
 		String formattedString = null;
+		//TODO handling of response in case of errors due to parsing errors
 	    try {
 	    	switch(mediatype) {
 	    	case MediaType.APPLICATION_XML:
@@ -968,10 +954,11 @@ public class ToscaCLI {
 	    		formattedString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObj);
 	    		break;
 	    	case "application/x-yaml":
+	    		formattedString = input;
 	    		break;
 	    	}
 	    } catch (Exception e) {
-	    	e.printStackTrace();
+	    	formattedString = e.getLocalizedMessage();
 	    }
 	    
 	    return formattedString;
