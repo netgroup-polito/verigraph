@@ -277,7 +277,7 @@ public class Test_Scalability_FW_FM_DPI_16 {
         int[] s = {1,2,3} ;
         ArrayList<Tuple<DatatypeExpr,DatatypeExpr>> acl = new ArrayList<Tuple<DatatypeExpr,DatatypeExpr>>();
 //        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_client"),nctx.am.get("ip_dpi_new1")));
-        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_fw1"),nctx.am.get("ip_server")));
+        acl.add(new Tuple<DatatypeExpr,DatatypeExpr>(nctx.am.get("ip_client"),nctx.am.get("ip_server")));
         PacketModel packet_modified = new PacketModel();
         packet_modified.setBody(100);
 

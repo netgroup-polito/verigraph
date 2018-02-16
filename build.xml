@@ -201,7 +201,7 @@
     <delete dir="${gen.dir}" />
     <delete dir="${gen-tomcat-service.dir}" />
     <delete dir="${war.dir}" />
-    <delete dir="${lib.dir}" />
+    <!--delete dir="${lib.dir}" /-->
   </target>
 
 
