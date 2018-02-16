@@ -100,7 +100,7 @@ public class ToscaClient {
 			System.out.println("++ Sending the new TopologyTemplate...");
 			NewTopologyTemplate response = blockingStub.createTopologyTemplate(topol);
 			if(response.getSuccess()) 
-				System.out.println("++ TopologyTemplate successfully created.");
+				System.out.println("++ TopologyTemplate successfully created with id: "+ response.getTopologyTemplate().getId());
 			else
 				System.out.println("-- TopologyTemplate creation failed: " + response.getErrorMessage());    	
 			return response;
@@ -185,13 +185,15 @@ public class ToscaClient {
 			if(!response.getErrorMessage().equals("")){
 				System.out.println("-- Error in operation: " + response.getErrorMessage());
 			}
-			System.out.println("++ Result: " + response.getResult());
-			System.out.println("++ Comment: " + response.getComment());
+			else {
+				System.out.println("++ Result: " + response.getResult());
+				System.out.println("++ Comment: " + response.getComment());
 
-			for(ToscaTestGrpc test : response.getTestList()){
-				System.out.println("++ Traversed nodes:");
-				for(NodeTemplateGrpc node : test.getNodeTemplateList()){
-					System.out.println("\t Node "+node.getName());
+				for(ToscaTestGrpc test : response.getTestList()){
+					System.out.println("++ Traversed nodes:");
+					for(NodeTemplateGrpc node : test.getNodeTemplateList()){
+						System.out.println("\t Node "+node.getName());
+					}
 				}
 			}
 			return response;
