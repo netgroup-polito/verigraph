@@ -157,15 +157,4 @@ public class YamlParsingUtils {
 		} 
 	}	
 
-	public static String writeServiceTemplateYamlString(ServiceTemplateYaml yamlServ) throws JAXBException {
-		try {
-			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-			StringWriter sw = new StringWriter();
-			mapper.writeValue(sw, yamlServ);
-			return sw.toString();
-		} catch (IOException e) {
-			throw new BadRequestException("Cannot convert Definitions element to string.");
-		}
-	}
-
 }

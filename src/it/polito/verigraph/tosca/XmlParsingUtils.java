@@ -139,20 +139,4 @@ public class XmlParsingUtils {
 		}
 	}
 
-	public static String writeDefinitionsString(Definitions def) throws JAXBException {
-		// Create a JAXBContext capable of handling the generated classes
-		JAXBContext jc;
-		try {
-			jc = JAXBContext.newInstance(ObjectFactory.class, TDefinitions.class, Configuration.class);
-			Marshaller m = jc.createMarshaller();
-			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			StringWriter sw = new StringWriter();
-			m.marshal(def,sw);
-			return sw.toString();
-
-		} catch (JAXBException e) {
-			throw new JAXBException("Cannot convert Definitions element to string.");
-		}
-	}
-
 }
