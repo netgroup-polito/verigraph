@@ -4,7 +4,16 @@
    :format: latex
 ..
 
-Let’s look at how to deploy **Verigraph** on Apache Tomcat. If you’re only interested in creating gRPC API, you can skip this section and go `here <https://github.com/netgroup-polito/verigraph/blob/master/README_gRPC.md>`_ (though you might find it useful if Tomcat is not yet installed!). **Verigraph** REST and gRPC services can be deployed also on **Docker** containers as documented `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/docker/README.rst>`_. **Verigraph** also supports **OASIS TOSCA** network service descriptors for performing verifications; more informations can be found `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_TOSCA.rst>`_.
+**Verigraph** is a tool for verifying policies within network graphs. It supports graphs descriptions provided in a custom **JSON** format, or in **TOSCA OASIS** **YAML**/**XML**-based descriptions. **Verigraph** provides a **RESTful** and an **gRPC** interface, and can also be deployed on **Docker** containers. For convenience a Command Line Interface is provided for interacting with the **Verigraph** service in all of its declinations.
+In the following section some informations are provided on how to deploy **Verigraph** on Apache **Tomcat**, but it's useful to read some parts of it even if you are only interested in other aspects of the project.
+
+Links to other sections of the documentation:
+
+- `gRPC API <https://github.com/netgroup-polito/verigraph/blob/master/README_gRPC.md>`_
+- `OASIS TOSCA support <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_TOSCA.rst>`_
+- `How to build a Docker image <https://github.com/netgroup-polito/verigraph/blob/tosca-support/docker/README.rst>`_
+- `CLI documentation <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_CLI.rst>`_
+
 
 How to deploy **Verigraph** on Apache Tomcat:
 
