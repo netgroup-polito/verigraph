@@ -15,6 +15,8 @@ Links to other sections of the documentation:
 - `CLI documentation <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_CLI.rst>`_
 
 
+----
+
 How to deploy **Verigraph** on Apache Tomcat:
 
 **Windows**
