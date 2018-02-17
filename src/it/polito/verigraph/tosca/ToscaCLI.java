@@ -158,7 +158,7 @@ public class ToscaCLI {
     				case "CONFIGURE":
     					this.setConfig(reader);
     					break;
-    				case "CLOSE":
+    				case "EXIT":
     					System.out.println("++ Client closing...");
     					scan.close();
     					input.close();
@@ -565,11 +565,9 @@ public class ToscaCLI {
 					
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				handleError(e);
 			}
 
-		
 	}
 	
 	
@@ -637,6 +635,8 @@ public class ToscaCLI {
 			System.out.println("-- Error while parsing xml : " + je.getMessage());
 		} catch (IOException ie) {
 			System.out.println("-- Error reading the file : " + ie.getMessage());
+		} catch(Exception e) {
+			handleError(e);
 		}
 
 		return;
