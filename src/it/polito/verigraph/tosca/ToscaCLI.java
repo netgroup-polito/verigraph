@@ -696,6 +696,10 @@ public class ToscaCLI {
 				}
 				break;
 			}
+		} catch (JAXBException je) {
+			System.out.println("-- Error while parsing xml : " + je.getMessage());
+		} catch (IOException ie) {
+			System.out.println("-- Error reading the file : " + ie.getMessage());
 		} catch(Exception e) {
 			handleError(e);
 		}
