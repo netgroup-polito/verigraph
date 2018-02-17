@@ -91,16 +91,13 @@
 
 
   <target name="chk-bindings">
-    <!--
-  <uptodate property="generate-bindings.notRequired" targetfile="${src.dir}/.flagfile">
-    <srcfiles dir="${schemadir}" includes="${schemafile}" />
-    <srcfiles dir="${toscaschemadir}" includes="${toscaschemafile}" />
-    <srcfiles dir="${toscaschemadir}" includes="${toscaverigraphschemafile}" />
-  </uptodate>
-  -->
-    <condition property="generate-bindings.notRequired">
-      <available file="${gen.dir}/.flagfile" type="file" />
-    </condition>
+    <uptodate property="generate-bindings.notRequired" targetfile="${gen.dir}/.flagfile">
+      <srcresources>
+        <fileset dir="${schemadir}" includes="${schemafile}" />
+        <fileset dir="${toscaschemadir}" includes="${toscaschemafile}" />
+        <fileset dir="${toscaschemadir}" includes="${toscaverigraphschemafile}" />
+      </srcresources>
+    </uptodate>
   </target>
 
 	
@@ -115,10 +112,12 @@
     <exec executable="xjc" failonerror="true">
       <arg line="-d ${root.location}/temp-gen -p it.polito.tosca.jaxb ${toscaschemadir}/${toscaverigraphschemafile}" />
     </exec>
+  	
     <copy toDir="${gen.dir}/it/polito/tosca/jaxb" overwrite="true">
       <file name="${root.location}/temp-gen/it/polito/tosca/jaxb/Configuration.java" />
     </copy>
     <delete dir="${root.location}/temp-gen" />
+  	
     <touch file="${gen.dir}/.flagfile" />
   </target>
 
