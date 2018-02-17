@@ -103,10 +103,11 @@ public class YamlConfigSerializer extends StdSerializer<ConfigurationYaml> {
 			FirewallConfigurationYaml fw = (FirewallConfigurationYaml) value;  
 
 			for(Map.Entry<String, String> entry : fw.getElements().entrySet()) {
-				jgen.writeStartObject();
-				jgen.writeObjectField("source", entry.getKey());
-				jgen.writeObjectField("destination", entry.getValue());
-				jgen.writeEndObject();
+				if(entry.getKey()!= null && entry.getValue() != null) {
+					jgen.writeStartObject();
+					jgen.writeObjectField(entry.getKey(),  entry.getValue());
+					jgen.writeEndObject();
+				}
 			}  		
 			jgen.writeEndArray();
 

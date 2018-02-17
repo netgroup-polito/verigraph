@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -290,7 +291,12 @@ public class ToscaCLI {
 	
 	//Utility function used only to print exception message
 	public void handleError(Exception e) {
-		System.out.println(e.getLocalizedMessage());
+		String errMsg = e.getMessage();
+		if(errMsg == null) {
+			System.out.println("-- Error: unexpected error occurred.");
+		}else {
+			System.out.println("-- Error: " + errMsg);
+		}
 		return;
 	}
 	
@@ -309,7 +315,9 @@ public class ToscaCLI {
 			Response res = target.request(mediatype).get();
 			this.readResponseRest("GETALL", res);
 			
-		} catch (Exception e) {
+		}catch(ProcessingException e) {
+			System.out.println("-- Error: the provided host address is not valid.");
+		}catch (Exception e) {
 			handleError(e);
 		}
 		return;
@@ -335,6 +343,8 @@ public class ToscaCLI {
 			Response res = target.request(mediatype).get();
 			this.readResponseRest("GET", res);
 
+		}catch(ProcessingException e) {
+			System.out.println("-- Error: the provided host address is not valid.");
 		} catch (Exception e) {
 			handleError(e);
 		}
@@ -376,6 +386,8 @@ public class ToscaCLI {
 			}
 
 			this.readResponseRest("CREATE", res);
+		}catch(ProcessingException e) {
+			System.out.println("-- Error: the provided host address is not valid.");
 		} catch (Exception e) {
 			handleError(e);
 		}
@@ -402,6 +414,8 @@ public class ToscaCLI {
 			// Performing the request and reading the response
 			Response res = target.request(mediatype).delete();
 			this.readResponseRest("DELETE", res);
+		}catch(ProcessingException e) {
+			System.out.println("-- Error: the provided host address is not valid.");
 		} catch (Exception e) {
 			handleError(e);
 		}
@@ -450,6 +464,8 @@ public class ToscaCLI {
 
 			this.readResponseRest("UPDATE", res);
 			
+		}catch(ProcessingException e) {
+			System.out.println("-- Error: the provided host address is not valid.");
 		} catch (Exception e) {
 			handleError(e);
 		}
@@ -500,6 +516,8 @@ public class ToscaCLI {
 			
 			Response res = target.request(mediatype).get();
 			this.readResponseRest("VERIFY", res);
+		}catch(ProcessingException e) {
+			System.out.println("-- Error: the provided host address is not valid.");
 		} catch (Exception e) {
 			handleError(e);
 		}
@@ -511,40 +529,46 @@ public class ToscaCLI {
 	
 	//gRPC service interface CRUD and Verify functions 
 	public void grpcGetAll(Scanner reader) {
-		try {
-			if(grpcClient == null) 
-				grpcClient = new ToscaClient(host, port);
-			
-			List<TopologyTemplateGrpc> templates; 
-			templates =  grpcClient.getTopologyTemplates();
-			
-			if(templates.isEmpty()) {
-				System.out.println("++ GET Success no graph was returned.");
-				return;
+
+			try {
+				if(grpcClient == null) 
+					grpcClient = new ToscaClient(host, port);
+				
+				List<TopologyTemplateGrpc> templates; 
+				templates =  grpcClient.getTopologyTemplates();
+				
+				if(templates == null) {
+					System.out.println("-- GET Failed : was not possible to perform the required operations.");
+					return;
+				}
+				else if(templates.isEmpty()) {
+					System.out.println("++ GET Success no graph was returned.");
+					return;
+				}
+
+				switch(mediatype) {
+				case MediaType.APPLICATION_XML:
+					List<Definitions> receivedDefs = new ArrayList<Definitions>();
+					for(TopologyTemplateGrpc curr : templates) {
+						receivedDefs.add(GrpcToXml.mapGraph(curr));
+					}
+					this.marshallToXml(receivedDefs);
+					break;
+					
+				case "application/x-yaml":
+					List<ServiceTemplateYaml> receivedTempls = new ArrayList<ServiceTemplateYaml>();
+					for(TopologyTemplateGrpc curr : templates) {
+						receivedTempls.add(GrpcToYaml.mapGraphYaml(curr));
+					}
+					this.marshallToYaml(receivedTempls);
+					break;
+					
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 
-			switch(mediatype) {
-			case MediaType.APPLICATION_XML:
-				List<Definitions> receivedDefs = new ArrayList<Definitions>();
-				for(TopologyTemplateGrpc curr : templates) {
-					receivedDefs.add(GrpcToXml.mapGraph(curr));
-				}
-				this.marshallToXml(receivedDefs);
-				break;
-				
-			case "application/x-yaml":
-				List<ServiceTemplateYaml> receivedTempls = new ArrayList<ServiceTemplateYaml>();
-				for(TopologyTemplateGrpc curr : templates) {
-					receivedTempls.add(GrpcToYaml.mapGraphYaml(curr));
-				}
-				this.marshallToYaml(receivedTempls);
-				break;
-				
-			}
-
-		}catch (Exception e) {
-			handleError(e);
-		}
 		
 	}
 	
@@ -561,11 +585,9 @@ public class ToscaCLI {
 			}
 			
 			TopologyTemplateGrpc templ = grpcClient.getTopologyTemplate(reader.next());
-			if(templ == null) {
-				System.out.println("++ No template received, the requested template could not be present.");
+			if(templ == null || !templ.getErrorMessage().equals("")) {
 				return;
 			}
-			
 		
 			switch(mediatype) {
 			case MediaType.APPLICATION_XML:
@@ -611,8 +633,10 @@ public class ToscaCLI {
 				break;
 			}
 
-		} catch (Exception e) {
-			handleError(e);
+		} catch (JAXBException je) {
+			System.out.println("-- Error while parsing xml : " + je.getMessage());
+		} catch (IOException ie) {
+			System.out.println("-- Error reading the file : " + ie.getMessage());
 		}
 
 		return;
@@ -746,13 +770,7 @@ public class ToscaCLI {
 			switch (res.getStatus()) {
 			case 200:
 				System.out.println("++ GET success :");
-				String getresult = res.readEntity(String.class);
-				if (getresult != null) {
-					System.out.println(getresult);
-				} else {
-					System.out.println("** No graphs to be showed **");
-				}
-				return;
+				break;
 			case 500:
 				System.out.println("-- GET failed : internal server error.");
 				break;
@@ -766,13 +784,7 @@ public class ToscaCLI {
 			switch (res.getStatus()) {
 			case 200:
 				System.out.println("++ GET success :");
-				String getresult = res.readEntity(String.class);
-				if (getresult != null) {
-					System.out.println(getresult);
-				} else {
-					System.out.println("** No graphs to be showed **");
-				}
-				return;
+				break;
 			case 404:
 				System.out.println("-- GET failed : graph not found.");
 				break;
@@ -791,7 +803,7 @@ public class ToscaCLI {
 				System.out.println("++ POST success : graph created.");
 				break;
 			case 400:
-				System.out.println("-- POST failed : invalid graph.");
+				System.out.println("-- POST failed : bad request.");
 				break;
 			case 500:
 				System.out.println("-- POST failed : internal server error.");
@@ -847,7 +859,8 @@ public class ToscaCLI {
 			
 		}
 		
-		if(res.hasEntity()) {
+		//In case of errors we do not read the message body
+		if(res.hasEntity() && res.getStatus() <= 300) {
 			String responseBody = prettyFormat(res.readEntity(String.class));
 			if(responseBody != null) System.out.println(responseBody);
 		}
@@ -871,10 +884,8 @@ public class ToscaCLI {
 			}
 
 		} catch (JAXBException je) {
-			System.out.println("-- Error while marshalling");
-			je.printStackTrace();
+			System.out.println("-- Error while marshalling : " + je.getMessage());
 		}
-
 		return;
 	}
 	
@@ -888,8 +899,8 @@ public class ToscaCLI {
 			}
 
 		} catch (JsonProcessingException je) {
-			System.out.println("-- Error while marshalling");
-			je.printStackTrace();
+			System.out.println("-- Error while marshalling : " + je.getMessage());
+			
 		}
 		return;
 	}
@@ -958,7 +969,7 @@ public class ToscaCLI {
 	    		break;
 	    	}
 	    } catch (Exception e) {
-	    	formattedString = e.getLocalizedMessage();
+	    	formattedString = e.getCause().toString();
 	    }
 	    
 	    return formattedString;

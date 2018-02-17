@@ -145,7 +145,7 @@ public class MappingUtils {
 		mapper.registerModule(module);
 
 		String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(nodeConfig);
-		if (stringConfiguration.equals("") | stringConfiguration == null)
+		if (stringConfiguration.equals("") || stringConfiguration == null)
 			return "[]";
 		else 
 			return stringConfiguration;

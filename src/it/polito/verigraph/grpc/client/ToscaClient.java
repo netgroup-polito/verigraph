@@ -66,8 +66,7 @@ public class ToscaClient {
 			System.out.println("++ All TopologyTemplates correctly received.");
 			return templates;
 		} else {
-			System.out.println("-- RPC failed.");
-			return new ArrayList<TopologyTemplateGrpc>(); //Function returns empty list in case of error
+			return null; //Function returns null in case of error to differentiate from empty list case.
 		}
 	}   
 
@@ -83,7 +82,7 @@ public class ToscaClient {
 				System.out.println("++ Received TopologyTemplate --> id:" + response.getId());
 				return response;
 			} else {
-				System.out.println("-- Received a TopologyTemplate with error: " + response.getErrorMessage());
+				System.out.println("-- Error: " + response.getErrorMessage());
 				return response;
 			}
 		} catch (StatusRuntimeException ex) {
