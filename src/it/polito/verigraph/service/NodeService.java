@@ -184,7 +184,7 @@ public class NodeService {
     public static void validateNodeConfigurationAgainstSchemaFile(Node node, JsonNode configurationJson) {
         String schemaFileName = node.getFunctional_type() + ".json";
 
-        File schemaFile = new File("/Users/alessandro/IdeaProjects/verigraph/jsonschema/" + schemaFileName);
+        File schemaFile = new File(System.getProperty("catalina.base") + "/webapps/verigraph/jsonschema/" + schemaFileName);
 
         if (!schemaFile.exists()) {
             //if no REST client, try gRPC application
