@@ -30,15 +30,21 @@ public class XmlToGrpc {
 
 		//Retrieving of list of NodeTemplate and RelationshipTemplate
 		List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
-		List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();	    
-		for(TNodeTemplate nt : XmlParsingUtils.obtainNodeTemplates(serviceTemplate)) {
+		List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();
+		List<TNodeTemplate> tNodes = XmlParsingUtils.obtainNodeTemplates(serviceTemplate);
+		for(TNodeTemplate nt : tNodes) {
 			for(NodeTemplateGrpc alreadyAddedNode : nodes)
 				if(alreadyAddedNode.getId().equals(nt.getId()))
 					throw new BadRequestException("The NodeTemplate ID must be unique.");
 			nodes.add(parseNodeTemplate(nt));
 		}
-		for(TRelationshipTemplate rt : XmlParsingUtils.obtainRelationshipTemplates(serviceTemplate))
+		for(TRelationshipTemplate rt : XmlParsingUtils.obtainRelationshipTemplates(serviceTemplate)) {
+			if(!tNodes.contains(rt.getSourceElement().getRef()) || !tNodes.contains(rt.getTargetElement().getRef()))
+				throw new BadRequestException("Invalid references to a Node in a Relationship.");
+			if(rt.getSourceElement().getRef() == rt.getTargetElement().getRef())
+				throw new BadRequestException("Source and Target cannot be equal in a Relationship.");
 			relats.add(parseRelationshipTemplate(rt));
+		}
 
 		//Creating TopologyTemplateGrpc object to be sent to server
 		return TopologyTemplateGrpc.newBuilder()
@@ -121,7 +127,7 @@ public class XmlToGrpc {
 		//ID and Name can be null
 		try {
 			relatgrpc.setId(relatTempl.getId());
-		} catch (NullPointerException ex) {}    	
+		} catch (NullPointerException ex) {}	//Different Relationship with same ID are considered valid.
 		try {
 			relatgrpc.setName(relatTempl.getName());
 		} catch (NullPointerException ex) {}

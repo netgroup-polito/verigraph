@@ -85,20 +85,23 @@ public class XmlToGraph {
 
 
 	private static void mapRelationshipTemplates(Map<Long, Node> nodes, List<TRelationshipTemplate> relationshipTemplates) {
-		//Map<Long,Node> updNodes = nodes; //new list to be filled with updated Node (update = Node + its Neighbour)
+		//update of nodes... (update = Node + its Neighbours)
 		for(TRelationshipTemplate relationshipTemplate : relationshipTemplates) {
 			if (relationshipTemplate != null) {
 				try {
+					if(relationshipTemplate.getSourceElement().getRef() == relationshipTemplate.getTargetElement().getRef())
+						throw new BadRequestException("Source and Target cannot be equal in a Relationship.");
+
 					// Retrieve the target Node name and generate a new Neighbour
 					TNodeTemplate targetNodeTemplate = (TNodeTemplate) relationshipTemplate.getTargetElement().getRef();
-					String neighName = nodes.get(Long.valueOf(targetNodeTemplate.getId())).getName();
+					String neighName = nodes.get(Long.valueOf(targetNodeTemplate.getId())).getName(); //this manages invalid/inexistent node ID for target node
 					Neighbour neigh = new Neighbour();
 					neigh.setName(neighName);
 					neigh.setId(Long.valueOf(relationshipTemplate.getId()));
 
 					//Retrieve the Neighbour map of the source Node and add the Neighbour
 					TNodeTemplate sourceNodeTemplate = (TNodeTemplate) relationshipTemplate.getSourceElement().getRef();
-					Node source = nodes.get(Long.valueOf(sourceNodeTemplate.getId()));
+					Node source = nodes.get(Long.valueOf(sourceNodeTemplate.getId())); //this manages invalid/inexistent node ID for source node
 					Map<Long,Neighbour> sourceNodeNeighMap = source.getNeighbours();
 					if(sourceNodeNeighMap.containsKey(neigh.getId()))
 						throw new BadRequestException("The RelationshipTemplate ID must be unique."); 
