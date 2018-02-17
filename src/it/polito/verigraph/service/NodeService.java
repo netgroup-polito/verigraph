@@ -14,12 +14,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.json.Json;
 import javax.ws.rs.InternalServerErrorException;
 import javax.xml.bind.JAXBException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.main.JsonSchema;
 import it.polito.neo4j.exceptions.MyInvalidIdException;
@@ -150,7 +152,19 @@ public class NodeService {
         if (configuration != null) {
             JsonNode configurationJsonNode = configuration.getConfiguration();
             // validate configuration against schema file
-            validateNodeConfigurationAgainstSchemaFile(node, configurationJsonNode);
+            try {
+                validateNodeConfigurationAgainstSchemaFile(node, configurationJsonNode);
+            }
+            catch(ForbiddenException e) {
+                node.setFunctional_type("fieldmodifier");
+                String FieldModifierJsonString = "{[]}";
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode FieldModifierConfigurationNode = null;
+                try {
+                    FieldModifierConfigurationNode = mapper.readTree(FieldModifierJsonString);
+                } catch (IOException e1) {}
+                configuration.setConfiguration(FieldModifierConfigurationNode);
+            }
             JsonValidationService jsonValidator = new JsonValidationService(graph, node);
             boolean hasCustomValidator = jsonValidator.validateNodeConfiguration();
             if (!hasCustomValidator) {
@@ -170,7 +184,7 @@ public class NodeService {
     public static void validateNodeConfigurationAgainstSchemaFile(Node node, JsonNode configurationJson) {
         String schemaFileName = node.getFunctional_type() + ".json";
 
-        File schemaFile = new File(System.getProperty("catalina.base") + "/webapps/verigraph/jsonschema/" + schemaFileName);
+        File schemaFile = new File("/Users/alessandro/IdeaProjects/verigraph/jsonschema/" + schemaFileName);
 
         if (!schemaFile.exists()) {
             //if no REST client, try gRPC application

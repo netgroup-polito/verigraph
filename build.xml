@@ -23,7 +23,7 @@
   <property name="lib.dir" location="${root.location}/lib" />
   <property name="schemadir" location="${root.location}/schema" />
   <property name="schemafile" value="xml_components.xsd" />
-  <property name="toscaschemadir" location="${root.location}/tosca_support" />
+  <property name="toscaschemadir" location="${root.location}/schema/tosca" />
   <property name="toscaschemafile" value="TOSCA-v1.0.xsd" />
   <property name="toscaverigraphschemafile" value="ToscaTypes_XMLconfig.xsd" />
   <property name="testfile" value="test.py" />
@@ -99,7 +99,7 @@
   </target>
 
 	
-  <target name="generate-bindings" unless="generate-bindings.notRequired" depends="init" description="Create the value classes">
+  <target name="generate-bindings" unless="generate-bindings.notRequired" depends="init, -chk-bindings" description="Create the value classes">
     <exec executable="xjc" failonerror="true">
       <arg line="-d ${gen.dir} -p it.polito.neo4j.jaxb ${schemadir}/${schemafile}" />
     </exec>
