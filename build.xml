@@ -89,17 +89,22 @@
     <delete file="${lib.dir}/z3-4.5.0-x86-win.zip" />
   </target>
 
-	
-  <target name="-chk-bindings">
-    <uptodate property="generate-bindings.notRequired" targetfile="${src.dir}/.flagfile">
-      <srcfiles dir="${schemadir}" includes="${schemafile}" />
-      <srcfiles dir="${toscaschemadir}" includes="${toscaschemafile}" />
-      <srcfiles dir="${toscaschemadir}" includes="${toscaverigraphschemafile}" />
-    </uptodate>
+
+  <target name="chk-bindings">
+    <!--
+  <uptodate property="generate-bindings.notRequired" targetfile="${src.dir}/.flagfile">
+    <srcfiles dir="${schemadir}" includes="${schemafile}" />
+    <srcfiles dir="${toscaschemadir}" includes="${toscaschemafile}" />
+    <srcfiles dir="${toscaschemadir}" includes="${toscaverigraphschemafile}" />
+  </uptodate>
+  -->
+    <condition property="generate-bindings.notRequired">
+      <available file="${gen.dir}/.flagfile" type="file" />
+    </condition>
   </target>
 
 	
-  <target name="generate-bindings" unless="generate-bindings.notRequired" depends="init, -chk-bindings" description="Create the value classes">
+  <target name="generate-bindings" unless="generate-bindings.notRequired" depends="init, chk-bindings" description="Create the value classes">
     <exec executable="xjc" failonerror="true">
       <arg line="-d ${gen.dir} -p it.polito.neo4j.jaxb ${schemadir}/${schemafile}" />
     </exec>
@@ -114,7 +119,7 @@
       <file name="${root.location}/temp-gen/it/polito/tosca/jaxb/Configuration.java" />
     </copy>
     <delete dir="${root.location}/temp-gen" />
-    <touch file="${src.dir}/.flagfile" />
+    <touch file="${gen.dir}/.flagfile" />
   </target>
 
   	

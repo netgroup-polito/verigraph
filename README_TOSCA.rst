@@ -34,7 +34,7 @@ The following Firewall *Node* (with its neighbours), written in Verigraph-compli
         {
            "host1": "host2"
         }
-      ]
+      ],
       "neighbours": [
         {
             "name": "host1"
