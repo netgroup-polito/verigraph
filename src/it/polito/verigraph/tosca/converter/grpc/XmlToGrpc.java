@@ -81,8 +81,8 @@ public class XmlToGrpc {
 			String typestring = nodeTempl.getType().getLocalPart().toLowerCase();
 			type = Type.valueOf(nodeTempl.getType().getLocalPart().toLowerCase().substring(0,typestring.length()-4));
 		} catch (IllegalArgumentException | NullPointerException ex) {
-			//in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be an endhost node
-			type = Type.endhost;
+			//in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be a fieldmodifier node
+			type = Type.fieldmodifier;
 			isVerigraphCompl = false;
 		}
 		nodegrpc.setType(type);

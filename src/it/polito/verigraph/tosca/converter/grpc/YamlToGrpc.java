@@ -111,8 +111,8 @@ public class YamlToGrpc {
 		try {
 			type = Type.valueOf(node.getValue().getType().replace("verigraph.nodeTypes.", "").toLowerCase());
 		} catch (IllegalArgumentException | NullPointerException ex) {
-			//in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be an endhost node
-			type = Type.endhost;
+			//in case the NodeTemplate is not TOSCA-Verigraph compliant, we assume it to be a fieldmodifier node
+			type = Type.fieldmodifier;
 			isVerigraphCompl = false;
 		}
 		nodegrpc.setType(type);
