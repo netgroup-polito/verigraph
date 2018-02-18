@@ -4,14 +4,14 @@
    :format: latex
 ..
 
-**Verigraph** is a tool for verifying policies within network graphs. It supports graphs descriptions provided in a custom **JSON** format, or in **TOSCA OASIS** **YAML**/**XML**-based descriptions. **Verigraph** provides a **RESTful** and an **gRPC** interface, and can also be deployed on **Docker** containers. For convenience a Command Line Interface is provided for interacting with the **Verigraph** service in all of its declinations.
+**Verigraph** is a tool for verifying policies within network graphs. It supports graphs descriptions provided in a custom **JSON** format, or in **TOSCA OASIS** **YAML**/**XML**-based descriptions. **Verigraph** provides a **RESTful** and a **gRPC** interface, and can also be deployed on **Docker** containers. For convenience a Command Line Interface is provided for interacting with the **Verigraph** service in all of its declinations.
 In the following section some informations are provided on how to deploy **Verigraph** on Apache **Tomcat**, but it's useful to read some parts of it even if you are only interested in other aspects of the project.
 
 Links to other sections of the documentation:
 
 - `gRPC API <https://github.com/netgroup-polito/verigraph/blob/master/README_gRPC.md>`_
 - `OASIS TOSCA support <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_TOSCA.rst>`_
-- `How to build a Docker image <https://github.com/netgroup-polito/verigraph/blob/tosca-support/docker/README.rst>`_
+- `How to build the Verigraph Docker images <https://github.com/netgroup-polito/verigraph/blob/tosca-support/docker/README.rst>`_
 - `CLI documentation <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_CLI.rst>`_
 
 
