@@ -3,8 +3,10 @@ package it.polito.verigraph.tosca.yaml.beans;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.*;
 
+//These annotations allow polimorphic deserialization of yaml text into beans by using the type field of each node
+//In case a specified type is unknown the default implementation will be FieldModifierNode
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type", visible= true)
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type", defaultImpl=FieldModifierNode.class, visible= true)
 @JsonSubTypes({
 	@JsonSubTypes.Type(value = AntispamNode.class, name="verigraph.nodeTypes.Antispam"),
 	@JsonSubTypes.Type(value = CacheNode.class, name="verigraph.nodeTypes.Cache"),
