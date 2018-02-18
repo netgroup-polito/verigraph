@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -207,8 +208,8 @@ public class ToscaCLI {
 	}
 	
 	public void setConfig(Scanner reader) throws InterruptedException {
-		if(!reader.hasNext()) {
-			System.out.println("-- No configuration options provided.");
+		if(!reader.hasNext(configOpt)) {
+			System.out.println("-- No or bad formed configuration options provided.");
 			return;
 		}
 		while(reader.hasNext(configOpt)) {
@@ -896,8 +897,8 @@ public class ToscaCLI {
 	public void marshallToYaml(List<ServiceTemplateYaml> templates) {
 		try {
 			YAMLMapper mapper = new YAMLMapper();
+			mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 			for (ServiceTemplateYaml templ : templates) {
-				// To be tested, in case of problems def must be converted to a JAXBElement
 				System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(templ));
 				System.out.println("\n");
 			}

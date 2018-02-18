@@ -60,8 +60,10 @@ public class GraphToYaml {
 		topologyTemplate.setNode_templates(new HashMap<String,NodeTemplateYaml>());
 		topologyTemplate.setRelationship_templates(new HashMap<String,RelationshipTemplateYaml>());
 		serviceTemplate.setMetadata(new HashMap<String,String>());
-
-		long i = 0;
+		
+		//Neighbour does not have a neighbourID! 
+		//RelationshipTemplate does, so it is an incremental number for each node
+		long i = 0; //This counter will act as a fake incremental id of relationships
 		for(Node node : graph.getNodes().values()) {
 			NodeTemplateYaml nodeTemplate;
 			try {
@@ -76,7 +78,7 @@ public class GraphToYaml {
 				Neighbour neigh = myentry.getValue();
 				if (graph.getNodes().containsKey(neigh.getId())) { // I have to check that because if I'm mapping a path (and not a graph) I could have as neighbour a node which is not in the path
 					RelationshipTemplateYaml relat = mapRelationshipYaml(node, neigh);
-					topologyTemplate.getRelationship_templates().put(String.valueOf(i), relat); //Neighbour does not have a neighbourID! RelationshipTemplate does, so it is an incremental number for each node
+					topologyTemplate.getRelationship_templates().put(String.valueOf(i), relat); 
 					i++;
 				}
 			}
@@ -98,7 +100,9 @@ public class GraphToYaml {
 		module.addDeserializer(ConfigurationYaml.class, new YamlConfigurationDeserializer());
 		mapper.registerModule(module);
 
-
+		//Here we use the custom deserializer to convert the JsonNode into a Yaml bean
+		//The injectable value allows to provide an additional info to the deserializer that will be able to 
+		//know that it is parsing a certain type of Configuration.
 		ConfigurationYaml yamlConfig = mapper
 				.reader(new InjectableValues.Std().addValue("type", node.getFunctional_type().toLowerCase())).forType(ConfigurationYaml.class)
 				.readValue(configNode);

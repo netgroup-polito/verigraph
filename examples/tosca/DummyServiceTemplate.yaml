@@ -25,7 +25,7 @@ topology_template:
       name : host1
       type: verigraph.nodeTypes.Endhost
       properties:
-        body: ciao
+        body: this_is_the_body
         protocol : HTTP_REQUEST
         destination: webserver
 
@@ -34,7 +34,7 @@ topology_template:
       type: verigraph.nodeTypes.Endpoint
 
     102:
-      name : antispammino
+      name : antispam1
       type: verigraph.nodeTypes.Antispam
       properties:
         sources:
@@ -42,14 +42,14 @@ topology_template:
           - host2
 
     103:
-      name : magicFirewall3.0
+      name : firewall1
       type: verigraph.nodeTypes.Firewall
       properties:
         elements:
-          "host1" : "host2"
+           host1: "host2"
 
     104:
-      name : myMail
+      name : mailClient1
       type: verigraph.nodeTypes.MailClient
       properties:
         mailserver : mail.polito.it

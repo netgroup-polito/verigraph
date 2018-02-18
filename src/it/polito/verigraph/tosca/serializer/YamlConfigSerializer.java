@@ -26,7 +26,7 @@ import it.polito.verigraph.tosca.yaml.beans.WebServerConfigurationYaml;
 
 
 
-//Custom serializer for XmlToscaConfigurationObject conversion to JSON
+//Custom serializer for YamlToscaConfigurationObject conversion to JSON
 public class YamlConfigSerializer extends StdSerializer<ConfigurationYaml> {
 
 	//Automatically generated VersionUID
@@ -174,7 +174,6 @@ public class YamlConfigSerializer extends StdSerializer<ConfigurationYaml> {
 		}else  {
 			jgen.writeStartArray();
 			jgen.writeEndArray();
-			System.out.println("[DA RIMUOVERE]: Yaml configuration settata a default."); //TODO
 		}
 
 	}
