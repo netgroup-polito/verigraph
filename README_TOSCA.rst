@@ -105,6 +105,7 @@ Below are detailed the extensions made to the RESTful and gRPC APIs:
 
 ``/graphs/{graphId}``
  - ``GET``: based on the request header, the server returns the id-specified graph stored on Neo4j, represented with the formats specified above
+ - ``DELETE``: the server deletes the id-specified graph stored on Neo4j
 
 ``/graphs/{graphId}/paths``
  - ``GET``: given a graph, a source node and a destination node; a list of all the possible paths is returned (``Content-Type: application/json``), otherwise (``Content-type: application/{x-yaml, xml}``) a set of *ServiceTemplates* (Graphs) is returned, each one representing a possible path between the selected source node and destination node
@@ -130,10 +131,10 @@ Below are detailed the extensions made to the RESTful and gRPC APIs:
 In order to obtain a gRPC object starting from file containing the NF-FG the following static methods can be used:
 
 - ``XmlToGrpc.obtainTopologyTemplateGrpc(String)`` returns a TopologyTemplateGrpc from a TOSCA-compliant XML filepath
-- ``XmlParsingUtils.writeDefinitionsString(Definitions)`` returns a string that contains an XML printable format of the Definitions
+- ``ToscaCLI.marshallToXml(List<Definitions>)`` prints on screen a string that contains an XML format of the Definitions
 - ``YamlToGrpc.obtainTopologyTemplateGrpc(String)`` returns a TopologyTemplateGrpc from a TOSCA compliant YAML filepath
-- ``YamlParsingUtils.writeServiceTemplateYamlString(ServiceTemplateYaml)`` returns a string that contains a YAML printable format of the ServiceTemplateYaml
-- Moreover, other converting utility methods can be found in the package ``it.polito.verigraph.tosca.converter``
+- ``ToscaCLI.marshallToYaml(List<ServiceTemplateYaml>)`` prints on screen a string that contains a YAML format of the ServiceTemplateYaml
+- Moreover, other converting utility methods can be found in the package ``it.polito.verigraph.tosca.converter`` `(link) <https://github.com/netgroup-polito/verigraph/tree/tosca-support/src/it/polito/verigraph/tosca/converter>`_
 
 The previous messages are used with the gRPC methods (specified in the `protocol buffer <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/verigraph.proto>`_) to perform CRUD operations on *Graphs* and to verify a specific policy:
 

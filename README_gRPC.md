@@ -1,6 +1,7 @@
 gRPC Project
 ============
 This project contains the interfaces for a web service based on gRPC.
+Information about how gRPC interface supports TOSCA can be found [here](https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_TOSCA.rst).
 
 <i class="icon-cog"></i>How to install:
 --------------------------------------------------------------
@@ -24,7 +25,7 @@ For gRPC interface, add to your `pom.xml` (in the project this part is already p
 
 ```
 
-For protobuf-based codegen integrated with the Maven build system, you can use protobuf-maven-plugin : 
+For protobuf-based codegen integrated with the Maven build system, you can use protobuf-maven-plugin :
 
 ```
 	<build>
@@ -58,12 +59,12 @@ For protobuf-based codegen integrated with the Maven build system, you can use p
 	</build>
 
 ```    
-	
 
-Due to the fact that the project is intended for Eclipse, you need to install an additional Eclipse plugin because [m2e](https://www.eclipse.org/m2e/) does not evaluate the extension specified in a `pom.xml`. [Download `os-maven-plugin-1.5.0.Final.jar`](http://repo1.maven.org/maven2/kr/motd/maven/os-maven-plugin/1.5.0.Final/os-maven-plugin-1.5.0.Final.jar) and put it into the `<ECLIPSE_HOME>/plugins` directory. 
+
+Due to the fact that the project is intended for Eclipse, you need to install an additional Eclipse plugin because [m2e](https://www.eclipse.org/m2e/) does not evaluate the extension specified in a `pom.xml`. [Download `os-maven-plugin-1.5.0.Final.jar`](http://repo1.maven.org/maven2/kr/motd/maven/os-maven-plugin/1.5.0.Final/os-maven-plugin-1.5.0.Final.jar) and put it into the `<ECLIPSE_HOME>/plugins` directory.
 (As you might have noticed, `os-maven-plugin` is a Maven extension, a Maven plugin, and an Eclipse plugin.)
 
-If you are using IntelliJ IDEA, you should not have any problem. 
+If you are using IntelliJ IDEA, you should not have any problem.
 
 If you are using other IDEs such as NetBeans, you need to set the system properties `os-maven-plugin` sets manually when your IDE is launched. You usually use JVM's `-D` flags like the following:
 
@@ -88,7 +89,7 @@ This package includes 2 classes that represent the client and server.
 >**Client.java:**
 
 >	Client of gRPC application. It implements all possible methods necessary for communicate with server.
->	It prints out the received response. 
+>	It prints out the received response.
 >	Moreover it provides some static methods that are used for creating the instances of requests.
 
 >**Service.java:**
@@ -105,37 +106,37 @@ This package includes 2 classes that represent the client and server.
 >   These functionalities are exploited by test classes.
 >   Furthermore this set of methods is public, so in your application you could call them, even if this should not be useful because `Client.java` provides other high-level functions.  
 
-	
- 
+
+
 
  - *it.polito.grpc.test:*
 
 	This package includes classes for testing the gRPC application.
-	
-	
+
+
 >**GrpcServerTest.java:**
-	
+
 >For each possible method we test if works correctly.
 >We create a fake client (so this test doesn't use the method that are present in client class) and test if it receives the expected response.
 >In a nutshell, it tests the methods of Client in case of a fake server.
 >Please notice that the test prints some errors but this is intentional, because the program tests also error case.
 >Indeed, not all methods are tested, because we have another class (ReachabilityTest.java) that is specialized for testing the verification method.
-			
+
 >**GrpcTest.java:**
-	
+
 >This set of tests is intended to control the most common use cases, in particular all methods that are callable in Client and Service class, apart from verifyPolicy for the same reason as before.
 >It tries also to raise an exception and verify if the behavior is as expected.
-			
+
 >**MultiThreadTest.java:**
-	
->This test creates multiple clients that connect to the server and verify is the result is correct. These methods test the synchronization on 
+
+>This test creates multiple clients that connect to the server and verify is the result is correct. These methods test the synchronization on
 >server-side.
-			
+
 >	**ReachabilityTest.java:**
-	
+
 >This file tests the verification method, it exploits the test case already present in the project and consequently has the certainty of testing not so simple case. In particular it reads the file in "src/main/webapp/json" and use this as starting point.
 >Some exceptions are thrown in order to verify if they are handled in a correct way.
-		
+
 **src/main/proto:**
 
 >**verigraph.proto:**
@@ -144,48 +145,48 @@ This package includes 2 classes that represent the client and server.
 >Moreover contains the definition of the methods that is possible to call.
 >Each possible method called by REST API is mapped on a proper gRPC method.
 >In case of error a message containing the reason is returned to the client.  
->More details are available in the section about Proto Buffer. 
-		
+>More details are available in the section about Proto Buffer.
+
 **taget/generated-sources/protobuf/java:**
 
  - *io.grpc.verigraph:*
- 
-	This package includes all classes generated from verigraph.proto by means of protoc. For each object you can find 2 classes : 
-	
+
+	This package includes all classes generated from verigraph.proto by means of protoc. For each object you can find 2 classes :
+
 	>**{NameObject}Grpc.java**
-	
-	>**{NameObject}GrpcOrBuilder.java** 
-	
+
+	>**{NameObject}GrpcOrBuilder.java**
+
 	>The first is the real implementation, the second is the interface.
-		
+
 **taget/generated-sources/protobuf/grpc-java:**
 
  - *io.grpc.verigraph:*
- 
-	This package includes a single class generated from verigraph.proto by means of protoc. 
-	
+
+	This package includes a single class generated from verigraph.proto by means of protoc.
+
 	>**VerigraphGrpc.java:**
-	
-	>This is useful in order to create the stubs that are necessary to communicate both for client and server. 
+
+	>This is useful in order to create the stubs that are necessary to communicate both for client and server.
 
 **lib:**
 
 This folder includes a jar used for compiling the project with Ant.
-	
+
 >**maven-ant-tasks-2.1.3.jar:**
 
 >This file is used by build.xml in order to include the maven dependencies.
-		
+
 **pom.xml:**
 
 Modified in order to add all necessary dependencies. It contains also the build tag used for create the generated-sources folders.
 This part is added according to documentation of gRPC for java as explained above in How To Install section.
 For further clarification go to [this link](https://github.com/grpc/grpc-java/blob/master/README.md).
-	
+
 **build.xml:**
 
 This ant file permit to run and compile the program in a simple way, it exploits the maven-ant-tasks-2.1.3.jar already present in project.
-	
+
 It contains 3 fundamental tasks for gRPC interface:
 - **build:** compile the program
 
@@ -203,26 +204,26 @@ Note that the execution of these tests may take up to 1-2 minutes when successfu
 <i class="icon-folder-open"></i>More Information About Proto Buffer:
 --------------------------------------------------------------------
 
-Further clarification about verigraph.proto: 
+Further clarification about verigraph.proto:
 
 - A `simple RPC` where the client sends a request to the server using the stub and waits for a response to come back, just like a normal function call.
 	```xml
 	// Obtains a graph
 	rpc GetGraph (RequestID) returns (GraphGrpc) {}
-	
+
 	```
- 
+
 In this case we send a request that contains the id of the graph and the response is a Graph.
 
 
 - A `server-side streaming RPC` where the client sends a request to the server and gets a stream to read a sequence of messages back. The client reads from the returned stream until there are no more messages. As you can see in our example, you specify a server-side streaming method by placing the stream keyword before the response type.
 	```xml
-  
+
 	// Obtains a list of Nodes
 	rpc GetNodes (RequestID) returns (stream NodeGrpc) {}
-	
+
 	```
- 
+
 In this case we send a request that contains the id of the graph and the response is a list of Nodes that are inside graph.
 
 Further possibilities are available but in this project are not expolied. If you are curious see [here](http://www.grpc.io/docs/tutorials/basic/java.html#defining-the-service).
@@ -234,17 +235,17 @@ Our `.proto` file also contains protocol buffer message type definitions for all
 		int64 idGraph = 1;
 		int64 idNode = 2;
 		int64 idNeighbour = 3;
-	}	
-```	
+	}
+```
 
 
 The " = 1", " = 2" markers on each element identify the unique "tag" that field uses in the binary encoding. Tag numbers 1-15 require one less byte to encode than higher numbers, so as an optimization you can decide to use those tags for the commonly used or repeated elements, leaving tags 16 and higher for less-commonly used optional elements. Each element in a repeated field requires re-encoding the tag number, so repeated fields are particularly good candidates for this optimization.
 
 
 Protocol buffers are the flexible, efficient, automated solution to solve exactly the problem of serialization. With protocol buffers, you write a .proto description of the data structure you wish to store. From that, the protocol buffer compiler creates a class that implements automatic encoding and parsing of the protocol buffer data with an efficient binary format. The generated class provides getters and setters for the fields that make up a protocol buffer and takes care of the details of reading and writing the protocol buffer as a unit. Importantly, the protocol buffer format supports the idea of extending the format over time in such a way that the code can still read data encoded with the old format.
-	
+
 	syntax = "proto3";
-	
+
 	package verigraph;
 
 	option java_multiple_files = true;
@@ -261,7 +262,7 @@ In this case this file is not generated, because `java_multiple_files` option is
 For further clarifications see [here](https://developers.google.com/protocol-buffers/docs/javatutorial)
 
 
-Notes 
+Notes
 --------
 
 For gRPC interface you need that neo4jmanager service is already deployed, so if this is not the case, please follow the instructions at this [link](https://github.com/netgroup-polito/verigraph/blob/a3c008a971a8b16552a20bf2484ebf8717735dd6/README.md).
@@ -283,7 +284,7 @@ Like before we added the possibility that files are not in "webapps" folder, so 
 Pay attention that Python is needed for the project. If it is not already present on your computer, please [download it]( https://www.python.org/download/releases/2.7.3/).
 It works fine with Python 2.7.3, or in general Python 2.
 
-If you have downloaded a Python version for 64-bit architecture please copy the files in "service/z3_64" and paste in "service/build" and substitute them, 
+If you have downloaded a Python version for 64-bit architecture please copy the files in "service/z3_64" and paste in "service/build" and substitute them,
 because this project works with Python for 32-bit architecture.
 
 Python and Z3 must support the same architetcure.
@@ -295,12 +296,12 @@ Moreover you need the following dependencies installed on your python distributi
 	"jsonschema" python package -> https://pypi.python.org/pypi/jsonschema
 
 HINT - to install a package you can raise the following command (Bash on Linux or DOS shell on Windows): python -m pip install jsonschema python -m pip install requests
-Pay attention that it is possible that you have to modify the PATH environment variable because is necessary to address the python folder, used for verification phase. 
+Pay attention that it is possible that you have to modify the PATH environment variable because is necessary to address the python folder, used for verification phase.
 
 Remember to read the [README.rtf](https://gitlab.com/serena.spinoso/DP2.2017.SpecialProject2.gRPC/tree/master) and to follow the instructions in order to deploy the Verigraph service.
 
-In the latest version of Maven there is the possibility that the downloaded files are incompatible with Java Version of the project (1.8). 
-In this case you have to modify the file `hk2-parent-2.4.0-b31.pom` under your local Maven repository (e.g. 'C:\Users\Standard\.m2\repository') 
+In the latest version of Maven there is the possibility that the downloaded files are incompatible with Java Version of the project (1.8).
+In this case you have to modify the file `hk2-parent-2.4.0-b31.pom` under your local Maven repository (e.g. 'C:\Users\Standard\.m2\repository')
 and in the path `\org\glassfish\hk2\hk2-parent\2.4.0-b31` find the file and modify at line 1098 (in section `profile`) the `jdk` version to `[1.8,)` .
 
 Admittedly, the version that is supported by the downloaded files from Maven Dependencies is incompatible with jdk of the project.
