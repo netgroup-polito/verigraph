@@ -166,6 +166,7 @@ public class ToscaCLI {
     					reader.close();
     					if(grpcClient != null) this.grpcClient.shutdown();
     					if(restClient != null) this.restClient.close();
+    					System.out.println("++ Goodbye!");
     					System.exit(0);
     					break;
     				default:
@@ -929,10 +930,10 @@ public class ToscaCLI {
 					System.out.println("++ File correctly read.");
 				}
 			} catch (FileNotFoundException ex) {
-				System.out.println("-- The provided file does not exist!");
+				System.out.println("-- Error : the provided file does not exist!");
 				ex.printStackTrace();
 			}catch (IOException ex) {
-				System.out.println("-- An error occurred reading the input file!");
+				System.out.println("-- Error : an error occurred reading the input file!");
 				ex.printStackTrace();
 			}catch (Exception e) {
 				handleError(e);
@@ -941,7 +942,7 @@ public class ToscaCLI {
 			}
 			
 		} else {
-			System.out.println("-- The file provided in input does not match with the current client configuration.");
+			System.out.println("-- Error : the file provided in input does not match with the current client configuration.");
 		}
 		
 		return content;
@@ -950,7 +951,7 @@ public class ToscaCLI {
 	
 	public String prettyFormat(String input) {
 		String formattedString = null;
-		//TODO handling of response in case of errors due to parsing errors
+		
 	    try {
 	    	switch(mediatype) {
 	    	case MediaType.APPLICATION_XML:

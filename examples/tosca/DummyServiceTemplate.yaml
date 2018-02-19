@@ -14,7 +14,7 @@ repositories:
     url: https://github.com/netgroup-polito/verigraph
 
 imports:
-  - file: ..\tosca_support\yamlToscaDefinitions.yaml
+  - file: ./schema/tosca/yamlToscaDefinitions.yaml
     repository: verigraph_repository
     namespace_uri: #tobe defined
     namespace_prefix: vt
@@ -50,7 +50,7 @@ topology_template:
 
     104:
       name : mailClient1
-      type: verigraph.nodeTypes.MailClient
+      type: verigraph.nodeTypes.MailClientNotExisting
       properties:
         mailserver : mail.polito.it
 
