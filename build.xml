@@ -14,6 +14,7 @@
 
   <property name="root.location" location="." />
   <!-- The location to be used for class files -->
+  <property name="docker.dir" value="${root.location}/docker/gRPC"/>
   <property name="src.dir" location="${root.location}/src" />
   <property name="gen.dir" location="${root.location}/gen-src" />
   <property name="war.dir" location="${root.location}/war" />
@@ -201,6 +202,43 @@
     </war>
   </target>
 
+
+  <target name="docker-grpc-build" depends="build-service">
+    <delete dir="${docker.dir}/service_lib" />
+    <mkdir dir="${docker.dir}/service_lib" />
+
+    <copy toDir="${docker.dir}/service_lib" flatten="true" overwrite="true">
+      <fileset refid="runtime.fileset" />
+    </copy>
+    <copy file="${lib.dir}/com.microsoft.z3.jar" todir="${docker.dir}/service_lib" />
+
+    <delete file="${docker.dir}/server.properties" />
+    <delete dir="${docker.dir}/jsonschema" />
+    <copy file="${root.location}/server.properties" todir="${docker.dir}" />
+    <copydir src="${root.location}/jsonschema" dest="${docker.dir}/jsonschema" />
+
+    <path id="jars.path">
+      <fileset dir="${docker.dir}">
+        <include name="service_lib/*.jar" />
+      </fileset>
+    </path>
+
+    <pathconvert property="jars.mf" pathsep=" ">
+      <path refid="jars.path" />
+      <flattenmapper />
+      <map from="" to="service_lib/" />
+    </pathconvert>
+
+    <delete file="${docker.dir}/service.jar"/>
+    <jar destfile="${docker.dir}/service.jar">
+      <manifest>
+        <attribute name="Main-Class" value="it.polito.verigraph.grpc.server.Service"/>
+        <attribute name="Class-Path" value="${jars.mf}"/>
+      </manifest>
+      <fileset dir="${root.location}/build"/>
+    </jar>
+  </target>
+
 	
   <!-- launch test python test -->
   <target name="run-test">
@@ -220,6 +258,10 @@
     <delete dir="${gen-tomcat-service.dir}" />
     <delete dir="${war.dir}" />
     <delete dir="${lib.dir}" />
+    <delete dir="${docker.dir}/service_lib" />
+    <delete dir="${docker.dir}/jsonschema" />
+    <delete file="${docker.dir}/server.properties" />
+    <delete file="${docker.dir}/service.jar" />
   </target>
 
 

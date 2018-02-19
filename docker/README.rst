@@ -6,7 +6,8 @@
 
 The **Verigraph** services can be run on **Docker** containers by using the Dockerfiles bundled in the project.
 
-Follow these instructions to build separate Docker images for its REST service and gRPC service:
+If it's the first time that you use **Docker**, please follow `this guide <https://docs.docker.com/get-started/>`_ first.
+You can follow these instructions to build separate Docker images for its REST service and gRPC service:
 
 **REST**
 
@@ -21,8 +22,8 @@ Follow these instructions to build separate Docker images for its REST service a
 - Build Verigraph from your IDE
 - Generate a runnable JAR starting from the ``it.polito.verigraph.grpc.server.Service`` class with the required libraries in a sub-folder next to the JAR. You can do that with the provided Ant script or manually:
 
- - In the gRPC-Docker-build.xml Ant script modify the properties ``dir.workspace`` and ``dir.m2`` respectively with the location of the Verigraph project directory and the Maven local repository directory. **Notice:** this Ant script assumes the default JAR libraries locations with the library versions specified in the pom.xml, if you change any of these library versions the script must be modified accordingly
- - Run the ``create_run_jar`` target
+ - Run the ``docker-grpc-build`` target contained into the ``build.xml`` Ant script
+ - Check that the folder ``service_lib`` containing all the required JARs, the folder ``jsonschema`` and the files ``server.properties`` and ``service.jar`` are included into the ``/verigraph/docker/gRPC`` folder
 
  **OR**
 
