@@ -26,7 +26,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -40,12 +39,8 @@ import com.sun.research.ws.wadl.ObjectFactory;
 import it.polito.tosca.jaxb.Configuration;
 import it.polito.tosca.jaxb.Definitions;
 import it.polito.tosca.jaxb.TDefinitions;
-import it.polito.verigraph.exception.BadRequestException;
-import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.grpc.TopologyTemplateGrpc;
 import it.polito.verigraph.grpc.ToscaPolicy;
-import it.polito.verigraph.grpc.ToscaTestGrpc;
-import it.polito.verigraph.grpc.ToscaVerificationGrpc;
 import it.polito.verigraph.grpc.client.ToscaClient;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToXml;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToYaml;
@@ -100,7 +95,6 @@ public class ToscaCLI {
 			myclient.clientStart();
 		} catch (Exception e) {
 			System.out.println("-- Unexpected error, service closing.");
-			e.printStackTrace();
 		}
 		return;
 	}
@@ -178,10 +172,8 @@ public class ToscaCLI {
     			System.err.println("-- Unrecognized or incorrect command,"
     					+ " type help to know how to use the client...");
     			continue;
-    		}catch(IOException ex){
-    			ex.printStackTrace();
-    		}catch(InterruptedException ex){
-    			ex.printStackTrace();
+    		}catch(IOException | InterruptedException ex){
+    			handleError(ex);
     		}finally {
     			reader.close();
     		}
@@ -201,7 +193,7 @@ public class ToscaCLI {
 			}
 			if(content != null) System.out.println(content);
 		} catch (IOException e) {
-			e.printStackTrace();
+			handleError(e);
 		}finally {
 			if(filereader != null) filereader.close();
 		}
@@ -931,10 +923,8 @@ public class ToscaCLI {
 				}
 			} catch (FileNotFoundException ex) {
 				System.out.println("-- Error : the provided file does not exist!");
-				ex.printStackTrace();
 			}catch (IOException ex) {
 				System.out.println("-- Error : an error occurred reading the input file!");
-				ex.printStackTrace();
 			}catch (Exception e) {
 				handleError(e);
 			}finally {
