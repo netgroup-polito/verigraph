@@ -12,7 +12,7 @@ You can follow these instructions to build separate Docker images for its REST s
 **REST**
 
 - Build the WAR containing the Verigraph REST service as detailed `here <https://github.com/netgroup-polito/verigraph/blob/master/README.rst>`_
-- Copy the generated ``verigraph.war`` to the folder containing the REST Dockerfile ``/verigraph/docker/REST``
+- Run the ``docker-rest-build`` target contained into the ``build.xml`` Ant script
 - With a terminal navigate to the folder containing the REST Dockerfile ``/verigraph/docker/REST``
 - After having started the Docker daemon, run the following command: ``docker build -t verigraph .``
 - Now that the image is built, you can run it from anywhere. For example for running the image in a local container: ``docker run -p 8080:8080 verigraph``
