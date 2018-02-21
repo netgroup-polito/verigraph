@@ -205,9 +205,9 @@
 
 
   <target name="docker-rest-build" depends="generate-war">
-    <delete file="{docker-rest.dir}/verigraph.war" />
+    <delete file="${docker-rest.dir}/verigraph.war" />
 
-    <copy file="${gen-war.dir}/verigraph.war" toDir="{docker-rest.dir}" />
+    <copy file="${gen-war.dir}/verigraph.war" toDir="${docker-rest.dir}" />
   </target>
 
   <target name="docker-grpc-build" depends="build-service">
