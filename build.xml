@@ -14,8 +14,9 @@
 
   <property name="root.location" location="." />
   <!-- The location to be used for class files -->
-  <property name="docker-grpc.dir" value="${root.location}/docker/gRPC"/>
-  <property name="docker-rest.dir" value="${root.location}/docker/REST"/>
+  <property name="docker-grpc.dir" value="${root.location}/docker/gRPC" />
+  <property name="docker-rest.dir" value="${root.location}/docker/REST" />
+  <property name="cli.dir" value="${root.location}/VerigraphCLI" />
   <property name="src.dir" location="${root.location}/src" />
   <property name="gen.dir" location="${root.location}/gen-src" />
   <property name="war.dir" location="${root.location}/war" />
@@ -246,7 +247,39 @@
     </jar>
   </target>
 
-	
+
+  <target name="build-cli-jar" depends="build-service">
+    <delete dir="${cli.dir}" />
+    <mkdir dir="${cli.dir}" />
+
+    <copy toDir="${cli.dir}/service_lib" flatten="true" overwrite="true">
+      <fileset refid="runtime.fileset" />
+    </copy>
+    <copy file="${src.dir}/it/polito/verigraph/tosca/README_CLI.txt" todir="${cli.dir}" />
+
+    <path id="jars.path">
+      <fileset dir="${cli.dir}">
+        <include name="service_lib/*.jar" />
+      </fileset>
+    </path>
+
+    <pathconvert property="jars.mf" pathsep=" ">
+      <path refid="jars.path" />
+      <flattenmapper />
+      <map from="" to="service_lib/" />
+    </pathconvert>
+
+    <delete file="${cli.dir}/VerigraphCLI.jar"/>
+    <jar destfile="${cli.dir}/VerigraphCLI.jar">
+      <manifest>
+        <attribute name="Main-Class" value="it.polito.verigraph.tosca.ToscaCLI"/>
+        <attribute name="Class-Path" value="${jars.mf}"/>
+      </manifest>
+      <fileset dir="${root.location}/build"/>
+    </jar>
+  </target>
+
+
   <!-- launch test python test -->
   <target name="run-test">
     <exec dir="${test.dir}" executable="python">
@@ -270,6 +303,7 @@
     <delete file="${docker-grpc.dir}/server.properties" />
     <delete file="${docker-grpc.dir}/service.jar" />
     <delete file="${docker-rest.dir}/verigraph.war" />
+    <delete dir="${cli.dir}" />
   </target>
 
 
