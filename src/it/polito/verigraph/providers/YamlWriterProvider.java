@@ -32,7 +32,6 @@ public class YamlWriterProvider<T> implements MessageBodyWriter<T> {
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        // TODO: Check that return
         return true;
     }
 
