@@ -106,7 +106,7 @@ public class ToscaCLI {
 	
 	//Function iterating getting user commands.
 	public void clientStart(){
-    	System.out.println("++ Welcome to Verigraph Verification Serivice...");
+    	System.out.println("++ Welcome to Verigraph Verification Service...");
     	System.out.println("++ Type HELP for instructions on client use...");
     	
     	Scanner reader = null;
