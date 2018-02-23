@@ -9,8 +9,11 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import it.polito.verigraph.grpc.GetRequest;
+import it.polito.verigraph.grpc.GraphGrpc;
+import it.polito.verigraph.grpc.NewGraph;
 import it.polito.verigraph.grpc.NewTopologyTemplate;
 import it.polito.verigraph.grpc.NodeTemplateGrpc;
+import it.polito.verigraph.grpc.RequestID;
 import it.polito.verigraph.grpc.Status;
 import it.polito.verigraph.grpc.TopologyTemplateGrpc;
 import it.polito.verigraph.grpc.ToscaPolicy;
@@ -202,4 +205,83 @@ public class ToscaClient {
 		}
 	}
 
+	
+	//Methods added for backward compatibility with JSON grpc, only create and update methods need to be redefined
+	//The reason is that the tosca Grpc converter requires a coherent numbering of IDs while the previous 
+	//implementations exploits names to identify nodes and can considers IDs as not strictly required attributes.
+	
+    public NewGraph createGraph(GraphGrpc gr) {
+        NewGraph response;
+        try {
+            response = blockingStub.createGraph(gr);
+			if(response.getSuccess()) 
+				System.out.println("++ TopologyTemplate successfully created with id: "+ response.getGraph().getId());
+			else
+				System.out.println("-- TopologyTemplate creation failed: " + response.getErrorMessage());    	
+			return response;
+        } catch (StatusRuntimeException e) {
+            System.err.println("-- RPC failed: " + e.getStatus());
+            return NewGraph.newBuilder().setSuccess(false).setErrorMessage(e.getStatus().getDescription()).build();
+        }
+
+    }
+    
+    public NewGraph updateGraph(long idGraph, GraphGrpc newGraph) {
+
+        GraphGrpc gr = GraphGrpc.newBuilder(newGraph).setId(idGraph).build();
+        NewGraph response;
+        try {
+            response = blockingStub.updateGraph(gr);
+            if(response.getSuccess()) 
+				System.out.println("++ TopologyTemplate successfully created with id: "+ response.getGraph().getId());
+			else
+				System.out.println("-- TopologyTemplate creation failed: " + response.getErrorMessage());    	
+			return response;
+        } catch (StatusRuntimeException e) {
+            System.err.println("-- RPC failed: " + e.getStatus());
+            return NewGraph.newBuilder().setSuccess(false).setErrorMessage(e.getStatus().getDescription()).build();
+        }
+    }
+    
+    public GraphGrpc getGraph(long idGraph) {
+
+        RequestID request = RequestID.newBuilder().setIdGraph(idGraph).build() ;
+        try {
+        	System.out.println("++ Receiving TopologyTemplate...");
+            GraphGrpc graph = blockingStub.getGraph(request);
+            System.out.println("++ Received TopologyTemplate --> id:" + graph.getId());
+            if(!graph.getErrorMessage().equals("")){
+                System.out.println("-- Error : " + graph.getErrorMessage());
+                return graph;
+            }
+            return graph;
+        } catch (StatusRuntimeException ex) {
+            System.err.println("-- RPC failed: " + ex.getStatus());
+            return null;
+        }
+    }
+    
+    
+    public List<GraphGrpc> getGraphs() {
+        List<GraphGrpc> graphsReceived = new ArrayList<GraphGrpc>();
+        GetRequest request = GetRequest.newBuilder().build();
+        Iterator<GraphGrpc> graphs;
+        try {
+            graphs = blockingStub.getGraphs(request);
+			System.out.println("++ Receiving TopologyTemplates...");
+            while (graphs.hasNext()) {
+                GraphGrpc graph = graphs.next();
+                if(graph.getErrorMessage().equals("")){
+                	System.out.println("++ Correctly received graph --> id:" + graph.getId());
+                    graphsReceived.add(graph);
+                }else{
+                	System.out.println("-- Received a graph with error : " + graph.getErrorMessage());
+                }
+            }
+        } catch (StatusRuntimeException ex) {
+            System.err.println("-- RPC failed : " + ex.getStatus());
+            return null;
+        }
+        return graphsReceived;
+    }
 }

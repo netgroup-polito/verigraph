@@ -46,6 +46,7 @@ public class GrpcUtils {
         //id is not present
         Neighbour ne = new Neighbour();
         ne.setName(request.getName());
+        ne.setId(request.getId());
         return ne;
     }
 
@@ -89,12 +90,16 @@ public class GrpcUtils {
     }
 
     public static Node deriveNode(NodeGrpc request) {
-        //id is not present
+    	//id is not present
         Node node = new Node();
         node.setName(request.getName());
         node.setFunctional_type(request.getFunctionalType().toString());
         Configuration conf = deriveConfiguration(request.getConfiguration());
         node.setConfiguration(conf);
+        
+        //Modification for Tosca CLI
+        Long id = request.getId();
+        if( id != null) node.setId(request.getId());
 
         Map<Long,Neighbour> neighours = node.getNeighbours();
         long i = 1;
@@ -119,7 +124,10 @@ public class GrpcUtils {
     public static Graph deriveGraph(GraphGrpc request) {
         //id is not present
         Graph graph = new Graph();
-
+        //Modification for Tosca CLI
+        Long id = request.getId();
+        if( id != null) graph.setId(request.getId());
+        
         long i=1;
         Map<Long, Node> nodes= graph.getNodes();
         for(NodeGrpc node:request.getNodeList()){

@@ -39,9 +39,14 @@ import com.sun.research.ws.wadl.ObjectFactory;
 import it.polito.tosca.jaxb.Configuration;
 import it.polito.tosca.jaxb.Definitions;
 import it.polito.tosca.jaxb.TDefinitions;
+import it.polito.verigraph.grpc.GraphGrpc;
 import it.polito.verigraph.grpc.TopologyTemplateGrpc;
 import it.polito.verigraph.grpc.ToscaPolicy;
 import it.polito.verigraph.grpc.client.ToscaClient;
+import it.polito.verigraph.grpc.server.GrpcUtils;
+import it.polito.verigraph.model.Graph;
+import it.polito.verigraph.tosca.converter.grpc.GraphToGrpc;
+import it.polito.verigraph.tosca.converter.grpc.GrpcToGraph;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToXml;
 import it.polito.verigraph.tosca.converter.grpc.GrpcToYaml;
 import it.polito.verigraph.tosca.converter.grpc.XmlToGrpc;
@@ -51,7 +56,7 @@ import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 public class ToscaCLI {
 	
-	private static final String helper = "./src/it/polito/verigraph/tosca/README_CLI.txt";
+	private static final String helper = "./README_CLI.txt";
 	
 	//Service parameters.
 	private String host;
@@ -219,10 +224,6 @@ public class ToscaCLI {
 						useRest = true;
 					}
 					else {
-						if(mediatype == MediaType.APPLICATION_JSON) {
-							System.out.println("-- The JSON format is not compatible with the grpc interface, change format first.");
-							return;
-						}
 						if(restClient != null) {
 							restClient.close();
 							restClient = null;
@@ -528,6 +529,28 @@ public class ToscaCLI {
 				if(grpcClient == null) 
 					grpcClient = new ToscaClient(host, port);
 				
+				//Added for backward compatibility with JSON grpc
+				if(mediatype == MediaType.APPLICATION_JSON) {
+					List<GraphGrpc> receivedGraphsGrpc = grpcClient.getGraphs();
+					
+					if(receivedGraphsGrpc == null) {
+						System.out.println("-- GET Failed : was not possible to perform the required operations.");
+						return;
+					}
+					else if(receivedGraphsGrpc.isEmpty()) {
+						System.out.println("++ GET Success no graph was returned.");
+						return;
+					}
+					
+					List<Graph> receivedGraphs = new ArrayList<Graph>();
+					for(GraphGrpc curr : receivedGraphsGrpc) {
+						receivedGraphs.add(GrpcUtils.deriveGraph(curr));
+					}
+					this.marshallToJson(receivedGraphs);
+					return;
+				}
+				
+				//Code for the Tosca compliant implementation
 				List<TopologyTemplateGrpc> templates; 
 				templates =  grpcClient.getTopologyTemplates();
 				
@@ -576,12 +599,28 @@ public class ToscaCLI {
 				return;
 			}
 			
+			//Added for backward compatibility with JSON grpc
+			if(mediatype == MediaType.APPLICATION_JSON) {
+				GraphGrpc graph = grpcClient.getGraph(reader.nextLong());
+				if(graph == null || !graph.getErrorMessage().equals(""));
+				List<Graph> receivedGraphs = new ArrayList<Graph>();
+				receivedGraphs.add(GrpcUtils.deriveGraph(graph));
+				this.marshallToJson(receivedGraphs);
+				return;
+			}
+			
+			//Code for Tosca compliant implementation
 			TopologyTemplateGrpc templ = grpcClient.getTopologyTemplate(reader.next());
 			if(templ == null || !templ.getErrorMessage().equals("")) {
 				return;
 			}
-		
 			switch(mediatype) {
+//			case MediaType.APPLICATION_JSON:
+//				Graph obt = GrpcToGraph.deriveGraph(templ);
+//				List<Graph> list = new ArrayList<Graph>();
+//				list.add(obt);
+//				marshallToJson(list);
+//				break;
 			case MediaType.APPLICATION_XML:
 				List<Definitions> receivedDefs = new ArrayList<Definitions>();
 				receivedDefs.add(GrpcToXml.mapGraph(templ));
@@ -606,11 +645,22 @@ public class ToscaCLI {
 				grpcClient = new ToscaClient(host, port);
 
 			switch (mediatype) {
+			case MediaType.APPLICATION_JSON:
+				if(reader.hasNext(jsonSource)) {
+					ObjectMapper mapper = new ObjectMapper();
+					Graph modelGraph = mapper.readValue(readFile(reader), Graph.class);
+					GraphGrpc graph = GrpcUtils.obtainGraph(modelGraph);
+					grpcClient.createGraph(graph);
+				}else {
+					System.out.println("-- The provided file is not compatible with the current configuration [json].");
+					return;
+				}
+				break;
 			case MediaType.APPLICATION_XML:
 				if (reader.hasNext(xmlSource)) {
 					grpcClient.createTopologyTemplate(XmlToGrpc.obtainTopologyTemplateGrpc(reader.next()));
 				} else {
-					System.out.println("-- The provided file is not compatible with the current configuration.");
+					System.out.println("-- The provided file is not compatible with the current configuration [xml].");
 					return;
 				}
 				break;
@@ -619,7 +669,7 @@ public class ToscaCLI {
 				if (reader.hasNext(yamlSource)) {
 					grpcClient.createTopologyTemplate(YamlToGrpc.obtainTopologyTemplateGrpc(reader.next()));
 				} else {
-					System.out.println("-- The provided file is not compatible with the current configuration.");
+					System.out.println("-- The provided file is not compatible with the current configuration [yaml].");
 					return;
 				}
 				break;
@@ -670,8 +720,19 @@ public class ToscaCLI {
 			}
 			String id = reader.next();
 			
-			//Readign the file and performing the request according to current configuration
+			//Reading the file and performing the request according to current configuration
 			switch (mediatype) {
+			case MediaType.APPLICATION_JSON:
+				if(reader.hasNext(jsonSource)) {
+					ObjectMapper mapper = new ObjectMapper();
+					Graph modelGraph = mapper.readValue(readFile(reader), Graph.class);
+					GraphGrpc graph = GrpcUtils.obtainGraph(modelGraph);
+					grpcClient.updateGraph(new Long(id), graph);
+				}else {
+					System.out.println("-- The provided file is not compatible with the current configuration [json].");
+					return;
+				}
+				break;
 			case MediaType.APPLICATION_XML:
 				if (reader.hasNext(xmlSource)) {
 					grpcClient.updateTopologyTemplate(XmlToGrpc.obtainTopologyTemplateGrpc(reader.next()), id);
@@ -892,6 +953,22 @@ public class ToscaCLI {
 			YAMLMapper mapper = new YAMLMapper();
 			mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 			for (ServiceTemplateYaml templ : templates) {
+				System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(templ));
+				System.out.println("\n");
+			}
+
+		} catch (JsonProcessingException je) {
+			System.out.println("-- Error while marshalling : " + je.getMessage());
+			
+		}
+		return;
+	}
+	
+	public void marshallToJson(List<Graph> templates) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			//mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+			for (Graph templ : templates) {
 				System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(templ));
 				System.out.println("\n");
 			}
