@@ -6,6 +6,12 @@
 
 The command line interface allows to interact with **Verigraph** using both the **REST** and **gRPC** interfaces. The CLI allows CRUD operations on graphs and verification of multiple types of policies.
 
+You can generate a JAR for executing the CLI with the following steps:
+
+- Run the ``build-cli-jar`` target contained into the ``build.xml`` Ant script
+- With a terminal navigate to the folder containing generated JAR file ``/verigraph/VerigraphCLI/``
+- Execute the command ``java -jar VerigraphCLI.jar`` for running the Commnad Line Interface
+
 **Available commands**
 
 - ``CONFIGURE -use <Interface> -format <contentFormat> -port <servicePort> -host <hostname>``
