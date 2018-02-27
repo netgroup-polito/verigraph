@@ -157,7 +157,7 @@
 		<echo>Running grpc tests...</echo>
 		<junit printsummary="yes" dir="." fork="yes" haltonfailure="no" showoutput="yes" filtertrace="true" timeout="120000">
 			<jvmarg value="-Djava.awt.headless=true" />
-			<formatter type="plain" usefile="false" />
+			<formatter type="brief" usefile="false" />
 			<test haltonfailure="no" failureproperty="test_failed" name="${testToscaGrpc.class}" />
 			<classpath>
 				<path refid="test.classpath" />

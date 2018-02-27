@@ -2,6 +2,7 @@ package it.polito.verigraph.grpc.tosca.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 
+import it.polito.verigraph.grpc.GraphGrpc;
 import it.polito.verigraph.grpc.NewTopologyTemplate;
 import it.polito.verigraph.grpc.NodeTemplateGrpc;
 import it.polito.verigraph.grpc.NodeTemplateGrpc.Type;
@@ -33,13 +35,9 @@ public class GrpcToscaTest {
 	private Service server;
 	private ToscaClient client;
 	private TopologyTemplateGrpc testTemplate, simpleTestTemplate;
-	private String testTemplateId, simpleTestTemplateId; //The actual id assigned by neo4j, to be set after test0
-
 
 	public GrpcToscaTest() {
 		this.generateTestTemplate();
-		this.testTemplateId = null;
-		this.simpleTestTemplateId = null;
 	}
 
 	@Before
@@ -60,38 +58,41 @@ public class GrpcToscaTest {
 	public void Test0Creation() {
 		System.out.println("Test A: Graph Creation.");
 		NewTopologyTemplate response = client.createTopologyTemplate(testTemplate);
-
+		
 		assertNotNull("Returned a NULL graph", response);
-		assertEquals(response.getSuccess(), true);
-		assertEquals("Error report: " + response.getErrorMessage(), response.getErrorMessage(), "");
+		assertEquals("Unexpected response", true, response.getSuccess());
+		assertEquals("Error report: " + response.getErrorMessage(), "", response.getErrorMessage());
+		
+		Status resp = client.deleteTopologyTemplate(response.getTopologyTemplate().getId());
+		assertEquals("Error while deleting testTemplate", true, resp.getSuccess());
 
-		//If there were no errors we can retrieve the actual Id
-		this.testTemplateId = response.getTopologyTemplate().getId();
 		return;
+		
 	}
 
+	
 	@Test
 	public void Test1Reading() {
 		NewTopologyTemplate response = client.createTopologyTemplate(simpleTestTemplate);
-
 		assertNotNull("Returned a NULL graph", response);
 		assertEquals(response.getSuccess(), true);
 		assertEquals("Error report: " + response.getErrorMessage(), response.getErrorMessage(), "");
-		this.simpleTestTemplateId = response.getTopologyTemplate().getId();
+		
+		String simpleTestTemplateId = response.getTopologyTemplate().getId();
 
-		TopologyTemplateGrpc retrieved = client.getTopologyTemplate(this.simpleTestTemplateId);
+		TopologyTemplateGrpc retrieved = client.getTopologyTemplate(simpleTestTemplateId);
 		assertNotNull("Retrieved a NULL graph", retrieved);
-		assertEquals(retrieved.getId(), this.simpleTestTemplateId);
+		assertEquals(retrieved.getId(), simpleTestTemplateId);
 
 		//Nodes checking
 		assertEquals(retrieved.getNodeTemplateCount(), 3);
 		assertEquals("Node1 name error", retrieved.getNodeTemplateList().get(0).getName(), simpleTestTemplate.getNodeTemplateList().get(0).getName());
 		assertEquals("Node2 name error", retrieved.getNodeTemplateList().get(1).getName(), simpleTestTemplate.getNodeTemplateList().get(1).getName());
 		assertEquals("Node3 name error", retrieved.getNodeTemplateList().get(2).getName(), simpleTestTemplate.getNodeTemplateList().get(2).getName());
-
+		
 		//Relationships checking
 		assertEquals(retrieved.getRelationshipTemplateCount(), 4);
-		assertEquals("Relat1 source error", retrieved.getRelationshipTemplateList().get(0).getIdSourceNodeTemplate(), simpleTestTemplate.getRelationshipTemplateList().get(0).getIdSourceNodeTemplate());
+		assertEquals("Relat1 source error", retrieved.getRelationshipTemplateList().get(0).getName(), simpleTestTemplate.getRelationshipTemplateList().get(0).getName());
 		assertEquals("Relat1 target error", retrieved.getRelationshipTemplateList().get(0).getIdTargetNodeTemplate(), simpleTestTemplate.getRelationshipTemplateList().get(0).getIdTargetNodeTemplate());
 		assertEquals("Relat2 source error", retrieved.getRelationshipTemplateList().get(1).getIdSourceNodeTemplate(), simpleTestTemplate.getRelationshipTemplateList().get(1).getIdSourceNodeTemplate());
 		assertEquals("Relat2 target error", retrieved.getRelationshipTemplateList().get(1).getIdTargetNodeTemplate(), simpleTestTemplate.getRelationshipTemplateList().get(1).getIdTargetNodeTemplate());
@@ -113,79 +114,89 @@ public class GrpcToscaTest {
 	@Test
 	public void Test3Verification() {
 		System.out.println("Test D: Verification.");
-
+		NewTopologyTemplate response = client.createTopologyTemplate(testTemplate);
+		if(response == null | response.getSuccess() != true) {
+			fail("Test failed, unable to load the graph.");
+			return;
+		}
+		
+		//The Id of the graph on which we are going to perform tests
+		String testTemplateId = response.getTopologyTemplate().getId();
+		
 		//REACHABILITY test
 		System.out.println("Phase 1.1 - Reachability SAT.");
-		ToscaPolicy policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+		ToscaPolicy policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(testTemplateId)
 				.setType(PolicyType.reachability).setSource("host2").setDestination("host1").build();
-
 		ToscaVerificationGrpc result = client.verifyPolicy(policy);
-		assertNotNull("there was no response", result);
-		assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "SAT");
-		assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+		assertNotNull("There was no response", result);
+		assertEquals("Unexpected result : " + result.getResult() + " - " + result.getComment(), "SAT", result.getResult());
+		assertEquals("Error report: " + result.getErrorMessage(), "", result.getErrorMessage());
 
 		result = null;
 		System.out.println("Phase 1.2 - Reachability UNSAT.");
-		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(testTemplateId)
 				.setType(PolicyType.reachability).setSource("host1").setDestination("antispamNode1").build();
-
 		result = client.verifyPolicy(policy);
-		assertNotNull("there was no response", result);
-		assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "UNSAT");
-		assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+		assertNotNull("There was no response", result);
+		assertEquals("Unexpected result : " + result.getResult() + " - " + result.getComment(), "UNSAT", result.getResult());
+		assertEquals("Error report: " + result.getErrorMessage(), "", result.getErrorMessage());
 
 		//ISOLATION test
 		result = null;
 		System.out.println("Phase 2.1 - Isolation SAT.");
-		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(testTemplateId)
 				.setType(PolicyType.isolation).setSource("host2").setDestination("host1").setMiddlebox("webserver1").build();
-
 		result = client.verifyPolicy(policy);
-		assertNotNull("there was no response", result);
-		assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "SAT");
-		assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
-
+		assertNotNull("There was no response", result);
+		assertEquals("Unexpected result : " + result.getResult() + " - " + result.getComment(), "SAT", result.getResult());
+		assertEquals("Error report: " + result.getErrorMessage(), "", result.getErrorMessage());
+		
 		System.out.println("Phase 2.2 - Isolation UNSAT.");
-		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(testTemplateId)
 				.setType(PolicyType.isolation).setSource("host2").setDestination("host1").setMiddlebox("fw").build();
-
 		result = client.verifyPolicy(policy);
-		assertNotNull("there was no response", result);
-		assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "UNSAT");
-		assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+		assertNotNull("There was no response", result);
+		assertEquals("Unexpected result : " + result.getResult() + " - " + result.getComment(), "UNSAT", result.getResult());
+		assertEquals("Error report: " + result.getErrorMessage(), "", result.getErrorMessage());
 
 		//TRAVERSAL test
 		result = null;
 		System.out.println("Phase 3.1 - Traversal SAT.");
-		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(testTemplateId)
 				.setType(PolicyType.traversal).setSource("host2").setDestination("host1").setMiddlebox("fw").build();
-
 		result = client.verifyPolicy(policy);
-		assertNotNull("there was no response", result);
-		assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "SAT");
-		assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+		assertNotNull("There was no response", result);
+		assertEquals("Unexpected result : " + result.getResult() + " - " + result.getComment(), "SAT", result.getResult());
+		assertEquals("Error report: " + result.getErrorMessage(), "", result.getErrorMessage());
 
 		System.out.println("Phase 3.2 - Traversal UNSAT.");
-		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+		policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(testTemplateId)
 				.setType(PolicyType.traversal).setSource("host2").setDestination("webserver1").setMiddlebox("fw").build();
-
 		result = client.verifyPolicy(policy);
-		assertNotNull("there was no response", result);
-		assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "UNSAT");
-		assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+		assertNotNull("There was no response", result);
+		assertEquals("Unexpected result : " + result.getResult() + " - " + result.getComment(), "UNSAT", result.getResult());
+		assertEquals("Error report: " + result.getErrorMessage(), "", result.getErrorMessage());
 
-
+		Status resp = client.deleteTopologyTemplate(testTemplateId);
+		assertEquals("Error while deleting testTemplate", true, resp.getSuccess());
+		
 		return;
 	}
 
 
 	@Test
 	public void Test4Deletion() {
-		Status resp = client.deleteTopologyTemplate(this.simpleTestTemplateId);
-		assertEquals("Error while deleting simpleTestTemplate", resp.getSuccess(), true);
-
-		Status resp2 = client.deleteTopologyTemplate(this.testTemplateId);
-		assertEquals("Error while deleting testTemplate", resp2.getSuccess(), true);
+		System.out.println("Test E: Deletion.");
+		NewTopologyTemplate templ = client.createTopologyTemplate(testTemplate);	
+		
+		if(templ.getSuccess() != true) {
+			fail("Unable to create the graph.");
+			return;
+		}else {
+			Status resp = client.deleteTopologyTemplate(templ.getTopologyTemplate().getId());
+			assertEquals("Error while deleting testTemplate", true, resp.getSuccess());
+		}
+	
 		return;
 	}
 
@@ -264,6 +275,7 @@ public class GrpcToscaTest {
 		relats2.add(rel1);
 		relats2.add(rel3);
 		relats2.add(rel4);
+		
 		this.simpleTestTemplate = templ2.addAllNodeTemplate(nodes2).addAllRelationshipTemplate(relats2).setId("1").build();
 
 	}
