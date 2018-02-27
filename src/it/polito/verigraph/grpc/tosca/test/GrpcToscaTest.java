@@ -78,8 +78,11 @@ public class GrpcToscaTest {
     
     @Test
     public void Test2Update() {
+    	
+    	
     	return;
     }
+    
     
     @Test
     public void Test3Verification() {
@@ -129,7 +132,7 @@ public class GrpcToscaTest {
     	result = null;
     	System.out.println("Phase 3.1 - Traversal SAT.");
     	policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
-    			.setType(PolicyType.traversal).setSource("host2").setDestination("host1").setMiddlebox("webserver1").build();
+    			.setType(PolicyType.traversal).setSource("host2").setDestination("host1").setMiddlebox("fw").build();
     	
     	result = client.verifyPolicy(policy);
     	assertNotNull("there was no response", result);
@@ -138,7 +141,7 @@ public class GrpcToscaTest {
     	
     	System.out.println("Phase 3.2 - Traversal UNSAT.");
     	policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
-    			.setType(PolicyType.traversal).setSource("host2").setDestination("host1").setMiddlebox("fw").build();
+    			.setType(PolicyType.traversal).setSource("host2").setDestination("webserver1").setMiddlebox("fw").build();
     	
     	result = client.verifyPolicy(policy);
     	assertNotNull("there was no response", result);
@@ -148,6 +151,7 @@ public class GrpcToscaTest {
     	
     	return;
     }
+    
     
     @Test
     public void Test4Deletion() {
