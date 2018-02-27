@@ -20,6 +20,9 @@ import it.polito.verigraph.grpc.NodeTemplateGrpc.Type;
 import it.polito.verigraph.grpc.RelationshipTemplateGrpc;
 import it.polito.verigraph.grpc.TopologyTemplateGrpc;
 import it.polito.verigraph.grpc.ToscaConfigurationGrpc;
+import it.polito.verigraph.grpc.ToscaPolicy;
+import it.polito.verigraph.grpc.ToscaPolicy.PolicyType;
+import it.polito.verigraph.grpc.ToscaVerificationGrpc;
 import it.polito.verigraph.grpc.client.ToscaClient;
 import it.polito.verigraph.grpc.server.Service;
 
@@ -28,15 +31,22 @@ import it.polito.verigraph.grpc.server.Service;
 public class GrpcToscaTest {
     private Service server;
     private ToscaClient client;
-    private static TopologyTemplateGrpc testTemplate = GrpcToscaTest.generateTestTemplate();
+    private TopologyTemplateGrpc testTemplate, simpleTestTemplate;
+    private String testTemplateId, simpleTestTemplateId; //The actual id assigned by neo4j, to be set after test0
     
+    
+    public GrpcToscaTest() {
+    	this.generateTestTemplate();
+    	this.testTemplateId = null;
+    	this.simpleTestTemplateId = null;
+    }
     
     @Before
     public void setUpBeforeClass() throws Exception {
         client = new ToscaClient("localhost" , 50051);
         server = new Service(50051);
-        
         server.start();
+        
     }
     
     @After
@@ -55,6 +65,9 @@ public class GrpcToscaTest {
     	assertEquals(response.getSuccess(), true);
     	assertEquals("error report: " + response.getErrorMessage() ,response.getErrorMessage(), "");
     	
+    	//If there were no errors we can retrieve the actual Id
+    	this.testTemplateId = response.getTopologyTemplate().getId();
+    	
     	return;
     }
     
@@ -70,6 +83,69 @@ public class GrpcToscaTest {
     
     @Test
     public void Test3Verification() {
+    	System.out.println("Test D: Verification.");
+    	
+    	//REACHABILITY test
+    	System.out.println("Phase 1.1 - Reachability SAT.");
+    	ToscaPolicy policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+    			.setType(PolicyType.reachability).setSource("host2").setDestination("host1").build();
+    	
+    	ToscaVerificationGrpc result = client.verifyPolicy(policy);
+    	assertNotNull("there was no response", result);
+    	assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "SAT");
+    	assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+    	
+    	result = null;
+    	System.out.println("Phase 1.2 - Reachability UNSAT.");
+    	policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+    			.setType(PolicyType.reachability).setSource("host1").setDestination("antispamNode1").build();
+    	
+    	result = client.verifyPolicy(policy);
+    	assertNotNull("there was no response", result);
+    	assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "UNSAT");
+    	assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+    	
+    	//ISOLATION test
+    	result = null;
+    	System.out.println("Phase 2.1 - Isolation SAT.");
+    	policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+    			.setType(PolicyType.isolation).setSource("host2").setDestination("host1").setMiddlebox("webserver1").build();
+    	
+    	result = client.verifyPolicy(policy);
+    	assertNotNull("there was no response", result);
+    	assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "SAT");
+    	assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+    	
+    	System.out.println("Phase 2.2 - Isolation UNSAT.");
+    	policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+    			.setType(PolicyType.isolation).setSource("host2").setDestination("host1").setMiddlebox("fw").build();
+    	
+    	result = client.verifyPolicy(policy);
+    	assertNotNull("there was no response", result);
+    	assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "UNSAT");
+    	assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+    	
+    	//TRAVERSAL test
+    	result = null;
+    	System.out.println("Phase 3.1 - Traversal SAT.");
+    	policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+    			.setType(PolicyType.traversal).setSource("host2").setDestination("host1").setMiddlebox("webserver1").build();
+    	
+    	result = client.verifyPolicy(policy);
+    	assertNotNull("there was no response", result);
+    	assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "SAT");
+    	assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+    	
+    	System.out.println("Phase 3.2 - Traversal UNSAT.");
+    	policy = ToscaPolicy.newBuilder().setIdTopologyTemplate(this.testTemplateId)
+    			.setType(PolicyType.traversal).setSource("host2").setDestination("host1").setMiddlebox("fw").build();
+    	
+    	result = client.verifyPolicy(policy);
+    	assertNotNull("there was no response", result);
+    	assertEquals("unexpected result : " + result.getResult() + " : " + result.getComment(), result.getResult(), "UNSAT");
+    	assertEquals("error report: " + result.getErrorMessage(), result.getErrorMessage(), "");
+    	
+    	
     	return;
     }
     
@@ -80,7 +156,7 @@ public class GrpcToscaTest {
     
     
     //Generates a correct instance of a TopologyTemplateGrpc to be used in tests
-    public static TopologyTemplateGrpc generateTestTemplate() {
+    public void generateTestTemplate() {
     	TopologyTemplateGrpc.Builder templ = TopologyTemplateGrpc.newBuilder();
 		List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
 		List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();
@@ -141,7 +217,12 @@ public class GrpcToscaTest {
 				.setIdSourceNodeTemplate("103").setIdTargetNodeTemplate("100").setName("Host1Tofw").build();
 		relats.add(rel5);
 		
-    	return templ.addAllNodeTemplate(nodes).addAllRelationshipTemplate(relats).setId("0").build();
+    	this.testTemplate = templ.addAllNodeTemplate(nodes).addAllRelationshipTemplate(relats).setId("0").build();
+    	
+    	
+    	//TODO Ciao angelicchio ho pensato i scriverti questo messagino così che tu scriva qui sotto
+    	//la roba per generare il simple template, quando lo crei nella get salvane anche l'id reale nella variabile
+    	//globale come è stato fatto per quello grosso così posso usare quello piccolo anche nella update. TVB ciao.
     }
 
 }
