@@ -54,48 +54,49 @@ public class GrpcToscaTest {
 
 
 	@Test
-	public void Test0Creation() {
+	public void test0Creation() {
 		System.out.println("\nTest A: Graph Creation.");
 
 		NewTopologyTemplate response = client.createTopologyTemplate(testTemplate);
 		assertNotNull("Returned a NULL graph", response);
 		assertEquals(response.getSuccess(), true);
 		assertEquals("Error report: " + response.getErrorMessage(), "", response.getErrorMessage());
-		System.out.println("Phase A.1 completed");
-
-		NewTopologyTemplate response2 = client.createTopologyTemplate(simpleTestTemplate);
-		assertNotNull("Returned a NULL graph", response2);
-		assertEquals(response2.getSuccess(), true);
-		assertEquals("Error report: " + response2.getErrorMessage(), "", response2.getErrorMessage());
-		System.out.println("Phase A.2 completed");
+		
+		Status resp = client.deleteTopologyTemplate(response.getTopologyTemplate().getId());
+		assertEquals("Error while deleting testTemplate.", true, resp.getSuccess());
+		
+		System.out.println("Test A completed\n");
 
 		return;
 	}
 
 
 	@Test
-	public void Test1Reading() {
-		System.out.println("\nTest B: Graph Reading");
-
+	public void test1Reading() {
+		System.out.println("\nTest B: Graph Reading.");
+		
+		//Creating a test graph on remote repository
+		System.out.println("Phase B.1 -- Creating a test graph.");
 		NewTopologyTemplate response = client.createTopologyTemplate(simpleTestTemplate);
 		assertNotNull("Returned a NULL graph", response);
 		assertEquals(true, response.getSuccess());
 		assertEquals("Error report: " + response.getErrorMessage(), "", response.getErrorMessage());
-		System.out.println("Phase B.1 completed");
-
+		
+		//Reading remote graph.
+		System.out.println("Phase B.2 -- Reading remote graph.");
 		TopologyTemplateGrpc retrieved = client.getTopologyTemplate(response.getTopologyTemplate().getId());
 		assertNotNull("Retrieved a NULL graph", retrieved);
 		assertEquals(retrieved.getId(), response.getTopologyTemplate().getId());
-		System.out.println("Phase B.2 completed");
 
 		//Nodes checking
+		System.out.println("Phase B.3 -- Checking graph's nodes.");
 		assertEquals(retrieved.getNodeTemplateCount(), 3);
 		assertEquals("Node1 name error", response.getTopologyTemplate().getNodeTemplateList().get(0).getName(), retrieved.getNodeTemplateList().get(0).getName());
 		assertEquals("Node2 name error", response.getTopologyTemplate().getNodeTemplateList().get(1).getName(), retrieved.getNodeTemplateList().get(1).getName());
 		assertEquals("Node3 name error", response.getTopologyTemplate().getNodeTemplateList().get(2).getName(), retrieved.getNodeTemplateList().get(2).getName());
-		System.out.println("Phase B.3 completed");
 
 		//Relationships checking
+		System.out.println("Phase B.4 -- Checking graph's relationships.");
 		assertEquals(retrieved.getRelationshipTemplateCount(), 4);
 		String source1=null, target1=null;
 		String source2=null, target2=null;
@@ -124,24 +125,26 @@ public class GrpcToscaTest {
 		assertEquals("Relat2 name error", retrieved.getRelationshipTemplateList().get(1).getName(), source2+"to"+target2);
 		assertEquals("Relat3 name error", retrieved.getRelationshipTemplateList().get(2).getName(), source3+"to"+target3);
 		assertEquals("Relat4 name error", retrieved.getRelationshipTemplateList().get(3).getName(), source4+"to"+target4);
-		System.out.println("Phase B.4 completed");
-
+		
+		System.out.println("Phase B.5 -- Deleting graph.");
 		Status resp = client.deleteTopologyTemplate(response.getTopologyTemplate().getId());
 		assertEquals("Error while deleting simpleTestTemplate", true, resp.getSuccess());	
-		System.out.println("Phase B.5 completed");
+		
+		
+		System.out.println("Test B completed.\n");
 		return;
 	}
 
 	@Test
-	public void Test2Update() {
-		System.out.println("\nTest C: Update");
+	public void test2Update() {
+		System.out.println("\nTest C: Update.");
 		//TODO
 		return;
 	}
 
 
 	@Test
-	public void Test3Verification() {
+	public void test3Verification() {
 		System.out.println("\nTest D: Verification.");
 		NewTopologyTemplate response = client.createTopologyTemplate(testTemplate);
 		if(response == null | response.getSuccess() != true) {
@@ -208,13 +211,14 @@ public class GrpcToscaTest {
 
 		Status resp = client.deleteTopologyTemplate(testTemplateId);
 		assertEquals("Error while deleting testTemplate", true, resp.getSuccess());
-
+		
+		System.out.println("Test D completed.\n");
 		return;
 	}
 
 
 	@Test
-	public void Test4Deletion() {
+	public void test4Deletion() {
 		System.out.println("\nTest E: Deletion");
 		NewTopologyTemplate templ = client.createTopologyTemplate(testTemplate);	
 
@@ -226,7 +230,7 @@ public class GrpcToscaTest {
 			assertEquals("Error while deleting testTemplate", true, resp.getSuccess());
 		}
 
-		System.out.println("Test E completed.");
+		System.out.println("Test E completed.\n");
 		return;
 	}
 
