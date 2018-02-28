@@ -61,10 +61,10 @@ public class GrpcToscaTest {
 		assertNotNull("Returned a NULL graph", response);
 		assertEquals(response.getSuccess(), true);
 		assertEquals("Error report: " + response.getErrorMessage(), "", response.getErrorMessage());
-		
+
 		Status resp = client.deleteTopologyTemplate(response.getTopologyTemplate().getId());
 		assertEquals("Error while deleting testTemplate.", true, resp.getSuccess());
-		
+
 		System.out.println("Test A completed\n");
 
 		return;
@@ -74,14 +74,14 @@ public class GrpcToscaTest {
 	@Test
 	public void test1Reading() {
 		System.out.println("\nTest B: Graph Reading.");
-		
+
 		//Creating a test graph on remote repository
 		System.out.println("Phase B.1 -- Creating a test graph.");
 		NewTopologyTemplate response = client.createTopologyTemplate(simpleTestTemplate);
 		assertNotNull("Returned a NULL graph", response);
 		assertEquals(true, response.getSuccess());
 		assertEquals("Error report: " + response.getErrorMessage(), "", response.getErrorMessage());
-		
+
 		//Reading remote graph.
 		System.out.println("Phase B.2 -- Reading remote graph.");
 		TopologyTemplateGrpc retrieved = client.getTopologyTemplate(response.getTopologyTemplate().getId());
@@ -125,12 +125,12 @@ public class GrpcToscaTest {
 		assertEquals("Relat2 name error", retrieved.getRelationshipTemplateList().get(1).getName(), source2+"to"+target2);
 		assertEquals("Relat3 name error", retrieved.getRelationshipTemplateList().get(2).getName(), source3+"to"+target3);
 		assertEquals("Relat4 name error", retrieved.getRelationshipTemplateList().get(3).getName(), source4+"to"+target4);
-		
+
 		System.out.println("Phase B.5 -- Deleting graph.");
 		Status resp = client.deleteTopologyTemplate(response.getTopologyTemplate().getId());
 		assertEquals("Error while deleting simpleTestTemplate", true, resp.getSuccess());	
-		
-		
+
+
 		System.out.println("Test B completed.\n");
 		return;
 	}
@@ -138,7 +138,88 @@ public class GrpcToscaTest {
 	@Test
 	public void test2Update() {
 		System.out.println("\nTest C: Update.");
-		//TODO
+
+		//Creating a test graph on remote repository
+		System.out.println("Phase C.1 -- Creating a test graph.");
+		NewTopologyTemplate response = client.createTopologyTemplate(simpleTestTemplate);
+		assertNotNull("Returned a NULL graph", response);
+		assertEquals(true, response.getSuccess());
+		assertEquals("Error report: " + response.getErrorMessage(), "", response.getErrorMessage());
+
+		//Reading remote graph.
+		System.out.println("Phase C.2 -- Reading remote graph.");
+		TopologyTemplateGrpc retrieved = client.getTopologyTemplate(response.getTopologyTemplate().getId());
+		assertNotNull("Retrieved a NULL graph", retrieved);
+		assertEquals(retrieved.getId(), response.getTopologyTemplate().getId());
+
+		//Updating a TopologyTemplateGrpc
+		System.out.println("Phase C.3 -- Updating a test graph.");
+		TopologyTemplateGrpc.Builder templ = TopologyTemplateGrpc.newBuilder();
+		List<NodeTemplateGrpc> nodes = new ArrayList<NodeTemplateGrpc>();
+		List<RelationshipTemplateGrpc> relats = new ArrayList<RelationshipTemplateGrpc>();
+
+		ToscaConfigurationGrpc node1conf = ToscaConfigurationGrpc.newBuilder().setDescription("node1configuration")
+				.setId("15").setConfiguration("[]").build();
+		NodeTemplateGrpc node1 = NodeTemplateGrpc.newBuilder().setConfiguration(node1conf).setId("999")
+				.setName("webserver1").setType(Type.webserver).build();
+		nodes.add(node1);
+
+		ToscaConfigurationGrpc node2conf = ToscaConfigurationGrpc.newBuilder().setDescription("node2configuration")
+				.setId("16").setConfiguration("[{\r\n\"protocol\":\"HTTP_REQUEST\",\r\n \"url\":\"www.facebook.com\"\r\n }]").build();
+		NodeTemplateGrpc node2 = NodeTemplateGrpc.newBuilder().setConfiguration(node2conf).setId("888")
+				.setName("host2").setType(Type.endhost).build();
+		nodes.add(node2);
+
+		RelationshipTemplateGrpc rel0 = RelationshipTemplateGrpc.newBuilder().setId("1001")
+				.setIdSourceNodeTemplate("999").setIdTargetNodeTemplate("888").setName("webserver1tohost2").build();
+		relats.add(rel0);
+
+		RelationshipTemplateGrpc rel1 = RelationshipTemplateGrpc.newBuilder().setId("1002")
+				.setIdSourceNodeTemplate("888").setIdTargetNodeTemplate("999").setName("host2towebserver1").build();
+		relats.add(rel1);
+
+		TopologyTemplateGrpc newTestTemplate = templ.addAllNodeTemplate(nodes).addAllRelationshipTemplate(relats).setId("9").build();
+		NewTopologyTemplate updated = client.updateTopologyTemplate(newTestTemplate, response.getTopologyTemplate().getId());
+		assertNotNull("Returned a NULL graph", updated);
+		assertEquals(true, updated.getSuccess());
+		assertEquals("Error report: " + updated.getErrorMessage(), "", updated.getErrorMessage());
+
+		//Reading remote graph.
+		System.out.println("Phase C.4 -- Reading remote graph.");
+		TopologyTemplateGrpc retrieved2 = client.getTopologyTemplate(response.getTopologyTemplate().getId());
+		assertNotNull("Retrieved a NULL graph", retrieved2);
+		assertEquals(retrieved2.getId(), response.getTopologyTemplate().getId());
+
+		//Nodes checking
+		System.out.println("Phase C.5 -- Checking updated graph's nodes.");
+		assertEquals(retrieved2.getNodeTemplateCount(), 2);
+		assertEquals("Node1 name error", updated.getTopologyTemplate().getNodeTemplateList().get(0).getName(), retrieved2.getNodeTemplateList().get(0).getName());
+		assertEquals("Node2 name error", updated.getTopologyTemplate().getNodeTemplateList().get(1).getName(), retrieved2.getNodeTemplateList().get(1).getName());
+
+		//Relationships checking
+		System.out.println("Phase C.6 -- Checking updated graph's relationships.");
+		assertEquals(retrieved2.getRelationshipTemplateCount(), 2);
+		String source1=null, target1=null;
+		String source2=null, target2=null;
+		for (NodeTemplateGrpc node : retrieved2.getNodeTemplateList()){
+			if(node.getId().equals(retrieved2.getRelationshipTemplateList().get(0).getIdSourceNodeTemplate()))
+				source1=node.getName();
+			if(node.getId().equals(retrieved2.getRelationshipTemplateList().get(0).getIdTargetNodeTemplate()))
+				target1=node.getName();
+			if(node.getId().equals(retrieved2.getRelationshipTemplateList().get(1).getIdSourceNodeTemplate()))
+				source2=node.getName();
+			if(node.getId().equals(retrieved2.getRelationshipTemplateList().get(1).getIdTargetNodeTemplate()))
+				target2=node.getName();
+		}
+
+		assertEquals("Relat1 name error", retrieved2.getRelationshipTemplateList().get(0).getName(), source1+"to"+target1);
+		assertEquals("Relat2 name error", retrieved2.getRelationshipTemplateList().get(1).getName(), source2+"to"+target2);
+
+		System.out.println("Phase C.6 -- Deleting graph.");
+		Status resp = client.deleteTopologyTemplate(updated.getTopologyTemplate().getId());
+		assertEquals("Error while deleting simpleTestTemplate", true, resp.getSuccess());	
+
+		System.out.println("Test C completed.\n");
 		return;
 	}
 
@@ -211,7 +292,7 @@ public class GrpcToscaTest {
 
 		Status resp = client.deleteTopologyTemplate(testTemplateId);
 		assertEquals("Error while deleting testTemplate", true, resp.getSuccess());
-		
+
 		System.out.println("Test D completed.\n");
 		return;
 	}
