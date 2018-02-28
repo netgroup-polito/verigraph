@@ -5,7 +5,7 @@
 ..
 
 **Verigraph** has been extended for **OASIS TOSCA**-based network service descriptors.
-**Verigraph** supports both **XML** and **YAML** TOSCA descriptions, provided both within its RESTful APIs and via gRPC.
+**Verigraph** supports both **XML** and **YAML** TOSCA descriptions, provided both within its RESTful APIs and via gRPC. A visual representation of the **Verigraph** + **TOSCA** architecture can be found `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/doc/TOSCA%20Verigraph%20architecture.pdf>`_.
 
 **TOSCA** network service descriptors are interpreted by **Verigraph** with the following mapping (``TOSCA -> Verigraph Model``):
 
