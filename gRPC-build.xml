@@ -109,6 +109,7 @@
 				<java classname="it.polito.verigraph.grpc.Service" failonerror="true" classpathref="build.classpath" fork="yes">
 					<classpath>
 						<pathelement path="${build.dir}"/>
+						<path refid="test.classpath" />
 					</classpath>
 				</java>
 			</sequential>
@@ -137,6 +138,7 @@
 		<java classname="it.polito.verigraph.grpc.server.Service" failonerror="true" classpathref="build.classpath" fork="yes">
 			<classpath>
 				<pathelement path="${build.dir}"/>
+				<path refid="test.classpath" />
 			</classpath>
 		</java>
 	</target>
