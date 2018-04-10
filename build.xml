@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2017 Politecnico di Torino and others.
+ Copyright (c) 2017/18 Politecnico di Torino and others.
 
  All rights reserved. This program and the accompanying materials
  are made available under the terms of the Apache License, Version 2.0
@@ -103,7 +103,6 @@
     </uptodate>
   </target>
 
-	
   <target name="generate-bindings" unless="generate-bindings.notRequired" depends="init, chk-bindings" description="Create the value classes">
     <exec executable="xjc" failonerror="true">
       <arg line="-d ${gen.dir} -p it.polito.neo4j.jaxb ${schemadir}/${schemafile}" />
@@ -115,16 +114,16 @@
     <exec executable="xjc" failonerror="true">
       <arg line="-d ${root.location}/temp-gen -p it.polito.tosca.jaxb ${toscaschemadir}/${toscaverigraphschemafile}" />
     </exec>
-  	
+
     <copy toDir="${gen.dir}/it/polito/tosca/jaxb" overwrite="true">
       <file name="${root.location}/temp-gen/it/polito/tosca/jaxb/Configuration.java" />
     </copy>
     <delete dir="${root.location}/temp-gen" />
-  	
+
     <touch file="${gen.dir}/.flagfile" />
   </target>
 
-  	
+
   <!-- The target for compiling the Verigraph application -->
   <target name="build-service" depends="init, generate-bindings, mvn-init">
     <echo>Building verigraph (if needed)...</echo>
@@ -189,12 +188,10 @@
     </sequential>
   </macrodef>
 
-	
   <target name="war-exploded" depends="build-service">
     <war-exploded />
   </target>
 
-	
   <target name="generate-war" depends="war-exploded">
     <war destfile="${gen-war.dir}/${serviceName}.war" basedir="${gen-tomcat-service.dir}">
       <exclude name="protoc-dependencies/" />
@@ -203,7 +200,6 @@
       <exclude />
     </war>
   </target>
-
 
   <target name="docker-rest-build" depends="generate-war">
     <delete file="${docker-rest.dir}/verigraph.war" />
@@ -279,7 +275,6 @@
     </jar>
   </target>
 
-
   <!-- launch test python test -->
   <target name="run-test">
     <exec dir="${test.dir}" executable="python">
@@ -288,8 +283,6 @@
       <arg value="${iteration}" />
     </exec>
   </target>
-
-
 
   <!-- target for cleaning -->
   <target name="clean">
@@ -305,6 +298,5 @@
     <delete file="${docker-rest.dir}/verigraph.war" />
     <delete dir="${cli.dir}" />
   </target>
-
 
 </project>

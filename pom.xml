@@ -219,15 +219,15 @@
             <version>1.6.4</version>
         </dependency>
         <dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>2.9.2</version>
-		</dependency>
-		<!-- Trying to make jaxb work -->
-		<dependency>
-    		<groupId>org.eclipse.persistence</groupId>
-    		<artifactId>org.eclipse.persistence.core</artifactId>
-    		<version>2.6.0</version>
-		</dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+        <!-- Trying to make jaxb work -->
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
     </dependencies>
 </project>
