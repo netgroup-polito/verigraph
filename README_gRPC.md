@@ -7,56 +7,56 @@ Information about how gRPC interface supports TOSCA can be found [here](https://
 --------------------------------------------------------------
 For gRPC interface, add to your `pom.xml` (in the project this part is already present):
 ```
-	<dependency>
-		<groupId>io.grpc</groupId>
-		<artifactId>grpc-netty</artifactId>
-		<version>${grpc.version}</version>
-	</dependency>
-	<dependency>
-		<groupId>io.grpc</groupId>
-		<artifactId>grpc-protobuf</artifactId>
-		<version>${grpc.version}</version>
-	</dependency>
-	<dependency>
-		<groupId>io.grpc</groupId>
-		<artifactId>grpc-stub</artifactId>
-		<version>${grpc.version}</version>
-	</dependency>
+  <dependency>
+    <groupId>io.grpc</groupId>
+    <artifactId>grpc-netty</artifactId>
+    <version>${grpc.version}</version>
+  </dependency>
+  <dependency>
+    <groupId>io.grpc</groupId>
+    <artifactId>grpc-protobuf</artifactId>
+    <version>${grpc.version}</version>
+  </dependency>
+  <dependency>
+    <groupId>io.grpc</groupId>
+    <artifactId>grpc-stub</artifactId>
+    <version>${grpc.version}</version>
+  </dependency>
 
 ```
 
 For protobuf-based codegen integrated with the Maven build system, you can use protobuf-maven-plugin :
 
 ```
-	<build>
-		<extensions>
-			<extension>
-				<groupId>kr.motd.maven</groupId>
-				<artifactId>os-maven-plugin</artifactId>
-				<version>1.4.1.Final</version>
-			</extension>
-		</extensions>
-		<plugins>
-			<plugin>
-				<groupId>org.xolstice.maven.plugins</groupId>
-				<artifactId>protobuf-maven-plugin</artifactId>
-				<version>0.5.0</version>
-				<configuration>
-					<protocArtifact>com.google.protobuf:protoc:3.1.0:exe:${os.detected.classifier}</protocArtifact>
-					<pluginId>grpc-java</pluginId>
-					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>compile-custom</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+  <build>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.4.1.Final</version>
+      </extension>
+    </extensions>
+    <plugins>
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>0.5.0</version>
+        <configuration>
+          <protocArtifact>com.google.protobuf:protoc:3.1.0:exe:${os.detected.classifier}</protocArtifact>
+          <pluginId>grpc-java</pluginId>
+          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>compile-custom</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 ```    
 
@@ -88,16 +88,16 @@ Here you can find a brief description about useful files for the gRPC interface:
 This package includes 2 classes that represent the client and server.
 >**Client.java:**
 
->	Client of gRPC application. It implements all possible methods necessary for communicate with server.
->	It prints out the received response.
->	Moreover it provides some static methods that are used for creating the instances of requests.
+>  Client of gRPC application. It implements all possible methods necessary for communicate with server.
+>  It prints out the received response.
+>  Moreover it provides some static methods that are used for creating the instances of requests.
 
 >**Service.java:**
 
->	Server of gRPC application. It implements all possible methods necessary for communicate with client.
->	It saves the received request on log.
->	This server could be accessed by multiple clients, because synchronizes concurrent accesses.
->	Each method that is possible to call is has the equivalent operation in REST-interface.
+>  Server of gRPC application. It implements all possible methods necessary for communicate with client.
+>  It saves the received request on log.
+>  This server could be accessed by multiple clients, because synchronizes concurrent accesses.
+>  Each method that is possible to call is has the equivalent operation in REST-interface.
 
 >**GrpcUtils.java:**
 
@@ -111,7 +111,7 @@ This package includes 2 classes that represent the client and server.
 
  - *it.polito.grpc.test:*
 
-	This package includes classes for testing the gRPC application.
+  This package includes classes for testing the gRPC application.
 
 
 >**GrpcServerTest.java:**
@@ -132,7 +132,7 @@ This package includes 2 classes that represent the client and server.
 >This test creates multiple clients that connect to the server and verify is the result is correct. These methods test the synchronization on
 >server-side.
 
->	**ReachabilityTest.java:**
+>  **ReachabilityTest.java:**
 
 >This file tests the verification method, it exploits the test case already present in the project and consequently has the certainty of testing not so simple case. In particular it reads the file in "src/main/webapp/json" and use this as starting point.
 >Some exceptions are thrown in order to verify if they are handled in a correct way.
@@ -151,23 +151,23 @@ This package includes 2 classes that represent the client and server.
 
  - *io.grpc.verigraph:*
 
-	This package includes all classes generated from verigraph.proto by means of protoc. For each object you can find 2 classes :
+  This package includes all classes generated from verigraph.proto by means of protoc. For each object you can find 2 classes :
 
-	>**{NameObject}Grpc.java**
+  >**{NameObject}Grpc.java**
 
-	>**{NameObject}GrpcOrBuilder.java**
+  >**{NameObject}GrpcOrBuilder.java**
 
-	>The first is the real implementation, the second is the interface.
+  >The first is the real implementation, the second is the interface.
 
 **taget/generated-sources/protobuf/grpc-java:**
 
  - *io.grpc.verigraph:*
 
-	This package includes a single class generated from verigraph.proto by means of protoc.
+  This package includes a single class generated from verigraph.proto by means of protoc.
 
-	>**VerigraphGrpc.java:**
+  >**VerigraphGrpc.java:**
 
-	>This is useful in order to create the stubs that are necessary to communicate both for client and server.
+  >This is useful in order to create the stubs that are necessary to communicate both for client and server.
 
 **lib:**
 
@@ -207,22 +207,22 @@ Note that the execution of these tests may take up to 1-2 minutes when successfu
 Further clarification about verigraph.proto:
 
 - A `simple RPC` where the client sends a request to the server using the stub and waits for a response to come back, just like a normal function call.
-	```xml
-	// Obtains a graph
-	rpc GetGraph (RequestID) returns (GraphGrpc) {}
+  ```xml
+  // Obtains a graph
+  rpc GetGraph (RequestID) returns (GraphGrpc) {}
 
-	```
+  ```
 
 In this case we send a request that contains the id of the graph and the response is a Graph.
 
 
 - A `server-side streaming RPC` where the client sends a request to the server and gets a stream to read a sequence of messages back. The client reads from the returned stream until there are no more messages. As you can see in our example, you specify a server-side streaming method by placing the stream keyword before the response type.
-	```xml
+  ```xml
 
-	// Obtains a list of Nodes
-	rpc GetNodes (RequestID) returns (stream NodeGrpc) {}
+  // Obtains a list of Nodes
+  rpc GetNodes (RequestID) returns (stream NodeGrpc) {}
 
-	```
+  ```
 
 In this case we send a request that contains the id of the graph and the response is a list of Nodes that are inside graph.
 
@@ -231,11 +231,11 @@ Further possibilities are available but in this project are not expolied. If you
 
 Our `.proto` file also contains protocol buffer message type definitions for all the request and response types used in our service methods - for example, heres the `RequestID`  message type:
 ```xml
-	message RequestID {
-		int64 idGraph = 1;
-		int64 idNode = 2;
-		int64 idNeighbour = 3;
-	}
+  message RequestID {
+    int64 idGraph = 1;
+    int64 idNode = 2;
+    int64 idNeighbour = 3;
+  }
 ```
 
 
@@ -244,14 +244,14 @@ The " = 1", " = 2" markers on each element identify the unique "tag" that field 
 
 Protocol buffers are the flexible, efficient, automated solution to solve exactly the problem of serialization. With protocol buffers, you write a .proto description of the data structure you wish to store. From that, the protocol buffer compiler creates a class that implements automatic encoding and parsing of the protocol buffer data with an efficient binary format. The generated class provides getters and setters for the fields that make up a protocol buffer and takes care of the details of reading and writing the protocol buffer as a unit. Importantly, the protocol buffer format supports the idea of extending the format over time in such a way that the code can still read data encoded with the old format.
 
-	syntax = "proto3";
+  syntax = "proto3";
 
-	package verigraph;
+  package verigraph;
 
-	option java_multiple_files = true;
-	option java_package = "io.grpc.verigraph";
-	option java_outer_classname = "VerigraphProto";
-	```
+  option java_multiple_files = true;
+  option java_package = "io.grpc.verigraph";
+  option java_outer_classname = "VerigraphProto";
+  ```
 This .proto file works for protobuf 3, that is slightly different from the version 2, so be careful if you have code already installed.
 
 The .proto file starts with a package declaration, which helps to prevent naming conflicts between different projects. In Java, the package name is used as the `Java package` unless you have explicitly specified a java_package, as we have here. Even if you do provide a `java_package`, you should still define a normal `package` as well to avoid name collisions in the Protocol Buffers name space as well as in non-Java languages.
@@ -275,7 +275,7 @@ At line 213 we modified the path, because this service is intended to run not on
 
 **it.polito.escape.verify.service.VerificationService:**
 
-In the original case it searches for python files in "webapps" folder, that is 	present if the service is deployed in a container, but absent otherwise. So we added another string that will be used in the case the service doesn't run in Tomcat.
+In the original case it searches for python files in "webapps" folder, that is   present if the service is deployed in a container, but absent otherwise. So we added another string that will be used in the case the service doesn't run in Tomcat.
 
 **it.polito.escape.verify.databese.DatabaseClass:**
 
@@ -287,13 +287,13 @@ It works fine with Python 2.7.3, or in general Python 2.
 If you have downloaded a Python version for 64-bit architecture please copy the files in "service/z3_64" and paste in "service/build" and substitute them,
 because this project works with Python for 32-bit architecture.
 
-Python and Z3 must support the same architetcure.
+Python and Z3 must support the same architecture.
 
 Moreover you need the following dependencies installed on your python distribution:
 
-	"requests" python package -> http://docs.python-requests.org/en/master/
+  "requests" python package -> http://docs.python-requests.org/en/master/
 
-	"jsonschema" python package -> https://pypi.python.org/pypi/jsonschema
+  "jsonschema" python package -> https://pypi.python.org/pypi/jsonschema
 
 HINT - to install a package you can raise the following command (Bash on Linux or DOS shell on Windows): python -m pip install jsonschema python -m pip install requests
 Pay attention that it is possible that you have to modify the PATH environment variable because is necessary to address the python folder, used for verification phase.

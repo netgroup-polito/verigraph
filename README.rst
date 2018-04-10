@@ -4,8 +4,12 @@
    :format: latex
 ..
 
-**Verigraph** is a tool for verifying policies within network graphs. It supports graphs descriptions provided in a custom **JSON** format, or in **TOSCA OASIS** **YAML**/**XML**-based descriptions. **Verigraph** provides a **RESTful** and a **gRPC** interface, and can also be deployed on **Docker** containers. For convenience a Command Line Interface is provided for interacting with the **Verigraph** service in all of its declinations.
-In the following section some informations are provided on how to deploy **Verigraph** on Apache **Tomcat**, but it's useful to read some parts of it even if you are only interested in other aspects of the project.
+**Verigraph** is a tool for verifying policies within network graphs. It supports graphs descriptions provided in a 
+custom **JSON** format, or in **TOSCA OASIS** **YAML**/**XML**-based descriptions. **Verigraph** provides a **RESTful** 
+and a **gRPC** interface, and can also be deployed on **Docker** containers. For convenience a Command Line Interface is
+ provided for interacting with the **Verigraph** service in all of its declinations.
+In the following section some informations are provided on how to deploy **Verigraph** on Apache **Tomcat**, but it's 
+useful to read some parts of it even if you are only interested in other aspects of the project.
 
 Links to other sections of the documentation:
 
