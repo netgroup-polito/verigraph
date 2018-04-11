@@ -18,8 +18,9 @@ The CLI allows CRUD operations on graphs and three kind of verification.
 
 -- CLI commands --
 > CONFIGURE -use <Interface> -format <contentFormat>
-Allows to configure connection parameters (host and port ), the interface (REST or gRPC ) and the data format (JSON, XML or YAML ) to be used to communicate with the verification service, XML and YAML formats exploit an extension of TOSCA specification. 
-At program start the default configuration uses the REST interface with XML data format. 
+Allows to configure connection parameters (host and port ), the interface (REST or gRPC ) and the data format
+(JSON, XML or YAML ) to be used to communicate with the verification service, XML and YAML formats exploit an extension
+of TOSCA specification. At program start the default configuration uses the REST interface with XML data format. 
 Note that the JSON format is not supported by the grpc interface.
 
 > HELP

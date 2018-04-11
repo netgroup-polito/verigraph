@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Politecnico di Torino and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Apache License, Version 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *******************************************************************************/
 package it.polito.verigraph.providers;
 
 import com.sun.research.ws.wadl.ObjectFactory;
@@ -18,7 +26,8 @@ public class XmlContextResolver implements ContextResolver<JAXBContext> {
     private JAXBContext ctx;
 
     public XmlContextResolver() throws JAXBException {
-        this.ctx = JAXBContext.newInstance(ObjectFactory.class, TDefinitions.class, Configuration.class); // initialize it the way you want
+        this.ctx = JAXBContext.newInstance(ObjectFactory.class, TDefinitions.class, Configuration.class);
+        // initialize it the way you want
     }
 
     public JAXBContext getContext(Class<?> type) {

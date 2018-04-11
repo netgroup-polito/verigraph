@@ -1,62 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2018 Politecnico di Torino and others.
+
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Apache License, Version 2.0
+ which accompanies this distribution, and is available at
+ http://www.apache.org/licenses/LICENSE-2.0
+-->
 
 <Definitions id="simpleDefinition"
-	name="Example of service described with modified Tosca" xmlns="http://docs.oasis-open.org/tosca/ns/2011/12"
-	xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://www.example.com/servicetemplates/ExampleService"
-	xs:schemaLocation="http://docs.oasis-open.org/tosca/TOSCA/v1.0/os/schemas/TOSCA-v1.0.xsd">
+  name="Example of service described with modified Tosca"
+  xmlns="http://docs.oasis-open.org/tosca/ns/2011/12"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="http://www.example.com/servicetemplates/ExampleService"
+  xs:schemaLocation="http://docs.oasis-open.org/tosca/TOSCA/v1.0/os/schemas/TOSCA-v1.0.xsd">
 
-	<Extensions>
-		<Extension
-			namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinitions"
-			mustUnderstand="yes" />
-	</Extensions>
+  <Extensions>
+    <Extension
+      namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinitions"
+      mustUnderstand="yes" />
+  </Extensions>
 
-	<Import importType=" http://docs.oasis-open.org/tosca/ns/2011/12"
-		namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
-		location="../ToscaVerigraph_compliance/ToscaVerigraphDefinitions.xml" />
+  <Import importType=" http://docs.oasis-open.org/tosca/ns/2011/12"
+    namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
+    location="../ToscaVerigraph_compliance/ToscaVerigraphDefinitions.xml" />
 
 
-	<ServiceTemplate id="0" name="simpleGraph">
+  <ServiceTemplate id="0" name="simpleGraph">
 
-		<TopologyTemplate id="10" name="simpleTopology">
-			<NodeTemplate id="100" name="user1" type="EndpointType">
-				<Properties>
-					<Configuration confID="1000" confDescr="User1 configuration" />
-				</Properties>
-			</NodeTemplate>
-			
-			<NodeTemplate id="101" name="nat" type="NatType">
-				<Properties>
-					<Configuration confID="1001" confDescr="superDescription">
-						<JSON> 
-						[
-							"user1",
-							"user2"
-						]
-						</JSON>
-					</Configuration>
-				</Properties>
-			</NodeTemplate>
-			
-			<NodeTemplate id="102" name="user2" type="EndpointType">
-				<Properties>
-					<Configuration confID="1002" confDescr="User2 configuration" />
-				</Properties>
-			</NodeTemplate>
-			
+    <TopologyTemplate id="10" name="simpleTopology">
+      <NodeTemplate id="100" name="user1" type="EndpointType">
+        <Properties>
+          <Configuration confID="1000" confDescr="User1 configuration" />
+        </Properties>
+      </NodeTemplate>
 
-			<RelationshipTemplate id="1001" name="user1ToNat" type="linkedTo">
-				<SourceElement ref="100" />
-				<TargetElement ref="101" />
-			</RelationshipTemplate>
-			
-			<RelationshipTemplate id="1001" name="natToUser2" type="linkedTo">
-				<SourceElement ref="101" />
-				<TargetElement ref="102" />
-			</RelationshipTemplate>
+      <NodeTemplate id="101" name="nat" type="NatType">
+        <Properties>
+          <Configuration confID="1001" confDescr="superDescription">
+            <JSON>
+              [
+              "user1",
+              "user2"
+              ]
+            </JSON>
+          </Configuration>
+        </Properties>
+      </NodeTemplate>
 
-		</TopologyTemplate>
+      <NodeTemplate id="102" name="user2" type="EndpointType">
+        <Properties>
+          <Configuration confID="1002" confDescr="User2 configuration" />
+        </Properties>
+      </NodeTemplate>
 
-	</ServiceTemplate>
+
+      <RelationshipTemplate id="1001" name="user1ToNat"
+        type="linkedTo">
+        <SourceElement ref="100" />
+        <TargetElement ref="101" />
+      </RelationshipTemplate>
+
+      <RelationshipTemplate id="1001" name="natToUser2"
+        type="linkedTo">
+        <SourceElement ref="101" />
+        <TargetElement ref="102" />
+      </RelationshipTemplate>
+
+    </TopologyTemplate>
+
+  </ServiceTemplate>
 
 </Definitions>

@@ -7,7 +7,7 @@
 **Verigraph** has been extended for **OASIS TOSCA**-based network service descriptors.
 **Verigraph** supports both **XML** and **YAML** TOSCA descriptions, provided both within its RESTful APIs and via gRPC.
 A visual representation of the **Verigraph** + **TOSCA** architecture can be found 
- `here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/doc/TOSCA%20Verigraph%20architecture.pdf>`_.
+`here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/doc/TOSCA%20Verigraph%20architecture.pdf>`_.
 
 **TOSCA** network service descriptors are interpreted by **Verigraph** with 
 the following mapping (``TOSCA -> Verigraph Model``):
@@ -95,7 +95,7 @@ can be specified in **TOSCA** **YAML** and **XML**:
   </RelationshipTemplate>
 
 Notice that the example reported above is not exhaustive, complete examples of NF-FGs (in YAML and XML)
- can be found `here <https://github.com/netgroup-polito/verigraph/tree/tosca-support/examples/tosca>`__.
+can be found `here <https://github.com/netgroup-polito/verigraph/tree/tosca-support/examples/tosca>`__.
 
 ----
 
@@ -110,30 +110,30 @@ Below are detailed the extensions made to the RESTful and gRPC APIs:
 **Verigraph** RESTful APIs support **TOSCA** YAML and XML representations at the *Graph* resource level:
 
 ``/graphs``
- - ``GET``: based on the request header, the server returns all the graphs stored on Neo4j 
- represented with the default Verigraph representation (``Accept: application/json``)
-  or with a TOSCA representation (``Accept: application/{x-yaml, xml}``)
+ - ``GET``: based on the request header, the server returns all the graphs stored on Neo4j
+   represented with the default Verigraph representation (``Accept: application/json``)
+   or with a TOSCA representation (``Accept: application/{x-yaml, xml}``)
  - ``POST``: the server accepts a graph represented with the default Verigraph representation
-  (``Content-Type: application/json``) or with a TOSCA representation (``Content-type: application/{x-yaml, xml}`` 
-  and stores it on Neo4j and returns the stored graph with the same format received
- - ``PUT``:  the server accepts a graph represented with the default Verigraph representation 
- (``Content-Type: application/json``) or with a TOSCA representation (``Content-type: application/{x-yaml, xml}``, 
- updates the id-specified graph, and returns the updated graph with the same format received
+   (``Content-Type: application/json``) or with a TOSCA representation (``Content-type: application/{x-yaml, xml}``
+   and stores it on Neo4j and returns the stored graph with the same format received
+ - ``PUT``:  the server accepts a graph represented with the default Verigraph representation
+   (``Content-Type: application/json``) or with a TOSCA representation (``Content-type: application/{x-yaml, xml}``,
+   updates the id-specified graph, and returns the updated graph with the same format received
 
 ``/graphs/{graphId}``
- - ``GET``: based on the request header, the server returns the id-specified graph stored on Neo4j, 
- represented with the formats specified above
+ - ``GET``: based on the request header, the server returns the id-specified graph stored on Neo4j,
+   represented with the formats specified above
  - ``DELETE``: the server deletes the id-specified graph stored on Neo4j
 
 ``/graphs/{graphId}/paths``
- - ``GET``: given a graph, a source node and a destination node; a list of all the
-  possible paths is returned (``Content-Type: application/json``), otherwise 
-  (``Content-type: application/{x-yaml, xml}``) a set of *ServiceTemplates* (Graphs) 
-  is returned, each one representing a possible path between the selected source node and destination node
+ - ``GET``: given a graph, a source node and a destination node; a list of all the 
+   possible paths is returned (``Content-Type: application/json``), otherwise 
+   (``Content-type: application/{x-yaml, xml}``) a set of *ServiceTemplates* (Graphs) 
+   is returned, each one representing a possible path between the selected source node and destination node
 
 ``/graphs/{graphId}/policy``
  - ``GET``: returns the result of a verification (in JSON, YAML or XML), specifying 
- the feasible paths with the same format of the ``GET`` on ``/graphs/{graphId}/paths`` (detailed above)
+   the feasible paths with the same format of the ``GET`` on ``/graphs/{graphId}/paths`` (detailed above)
 
 
 **gRPC**
@@ -158,21 +158,21 @@ In order to obtain a gRPC object starting from file containing the NF-FG the fol
 - ``ToscaCLI.marshallToXml(List<Definitions>)`` prints on screen a string that contains an XML format of the Definitions
 - ``YamlToGrpc.obtainTopologyTemplateGrpc(String)`` returns a TopologyTemplateGrpc from a TOSCA compliant YAML filepath
 - ``ToscaCLI.marshallToYaml(List<ServiceTemplateYaml>)`` prints on screen a string that contains a YAML format of the
-ServiceTemplateYaml
+  ServiceTemplateYaml
 - Moreover, other converting utility methods can be found in the package ``it.polito.verigraph.tosca.converter`` 
-`(link) <https://github.com/netgroup-polito/verigraph/tree/tosca-support/src/it/polito/verigraph/tosca/converter>`_
+  `(link) <https://github.com/netgroup-polito/verigraph/tree/tosca-support/src/it/polito/verigraph/tosca/converter>`_
 
 The previous messages are used with the gRPC methods (specified in the 
 `protocol buffer <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/verigraph.proto>`_) 
 to perform CRUD operations on *Graphs* and to verify a specific policy:
 
 - ``GetTopologyTemplates(GetRequest)``: returns a list that contains all the *Graphs* stored in 
-Verigraph (as *TopologyTemplateGrpc*)
+  Verigraph (as *TopologyTemplateGrpc*)
 - ``GetTopologyTemplate(ToscaRequestID)``: returns the *Graph* with the specific ID provided (as *TopologyTemplateGrpc*)
 - ``CreateTopologyTemplate(TopologyTemplateGrpc)``: sends to Verigraph a *Graph* (as *TopologyTemplateGrpc*)
-and returns the *Graph* (as *NewTopologyTemplate*) as it has been created by Verigraph
+  and returns the *Graph* (as *NewTopologyTemplate*) as it has been created by Verigraph
 - ``DeleteTopologyTemplate(ToscaRequestID)``: deletes the *Graph* with the specific ID provided from Verigraph
 - ``UpdateTopologyTemplate(TopologyTemplateGrpc)``: sends to Verigraph an update of the *Graph*
-(as *TopologyTemplateGrpc*) and returns the *Graph* updated (as *NewTopologyTemplate*)
+  (as *TopologyTemplateGrpc*) and returns the *Graph* updated (as *NewTopologyTemplate*)
 - ``VerifyPolicy(ToscaPolicy)``: send a *ToscaPolicy* to Verigraph and returns a
-s*ToscaVerificationGrpc* that contains the result
+  *ToscaVerificationGrpc* that contains the result

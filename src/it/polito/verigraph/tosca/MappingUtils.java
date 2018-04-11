@@ -1,3 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Politecnico di Torino and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Apache License, Version 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *******************************************************************************/
+
 package it.polito.verigraph.tosca;
 
 import java.io.IOException;
@@ -27,179 +36,180 @@ import it.polito.verigraph.tosca.yaml.beans.VerificationYaml;
 
 public class MappingUtils {
 
-	public static String prettyPrintJsonString(JsonNode jsonNode) {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			Object json = mapper.readValue(jsonNode.toString(), Object.class);
-			return System.getProperty("line.separator") + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json) + System.getProperty("line.separator");
-		} catch (Exception e) {
-			return "Sorry, pretty print didn't work";
-		}
-	}
+    public static String prettyPrintJsonString(JsonNode jsonNode) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Object json = mapper.readValue(jsonNode.toString(), Object.class);
+            return System.getProperty("line.separator") + mapper.writerWithDefaultPrettyPrinter()
+            .writeValueAsString(json) + System.getProperty("line.separator");
+        } catch (Exception e) {
+            return "Sorry, pretty print didn't work";
+        }
+    }
 
-	// From a list of nodes (path) returns a Definitions object that contains all the paths as different service templates
-	public static Definitions mapPathsToXml(List<List<Node>> paths) {
-		Definitions definitions = new Definitions();
-		List<Graph> tempGraphs = new ArrayList<Graph>();
+    // From a list of nodes (path) returns a Definitions object that contains all the paths as different service templates
+    public static Definitions mapPathsToXml(List<List<Node>> paths) {
+        Definitions definitions = new Definitions();
+        List<Graph> tempGraphs = new ArrayList<Graph>();
 
-		int i = 0;
-		for (List<Node> path: paths) {
-			Graph tempGraph = new Graph();
-			tempGraph.setId(i++);
-			for (Node node : path)
-				tempGraph.getNodes().put(node.getId(), node);
-			tempGraphs.add(tempGraph);
-		}
+        int i = 0;
+        for (List<Node> path: paths) {
+            Graph tempGraph = new Graph();
+            tempGraph.setId(i++);
+            for (Node node : path)
+                tempGraph.getNodes().put(node.getId(), node);
+            tempGraphs.add(tempGraph);
+        }
 
-		for (Graph g: tempGraphs) {
-			definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().add(GraphToXml.mapPathToXml(g));
-		}
+        for (Graph g: tempGraphs) {
+            definitions.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().add(GraphToXml.mapPathToXml(g));
+        }
 
-		return definitions;
-	}
-
-
-	// From a list of nodes (path) returns a list of ServiceTemplateYaml object that represent the paths
-	public static List<ServiceTemplateYaml> mapPathsToYaml(List<List<Node>> paths) {
-		List<ServiceTemplateYaml> serviceTemplates = new ArrayList<ServiceTemplateYaml>();
-		List<Graph> tempGraphs = new ArrayList<Graph>();
-
-		int i = 0;
-		for (List<Node> path: paths) {
-			Graph tempGraph = new Graph();
-			tempGraph.setId(i++);
-			for (Node node : path)
-				tempGraph.getNodes().put(node.getId(), node);
-			tempGraphs.add(tempGraph);
-		}
-
-		for (Graph g: tempGraphs) {
-			serviceTemplates.add(GraphToYaml.mapGraphYaml(g));
-		}
-
-		return serviceTemplates;
-	}
+        return definitions;
+    }
 
 
-	public static Definitions mapVerificationToXml(Verification verification) {
-		Definitions toscaVerification = new Definitions();
-		TDocumentation toscaVerificationResult = new TDocumentation();
-		toscaVerificationResult.setSource(verification.getResult() + ": " + verification.getComment());
-		toscaVerification.getDocumentation().add(toscaVerificationResult);
+    // From a list of nodes (path) returns a list of ServiceTemplateYaml object that represent the paths
+    public static List<ServiceTemplateYaml> mapPathsToYaml(List<List<Node>> paths) {
+        List<ServiceTemplateYaml> serviceTemplates = new ArrayList<ServiceTemplateYaml>();
+        List<Graph> tempGraphs = new ArrayList<Graph>();
 
-		List<TServiceTemplate> toscaPaths = new ArrayList<TServiceTemplate>();
+        int i = 0;
+        for (List<Node> path: paths) {
+            Graph tempGraph = new Graph();
+            tempGraph.setId(i++);
+            for (Node node : path)
+                tempGraph.getNodes().put(node.getId(), node);
+            tempGraphs.add(tempGraph);
+        }
 
-		int i = 0;
-		for (Test test: verification.getTests()) {
-			Graph tempGraph = new Graph();
-			tempGraph.setId(i++);
-			for (Node node : test.getPath())
-				tempGraph.getNodes().put(node.getId(), node);
+        for (Graph g: tempGraphs) {
+            serviceTemplates.add(GraphToYaml.mapGraphYaml(g));
+        }
 
-			TServiceTemplate toscaPath = GraphToXml.mapPathToXml(tempGraph);
-			TDocumentation toscaTestResult = new TDocumentation();
-			toscaTestResult.setSource(test.getResult());
-			toscaPath.getDocumentation().add(toscaTestResult);
-			toscaPaths.add(toscaPath);
-		}
-
-		toscaVerification.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().addAll(0, toscaPaths);
-		return toscaVerification;
-	}
+        return serviceTemplates;
+    }
 
 
-	public static VerificationYaml mapVerificationToYaml(Verification verification) {
-		VerificationYaml verificationYaml = new VerificationYaml();
-		verificationYaml.setResult(verification.getResult());
-		verificationYaml.setComment(verification.getComment());
+    public static Definitions mapVerificationToXml(Verification verification) {
+        Definitions toscaVerification = new Definitions();
+        TDocumentation toscaVerificationResult = new TDocumentation();
+        toscaVerificationResult.setSource(verification.getResult() + ": " + verification.getComment());
+        toscaVerification.getDocumentation().add(toscaVerificationResult);
 
-		List<ServiceTemplateYaml> toscaPaths = new ArrayList<ServiceTemplateYaml>();
+        List<TServiceTemplate> toscaPaths = new ArrayList<TServiceTemplate>();
 
-		int i = 0;
-		for (Test test: verification.getTests()) {
-			Graph tempGraph = new Graph();
-			tempGraph.setId(i++);
-			for (Node node : test.getPath())
-				tempGraph.getNodes().put(node.getId(), node);
+        int i = 0;
+        for (Test test: verification.getTests()) {
+            Graph tempGraph = new Graph();
+            tempGraph.setId(i++);
+            for (Node node : test.getPath())
+                tempGraph.getNodes().put(node.getId(), node);
 
-			ServiceTemplateYaml toscaPath = GraphToYaml.mapGraphYaml(tempGraph);
-			toscaPath.getMetadata().put("result", test.getResult());
-			toscaPaths.add(toscaPath);
-		}
+            TServiceTemplate toscaPath = GraphToXml.mapPathToXml(tempGraph);
+            TDocumentation toscaTestResult = new TDocumentation();
+            toscaTestResult.setSource(test.getResult());
+            toscaPath.getDocumentation().add(toscaTestResult);
+            toscaPaths.add(toscaPath);
+        }
 
-		verificationYaml.setPaths(toscaPaths);
-		return verificationYaml;
-	}
-
-
-	/** Return a string that represent the Tosca Configuration in json string.
-	 * 
-	 * The string can be converted in JsonNode to be inserted in Model Configuration.
-	 * 
-	 * Used for: xml-->model 
-	 * @throws JsonProcessingException*/
-	public static String obtainStringConfiguration(it.polito.tosca.jaxb.Configuration nodeConfig) throws JsonProcessingException {
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule();
-		module.addSerializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigSerializer());
-		mapper.registerModule(module);
-
-		String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(nodeConfig);
-		if (stringConfiguration.equals("") || stringConfiguration == null)
-			return "[]";
-		else 
-			return stringConfiguration;
-	}
+        toscaVerification.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().addAll(0, toscaPaths);
+        return toscaVerification;
+    }
 
 
-	/** Return a Tosca Configuration with inside the representation of a model Configuration (only its JsonNode)
-	 * 
-	 * Used for: model-->xml 
-	 * @throws JsonProcessingException */
-	public static it.polito.tosca.jaxb.Configuration obtainToscaConfiguration(it.polito.verigraph.model.Configuration modelConfig, String type) throws JsonProcessingException {
+    public static VerificationYaml mapVerificationToYaml(Verification verification) {
+        VerificationYaml verificationYaml = new VerificationYaml();
+        verificationYaml.setResult(verification.getResult());
+        verificationYaml.setComment(verification.getComment());
 
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule();
+        List<ServiceTemplateYaml> toscaPaths = new ArrayList<ServiceTemplateYaml>();
 
-		//Passing the configuration type to the Deserializer context
-		module.addDeserializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigurationDeserializer());
-		mapper.registerModule(module);
+        int i = 0;
+        for (Test test: verification.getTests()) {
+            Graph tempGraph = new Graph();
+            tempGraph.setId(i++);
+            for (Node node : test.getPath())
+                tempGraph.getNodes().put(node.getId(), node);
 
-		it.polito.tosca.jaxb.Configuration toscaConfig = new it.polito.tosca.jaxb.Configuration();
-		try {
-			toscaConfig = mapper.reader(new InjectableValues.Std().addValue("type", type))
-					.forType(it.polito.tosca.jaxb.Configuration.class)
-					.readValue(modelConfig.getConfiguration());
-		} catch (IOException e) {
-			//TODO shall we suppose that configuration stored on DB are always correct?
-		}
+            ServiceTemplateYaml toscaPath = GraphToYaml.mapGraphYaml(tempGraph);
+            toscaPath.getMetadata().put("result", test.getResult());
+            toscaPaths.add(toscaPath);
+        }
 
-		return toscaConfig;
-	}
+        verificationYaml.setPaths(toscaPaths);
+        return verificationYaml;
+    }
 
-	/** Return a Tosca Configuration from a ConfigurationGrpc
-	 * 
-	 * Used for: grpc-->xml 
-	 * @throws JsonProcessingException */
-	public static it.polito.tosca.jaxb.Configuration obtainToscaConfiguration(ToscaConfigurationGrpc grpcConfig, String type) throws JsonProcessingException {
 
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule();
+    /** Return a string that represent the Tosca Configuration in json string.
+     *
+     * The string can be converted in JsonNode to be inserted in Model Configuration.
+     *
+     * Used for: xml-->model
+     * @throws JsonProcessingException*/
+    public static String obtainStringConfiguration(it.polito.tosca.jaxb.Configuration nodeConfig) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigSerializer());
+        mapper.registerModule(module);
 
-		//Passing the configuration type to the Deserializer context
-		module.addDeserializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigurationDeserializer());
-		mapper.registerModule(module);
+        String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(nodeConfig);
+        if (stringConfiguration.equals("") || stringConfiguration == null)
+            return "[]";
+        else
+            return stringConfiguration;
+    }
 
-		it.polito.tosca.jaxb.Configuration toscaConfig = new it.polito.tosca.jaxb.Configuration();
-		try {
-			toscaConfig = mapper.reader(new InjectableValues.Std().addValue("type", type))
-					.forType(it.polito.tosca.jaxb.Configuration.class)
-					.readValue(grpcConfig.getConfiguration());
-		} catch (IOException e) {
-			//TODO shall we suppose that configuration stored on DB are always correct?
-		}
 
-		return toscaConfig;
-	}
+    /** Return a Tosca Configuration with inside the representation of a model Configuration (only its JsonNode)
+     *
+     * Used for: model-->xml
+     * @throws JsonProcessingException */
+    public static it.polito.tosca.jaxb.Configuration obtainToscaConfiguration(it.polito.verigraph.model.Configuration modelConfig, String type) throws JsonProcessingException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+
+        //Passing the configuration type to the Deserializer context
+        module.addDeserializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigurationDeserializer());
+        mapper.registerModule(module);
+
+        it.polito.tosca.jaxb.Configuration toscaConfig = new it.polito.tosca.jaxb.Configuration();
+        try {
+            toscaConfig = mapper.reader(new InjectableValues.Std().addValue("type", type))
+                    .forType(it.polito.tosca.jaxb.Configuration.class)
+                    .readValue(modelConfig.getConfiguration());
+        } catch (IOException e) {
+            //TODO shall we suppose that configuration stored on DB are always correct?
+        }
+
+        return toscaConfig;
+    }
+
+    /** Return a Tosca Configuration from a ConfigurationGrpc
+     *
+     * Used for: grpc-->xml
+     * @throws JsonProcessingException */
+    public static it.polito.tosca.jaxb.Configuration obtainToscaConfiguration(ToscaConfigurationGrpc grpcConfig, String type) throws JsonProcessingException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+
+        //Passing the configuration type to the Deserializer context
+        module.addDeserializer(it.polito.tosca.jaxb.Configuration.class, new XmlConfigurationDeserializer());
+        mapper.registerModule(module);
+
+        it.polito.tosca.jaxb.Configuration toscaConfig = new it.polito.tosca.jaxb.Configuration();
+        try {
+            toscaConfig = mapper.reader(new InjectableValues.Std().addValue("type", type))
+                    .forType(it.polito.tosca.jaxb.Configuration.class)
+                    .readValue(grpcConfig.getConfiguration());
+        } catch (IOException e) {
+            //TODO shall we suppose that configuration stored on DB are always correct?
+        }
+
+        return toscaConfig;
+    }
 
 }

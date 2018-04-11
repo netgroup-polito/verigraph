@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Politecnico di Torino and others.
+ * Copyright (c) 2017/18 Politecnico di Torino and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Apache License, Version 2.0
@@ -49,112 +49,112 @@ import it.polito.verigraph.tosca.yaml.beans.WebServerNode;
 
 public class YamlParsingUtils {
 
-	public static ServiceTemplateYaml obtainServiceTemplate(String filePath) throws InvalidServiceTemplateException {
-		ServiceTemplateYaml yamlServiceTemplate = new ServiceTemplateYaml();
-		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-		mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+    public static ServiceTemplateYaml obtainServiceTemplate(String filePath) throws InvalidServiceTemplateException {
+        ServiceTemplateYaml yamlServiceTemplate = new ServiceTemplateYaml();
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
 
-		try {
-			yamlServiceTemplate = mapper.readValue(new File(filePath), ServiceTemplateYaml.class);
-			return yamlServiceTemplate;
+        try {
+            yamlServiceTemplate = mapper.readValue(new File(filePath), ServiceTemplateYaml.class);
+            return yamlServiceTemplate;
 
-		} catch (JsonParseException e) {
-			throw new InvalidServiceTemplateException("The NodeTemplate IDs and the RelationshipTemplate IDs must be unique.");
-		} catch (JsonMappingException e) {
-			throw new InvalidServiceTemplateException("The provided file does not match the expected structure.");
-		} catch (InvalidServiceTemplateException e) {
-			throw new InvalidServiceTemplateException("The provided template contains errors or missing informations.");
-		} catch (IOException e) {
-			throw new InvalidServiceTemplateException("I/O error.");
-		}
+        } catch (JsonParseException e) {
+            throw new InvalidServiceTemplateException("The NodeTemplate IDs and the RelationshipTemplate IDs must be unique.");
+        } catch (JsonMappingException e) {
+            throw new InvalidServiceTemplateException("The provided file does not match the expected structure.");
+        } catch (InvalidServiceTemplateException e) {
+            throw new InvalidServiceTemplateException("The provided template contains errors or missing informations.");
+        } catch (IOException e) {
+            throw new InvalidServiceTemplateException("I/O error.");
+        }
 
-	}
-
-
-	public static Map<String, NodeTemplateYaml> obtainNodeTemplates(ServiceTemplateYaml yamlService) throws DataNotFoundException {
-		TopologyTemplateYaml yamlTopology;
-		try {
-			yamlTopology = yamlService.getTopology_template();
-		} catch(NullPointerException ex) {
-			throw new DataNotFoundException("The ServiceTemplate provided does not contain a TopologyTemplate.");
-		}
-		try {
-			Map<String, NodeTemplateYaml> nodes = yamlTopology.getNode_templates();
-			return nodes;
-		} catch(NullPointerException ex) {
-			throw new DataNotFoundException("The ServiceTemplate provided does not contain any NodeTemplates.");
-		}
-
-	}
+    }
 
 
-	public static Map<String, RelationshipTemplateYaml> obtainRelationshipTemplates(ServiceTemplateYaml yamlService) throws DataNotFoundException {
-		TopologyTemplateYaml yamlTopology;
-		try {
-			yamlTopology = yamlService.getTopology_template();
-		} catch(NullPointerException ex) {
-			throw new DataNotFoundException("The ServiceTemplate provided does not contain a TopologyTemplate.");
-		}
-		try {
-			Map<String,RelationshipTemplateYaml> relats = yamlTopology.getRelationship_templates();
-			return relats;
-		} catch(NullPointerException ex) {
-			throw new DataNotFoundException("The ServiceTemplate provided does not contain any RelationshipTemplates.");
-		}
+    public static Map<String, NodeTemplateYaml> obtainNodeTemplates(ServiceTemplateYaml yamlService) throws DataNotFoundException {
+        TopologyTemplateYaml yamlTopology;
+        try {
+            yamlTopology = yamlService.getTopology_template();
+        } catch(NullPointerException ex) {
+            throw new DataNotFoundException("The ServiceTemplate provided does not contain a TopologyTemplate.");
+        }
+        try {
+            Map<String, NodeTemplateYaml> nodes = yamlTopology.getNode_templates();
+            return nodes;
+        } catch(NullPointerException ex) {
+            throw new DataNotFoundException("The ServiceTemplate provided does not contain any NodeTemplates.");
+        }
 
-	}
+    }
 
 
-	public static String obtainConfiguration(NodeTemplateYaml node) throws BadRequestException {
-		ConfigurationYaml yamlConfiguration = null;		
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule();
-		module.addSerializer(ConfigurationYaml.class, new YamlConfigSerializer());
-		mapper.registerModule(module);
+    public static Map<String, RelationshipTemplateYaml> obtainRelationshipTemplates(ServiceTemplateYaml yamlService) throws DataNotFoundException {
+        TopologyTemplateYaml yamlTopology;
+        try {
+            yamlTopology = yamlService.getTopology_template();
+        } catch(NullPointerException ex) {
+            throw new DataNotFoundException("The ServiceTemplate provided does not contain a TopologyTemplate.");
+        }
+        try {
+            Map<String,RelationshipTemplateYaml> relats = yamlTopology.getRelationship_templates();
+            return relats;
+        } catch(NullPointerException ex) {
+            throw new DataNotFoundException("The ServiceTemplate provided does not contain any RelationshipTemplates.");
+        }
 
-		// Find out node type, retrieve the corresponding configuration and convert it properly
-		try {
-			if(node instanceof AntispamNode) {
-				yamlConfiguration = ((AntispamNode)node).getProperties();
-			}else if(node instanceof CacheNode) {
-				yamlConfiguration = ((CacheNode)node).getProperties();
-			}else if(node instanceof DpiNode) {
-				yamlConfiguration = ((DpiNode)node).getProperties();
-			}else if(node instanceof EndhostNode) {
-				yamlConfiguration = ((EndhostNode)node).getProperties();
-			}else if(node instanceof EndpointNode) {
-				yamlConfiguration = ((EndpointNode)node).getProperties();
-			}else if(node instanceof FieldModifierNode) {
-				yamlConfiguration = ((FieldModifierNode)node).getProperties();
-			}else if(node instanceof FirewallNode) {
-				yamlConfiguration = ((FirewallNode)node).getProperties();
-			}else if(node instanceof MailClientNode) {
-				yamlConfiguration = ((MailClientNode)node).getProperties();
-			}else if(node instanceof MailServerNode) {
-				yamlConfiguration = ((MailServerNode)node).getProperties();
-			}else if(node instanceof NatNode) {
-				yamlConfiguration = ((NatNode)node).getProperties();
-			}else if(node instanceof VpnAccessNode) {
-				yamlConfiguration = ((VpnAccessNode)node).getProperties();
-			}else if(node instanceof VpnExitNode) {
-				yamlConfiguration = ((VpnExitNode)node).getProperties();
-			}else if(node instanceof WebClientNode) {
-				yamlConfiguration = ((WebClientNode)node).getProperties();
-			}else if(node instanceof WebServerNode) {
-				yamlConfiguration = ((WebServerNode)node).getProperties();
-			}else {
-				throw new BadRequestException("The provided node is of unknown type, unable to retrieve the node configuration");
-			}
+    }
 
-			String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(yamlConfiguration);
-			if (!stringConfiguration.equals("null"))
-				return stringConfiguration;
-			else 
-				return "[]";
 
-		} catch (JsonProcessingException | NullPointerException e) {
-			throw new BadRequestException("Not able to retrieve a valid configuration");
-		} 
-	}	
+    public static String obtainConfiguration(NodeTemplateYaml node) throws BadRequestException {
+        ConfigurationYaml yamlConfiguration = null;
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(ConfigurationYaml.class, new YamlConfigSerializer());
+        mapper.registerModule(module);
+
+        // Find out node type, retrieve the corresponding configuration and convert it properly
+        try {
+            if(node instanceof AntispamNode) {
+                yamlConfiguration = ((AntispamNode)node).getProperties();
+            }else if(node instanceof CacheNode) {
+                yamlConfiguration = ((CacheNode)node).getProperties();
+            }else if(node instanceof DpiNode) {
+                yamlConfiguration = ((DpiNode)node).getProperties();
+            }else if(node instanceof EndhostNode) {
+                yamlConfiguration = ((EndhostNode)node).getProperties();
+            }else if(node instanceof EndpointNode) {
+                yamlConfiguration = ((EndpointNode)node).getProperties();
+            }else if(node instanceof FieldModifierNode) {
+                yamlConfiguration = ((FieldModifierNode)node).getProperties();
+            }else if(node instanceof FirewallNode) {
+                yamlConfiguration = ((FirewallNode)node).getProperties();
+            }else if(node instanceof MailClientNode) {
+                yamlConfiguration = ((MailClientNode)node).getProperties();
+            }else if(node instanceof MailServerNode) {
+                yamlConfiguration = ((MailServerNode)node).getProperties();
+            }else if(node instanceof NatNode) {
+                yamlConfiguration = ((NatNode)node).getProperties();
+            }else if(node instanceof VpnAccessNode) {
+                yamlConfiguration = ((VpnAccessNode)node).getProperties();
+            }else if(node instanceof VpnExitNode) {
+                yamlConfiguration = ((VpnExitNode)node).getProperties();
+            }else if(node instanceof WebClientNode) {
+                yamlConfiguration = ((WebClientNode)node).getProperties();
+            }else if(node instanceof WebServerNode) {
+                yamlConfiguration = ((WebServerNode)node).getProperties();
+            }else {
+                throw new BadRequestException("The provided node is of unknown type, unable to retrieve the node configuration");
+            }
+
+            String stringConfiguration = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(yamlConfiguration);
+            if (!stringConfiguration.equals("null"))
+                return stringConfiguration;
+            else
+                return "[]";
+
+        } catch (JsonProcessingException | NullPointerException e) {
+            throw new BadRequestException("Not able to retrieve a valid configuration");
+        }
+    }
 
 }

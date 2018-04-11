@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Politecnico di Torino and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Apache License, Version 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *******************************************************************************/
 package it.polito.verigraph.providers;
 
 import com.sun.research.ws.wadl.ObjectFactory;
@@ -29,7 +37,8 @@ public class XmlReaderProvider implements MessageBodyReader<Graph> {
         return Graph.class == type;
     }
 
-    public Graph readFrom(Class<Graph> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
+    public Graph readFrom(Class<Graph> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+            MultivaluedMap<String, String> httpHeaders,
                           InputStream entityStream) throws WebApplicationException {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class, TDefinitions.class, Configuration.class);

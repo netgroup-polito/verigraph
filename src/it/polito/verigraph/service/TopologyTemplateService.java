@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Politecnico di Torino and others.
+ * Copyright (c) 2017/18 Politecnico di Torino and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Apache License, Version 2.0
@@ -32,101 +32,101 @@ import it.polito.verigraph.tosca.yaml.beans.ServiceTemplateYaml;
 
 public class TopologyTemplateService {
 
-	private Neo4jDBManager manager = new Neo4jDBManager();
-	public static VerigraphLogger vlogger = VerigraphLogger.getVerigraphlogger();
+    private Neo4jDBManager manager = new Neo4jDBManager();
+    public static VerigraphLogger vlogger = VerigraphLogger.getVerigraphlogger();
 
-	public TopologyTemplateService() {}
+    public TopologyTemplateService() {}
 
-	//XML methods
+    //XML methods
 
-	public List<Definitions> getAllTopologyTemplates() throws JsonProcessingException, MyNotFoundException {
-		List<Graph> verigraphResult;
-		List<Definitions> result = new ArrayList<Definitions>();
+    public List<Definitions> getAllTopologyTemplates() throws JsonProcessingException, MyNotFoundException {
+        List<Graph> verigraphResult;
+        List<Definitions> result = new ArrayList<Definitions>();
 
-		verigraphResult = manager.getGraphs();
-		for(Graph g : verigraphResult){
-			validateGraph(g);
-			result.add(GraphToXml.mapGraph(g));
-		}
-		return result;
-	}
-
-
-	public Definitions addTopologyTemplate(Definitions topologyTemplate) throws JAXBException, IOException, MyInvalidIdException {
-		Graph graph = XmlToGraph.mapTopologyTemplate(topologyTemplate);
-		validateGraph(graph);
-
-		Graph newGraph = manager.addGraph(graph);
-		validateGraph(newGraph);
-		Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
-
-		return newTopologyTemplate;
-	}
+        verigraphResult = manager.getGraphs();
+        for(Graph g : verigraphResult){
+            validateGraph(g);
+            result.add(GraphToXml.mapGraph(g));
+        }
+        return result;
+    }
 
 
-	public Definitions getTopologyTemplate(long id) throws JsonParseException, JsonMappingException, JAXBException, IOException {
-		if (id < 0) {
-			throw new ForbiddenException("Illegal topology template id: " + id);
-		}
-		Graph localGraph = manager.getGraph(id);
-		validateGraph(localGraph);
-		return GraphToXml.mapGraph(localGraph);
-	}
+    public Definitions addTopologyTemplate(Definitions topologyTemplate) throws JAXBException, IOException, MyInvalidIdException {
+        Graph graph = XmlToGraph.mapTopologyTemplate(topologyTemplate);
+        validateGraph(graph);
 
-	//    public TopologyTemplate updateTopologyTemplate(TTopologyTemplate graph) throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
-	//        if (graph.getId() < 0) {
-	//            throw new ForbiddenException("Illegal graph id: " + graph.getId());
-	//        }
-	//        validateTopologyTemplate(graph);
-	//        TTopologyTemplate localTopologyTemplate=new TTopologyTemplate();
-	//        localTopologyTemplate=manager.updateTopologyTemplate(graph);
-	//        vlogger.logger.info("TopologyTemplate updated");
-	//        validateTopologyTemplate(localTopologyTemplate);
-	//        return localTopologyTemplate;
-	//    }
-	//
-	//
-	//    public void removeTopologyTemplate(long id) {
-	//
-	//        if (id < 0) {
-	//            throw new ForbiddenException("Illegal graph id: " + id);
-	//        }
-	//        manager.deleteTopologyTemplate(id);
-	//    }
-	//
-	//    public TTopologyTemplate addTopologyTemplate(TTopologyTemplate graph) throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
-	//        validateTopologyTemplate(graph);
-	//        TTopologyTemplate g=manager.addTopologyTemplate(graph);
-	//        validateTopologyTemplate(g);
-	//        return g;
-	//    }
+        Graph newGraph = manager.addGraph(graph);
+        validateGraph(newGraph);
+        Definitions newTopologyTemplate = GraphToXml.mapGraph(newGraph);
 
-	public static void validateGraph(Graph graph) throws JsonProcessingException {
-		for (Node node : graph.getNodes().values()) {
-			NodeService.validateNode(graph, node);
-		}
-	}
+        return newTopologyTemplate;
+    }
 
-	//YAML methods
 
-	public List<ServiceTemplateYaml> getAllTopologyTemplatesYaml() throws JsonProcessingException, MyNotFoundException {
-		List<Graph> verigraphResult;
-		List<ServiceTemplateYaml> result = new ArrayList<ServiceTemplateYaml>();
+    public Definitions getTopologyTemplate(long id) throws JsonParseException, JsonMappingException, JAXBException, IOException {
+        if (id < 0) {
+            throw new ForbiddenException("Illegal topology template id: " + id);
+        }
+        Graph localGraph = manager.getGraph(id);
+        validateGraph(localGraph);
+        return GraphToXml.mapGraph(localGraph);
+    }
 
-		verigraphResult = manager.getGraphs();
-		for(Graph g : verigraphResult){
-			validateGraph(g);
-			result.add(GraphToYaml.mapGraphYaml(g));
-		}
-		return result;
-	}
+    //    public TopologyTemplate updateTopologyTemplate(TTopologyTemplate graph) throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
+    //        if (graph.getId() < 0) {
+    //            throw new ForbiddenException("Illegal graph id: " + graph.getId());
+    //        }
+    //        validateTopologyTemplate(graph);
+    //        TTopologyTemplate localTopologyTemplate=new TTopologyTemplate();
+    //        localTopologyTemplate=manager.updateTopologyTemplate(graph);
+    //        vlogger.logger.info("TopologyTemplate updated");
+    //        validateTopologyTemplate(localTopologyTemplate);
+    //        return localTopologyTemplate;
+    //    }
+    //
+    //
+    //    public void removeTopologyTemplate(long id) {
+    //
+    //        if (id < 0) {
+    //            throw new ForbiddenException("Illegal graph id: " + id);
+    //        }
+    //        manager.deleteTopologyTemplate(id);
+    //    }
+    //
+    //    public TTopologyTemplate addTopologyTemplate(TTopologyTemplate graph) throws JAXBException, JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
+    //        validateTopologyTemplate(graph);
+    //        TTopologyTemplate g=manager.addTopologyTemplate(graph);
+    //        validateTopologyTemplate(g);
+    //        return g;
+    //    }
 
-	public ServiceTemplateYaml getTopologyTemplateYaml(long graphId) throws JAXBException, JsonProcessingException, JsonMappingException, IOException {
-		if (graphId < 0) {
-			throw new ForbiddenException("Illegal topology template id: " + graphId);
-		}
-		Graph localGraph = manager.getGraph(graphId);
-		validateGraph(localGraph);
-		return GraphToYaml.mapGraphYaml(localGraph);
-	}
+    public static void validateGraph(Graph graph) throws JsonProcessingException {
+        for (Node node : graph.getNodes().values()) {
+            NodeService.validateNode(graph, node);
+        }
+    }
+
+    //YAML methods
+
+    public List<ServiceTemplateYaml> getAllTopologyTemplatesYaml() throws JsonProcessingException, MyNotFoundException {
+        List<Graph> verigraphResult;
+        List<ServiceTemplateYaml> result = new ArrayList<ServiceTemplateYaml>();
+
+        verigraphResult = manager.getGraphs();
+        for(Graph g : verigraphResult){
+            validateGraph(g);
+            result.add(GraphToYaml.mapGraphYaml(g));
+        }
+        return result;
+    }
+
+    public ServiceTemplateYaml getTopologyTemplateYaml(long graphId) throws JAXBException, JsonProcessingException, JsonMappingException, IOException {
+        if (graphId < 0) {
+            throw new ForbiddenException("Illegal topology template id: " + graphId);
+        }
+        Graph localGraph = manager.getGraph(graphId);
+        validateGraph(localGraph);
+        return GraphToYaml.mapGraphYaml(localGraph);
+    }
 }
