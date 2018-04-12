@@ -1,0 +1,82 @@
+##############################################################################
+# Copyright (c) 2018 Politecnico di Torino and others.
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+tosca_definitions_version: http://docs.oasis-open.org/tosca/ns/simple/yaml/1.0
+
+metadata:
+  template_name: MyDummyService
+  template_author: Dummy
+  template_version: Dummy1.0
+  template_id: 99
+
+description: sample of Tosca yaml service template exploiting verigraph
+
+repositories:
+  verigraph_repository:
+    url: https://github.com/netgroup-polito/verigraph
+
+imports:
+  - file: ./schema/tosca/yamlToscaDefinitions.yaml
+    repository: verigraph_repository
+    namespace_uri: #tobe defined
+    namespace_prefix: vt
+
+topology_template:
+  node_templates:
+    100:
+      name : host1
+      type: verigraph.nodeTypes.Endhost
+      properties:
+        body: this_is_the_body
+        protocol : HTTP_REQUEST
+        destination: webserver
+
+    101:
+      name : host2
+      type: verigraph.nodeTypes.Endpoint
+
+    102:
+      name : antispam1
+      type: verigraph.nodeTypes.Antispam
+      properties:
+        sources:
+          - host1
+          - host2
+
+    103:
+      name : firewall1
+      type: verigraph.nodeTypes.Firewall
+      properties:
+        elements:
+           host1: "host2"
+
+    104:
+      name : mailClient1
+      type: verigraph.nodeTypes.MailClientNotExisting
+      properties:
+        mailserver : mail.polito.it
+
+    105:
+      name : mail.polito.it
+      type: verigraph.nodeTypes.MailServer
+
+  relationship_templates:
+    900:
+      type: verigraph.relationshipType.generic
+      properties:
+        name: 100to101
+        source_id: 100
+        target_id: 101
+
+    901:
+      type: verigraph.relationshipType.generic
+      properties:
+        name: 102to103
+        source_id: 102
+        target_id: 103

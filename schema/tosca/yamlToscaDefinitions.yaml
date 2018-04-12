@@ -1,0 +1,157 @@
+##############################################################################
+# Copyright (c) 2018 Politecnico di Torino and others.
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+#Tosca definitions for Verigraph extension in Tosca Yaml simple profile
+
+tosca_definitions_version: http://docs.oasis-open.org/tosca/ns/simple/yaml/1.0
+
+description: node type definitions exetending tosca types for support to Verigraph verification system
+
+node_types:
+  verigraph.types.Antispam:
+    derived_from: tosca.nodes.Root
+    description: verigraph Antispam node
+    properties:
+      sources:
+        type: list
+        entry_schema:
+          type: string
+
+  verigraph.types.Cache:
+    derived_from: tosca.nodes.Root
+    description: verigraph Cache node
+    properties:
+      resources:
+        type: list
+        entry_schema:
+          type: string
+
+  verigraph.types.Dpi:
+    derived_from: tosca.nodes.Root
+    description: verigraph Dpi node
+    properties:
+      notAllowedList:
+        type: list
+        entry_schema:
+          type: string
+
+  verigraph.types.Endhost:
+    derived_from: tosca.nodes.Root
+    description: verigraph endhost node
+    attributes:
+      body:
+        type: string
+      sequence:
+        type: integer
+      protocol:
+        type: string
+        constraints:
+          - valid_values: [ HTTP_REQUEST, HTTP_RESPONSE, POP3_REQUEST, POP3_RESOPONSE ]
+      email_from:
+        type: string
+      url:
+        type: string
+      options:
+        type: string
+      destination:
+        type: string
+
+  verigraph.types.Endpoint:
+    derived_from: tosca.nodes.Root
+    description: verigraph Endpoint node
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string
+
+  verigraph.types.FieldModifier:
+    derived_from: tosca.nodes.Root
+    description: verigraph Field Modifier node
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string
+
+  verigraph.types.Firewall:
+    derived_from: tosca.nodes.Root
+    description: verigraph Firewall node
+    properties:
+      elements:
+        type: map
+        entry_schema:
+          description: "source : destination" firewall mapping
+          type: string
+
+  verigraph.types.MailClient:
+    derived_from: tosca.nodes.Root
+    description: verigraph Mail Client node
+    attributes:
+      mailserver:
+        type: string
+
+  verigraph.types.MailServer:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph Mail Server node
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string
+
+  verigraph.types.Nat:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph Nat node
+    properties:
+      sources:
+        type: list
+        entry_schema:
+          type: string
+
+  verigraph.types.VpnAccess:
+    deriver_from: tosca.nodes.Root
+    descrtiption: verigraph Vpn Access node
+    attributes:
+      vpnexit:
+        type: string
+
+  verigraph.types.VpnExit:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph Vpn Exit node
+    attributes:
+      vpnaccess:
+        type: string
+
+  verigraph.types.WebClient:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph web Client node
+    attributes:
+      nameWebServer:
+        type: string
+
+  verigraph.types.WebServer:
+    derived_from: tosca.nodes.Root
+    descrtiption: verigraph web Server node
+    properties:
+      names:
+        type: list
+        entry_schema:
+          type: string
+
+relationship_types:
+  verigraph.relationshipType.generic:
+    derived_from: tosca.relationships.Root
+    properties:
+      name:
+        type: string
+      source_id:
+        type: string
+      target_id:
+        type: string

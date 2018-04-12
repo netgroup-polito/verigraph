@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
  Copyright (c) 2017 Politecnico di Torino and others.
-
  All rights reserved. This program and the accompanying materials
  are made available under the terms of the Apache License, Version 2.0
  which accompanies this distribution, and is available at
@@ -31,6 +30,8 @@
   <property name="test2.class" value="it.polito.verigraph.grpc.test.GrpcTest" />
   <property name="test3.class" value="it.polito.verigraph.grpc.test.MultiThreadTest" />
   <property name="test4.class" value="it.polito.verigraph.grpc.test.ReachabilityTest" />
+  <!-- Tosca grpc test class -->
+  <property name="testToscaGrpc.class" value="it.polito.verigraph.grpc.tosca.test.GrpcToscaTest" />
   <!-- The name to be given to the final zip -->
   <property name="sol.zip" value="grpc.zip" />
   <!-- Java compiler settings -->
@@ -43,7 +44,7 @@
   <path id="test.classpath">
     <pathelement path="${build.dir}" />
     <fileset dir="${grpc.location}/lib">
-        <include name="com.microsoft.z3.jar" />
+      <include name="com.microsoft.z3.jar" />
     </fileset>
     <fileset refid="mvn-dependencies" />
   </path>
@@ -65,7 +66,7 @@
   </artifact:dependencies>-->
 
   <path id="build.classpath">
-      <fileset refid="mvn-dependencies" />
+    <fileset refid="mvn-dependencies" />
   </path>
 
   <!-- target name="init">
@@ -77,7 +78,7 @@
   <!--target name="gRPC-build" depends="init" description="Build the sources"-->
   <target name="gRPC-build" description="Build the sources">
     <echo>Building gRPC (if needed)...</echo>
-      <javac
+    <javac
         debug="${debug}"
         debuglevel="${debuglevel}"
         source="${source}"
@@ -85,18 +86,18 @@
         destdir="${build.dir}"
         classpathref="build.classpath"
         includeantruntime="false">
-        <src path="${generated.dir}" />
-        <src path="${src.dir}" />
-        <src path="${grpc.location}/gen-src"/>
-        <compilerarg value="-Xlint:unchecked"/>
-        <classpath>
-          <pathelement path="${grpc.location}/lib/com.microsoft.z3.jar"/>
-        </classpath>
-        <include name="$it/polito/**/**/*.java"/>
-        <!-- classpath>
+      <src path="${generated.dir}" />
+      <src path="${src.dir}" />
+      <src path="${grpc.location}/gen-src"/>
+      <compilerarg value="-Xlint:unchecked"/>
+      <classpath>
+        <pathelement path="${grpc.location}/lib/com.microsoft.z3.jar"/>
+      </classpath>
+      <include name="$it/polito/**/**/*.java"/>
+      <!-- classpath>
           <pathelement path="${other_lib.dir}/qjutils.jar"/>
         </classpath-->
-      </javac>
+    </javac>
     <echo>Done.</echo>
   </target>
 
@@ -104,20 +105,21 @@
   <!-- The target for running the gRPC application -->
   <target name="gRPC-run" depends="gRPC-build" description="Run gRPC">
     <parallel>
-       <sequential>
-          <java classname="it.polito.verigraph.grpc.Service" failonerror="true" classpathref="build.classpath" fork="yes">
-            <classpath>
-              <pathelement path="${build.dir}"/>
-            </classpath>
-            </java>
-        </sequential>
-        <sequential>
-          <sleep milliseconds="500"/>
-            <java classname="it.polito.verigraph.grpc.Client" failonerror="true" classpathref="build.classpath" fork="yes">
-           <classpath>
-          <pathelement path="${build.dir}"/>
-        </classpath>
-           </java>
+      <sequential>
+        <java classname="it.polito.verigraph.grpc.Service" failonerror="true" classpathref="build.classpath" fork="yes">
+          <classpath>
+            <pathelement path="${build.dir}"/>
+            <path refid="test.classpath" />
+          </classpath>
+        </java>
+      </sequential>
+      <sequential>
+        <sleep milliseconds="500"/>
+        <java classname="it.polito.verigraph.grpc.Client" failonerror="true" classpathref="build.classpath" fork="yes">
+          <classpath>
+            <pathelement path="${build.dir}"/>
+          </classpath>
+        </java>
       </sequential>
     </parallel>
   </target>
@@ -136,6 +138,7 @@
     <java classname="it.polito.verigraph.grpc.server.Service" failonerror="true" classpathref="build.classpath" fork="yes">
       <classpath>
         <pathelement path="${build.dir}"/>
+        <path refid="test.classpath" />
       </classpath>
     </java>
   </target>
@@ -151,6 +154,19 @@
     </antcall>
   </target>
 
+  <!-- Run Tosca Grpc Tests -->
+  <target name="gRPC-tosca-run-tests" description="Run tests for Tosca implementation of gRPC">
+    <echo>Running grpc tests...</echo>
+    <junit printsummary="yes" dir="." fork="yes" haltonfailure="no" showoutput="yes" filtertrace="true" timeout="120000">
+      <jvmarg value="-Djava.awt.headless=true" />
+      <formatter type="brief" usefile="false" />
+      <test haltonfailure="no" failureproperty="test_failed" name="${testToscaGrpc.class}" />
+      <classpath>
+        <path refid="test.classpath" />
+      </classpath>
+    </junit>
+    <fail if="test_failed" message="*** JUnit tests for gRPC Tosca completed: some Tests FAILED ***" />
+  </target>
 
   <!-- Target runFuncTest.real  -->
   <target name="runFuncTest.real" depends="gRPC-build">

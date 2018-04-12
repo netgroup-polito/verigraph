@@ -15,9 +15,13 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
+import it.polito.verigraph.exception.BadRequestException;
+import it.polito.verigraph.exception.DataNotFoundException;
+import it.polito.verigraph.exception.ForbiddenException;
 import it.polito.verigraph.grpc.ConfigurationGrpc;
 import it.polito.verigraph.grpc.GetRequest;
 import it.polito.verigraph.grpc.GraphGrpc;
@@ -25,15 +29,17 @@ import it.polito.verigraph.grpc.NeighbourGrpc;
 import it.polito.verigraph.grpc.NewGraph;
 import it.polito.verigraph.grpc.NewNeighbour;
 import it.polito.verigraph.grpc.NewNode;
+import it.polito.verigraph.grpc.NewTopologyTemplate;
 import it.polito.verigraph.grpc.NodeGrpc;
 import it.polito.verigraph.grpc.Policy;
 import it.polito.verigraph.grpc.RequestID;
 import it.polito.verigraph.grpc.Status;
+import it.polito.verigraph.grpc.TopologyTemplateGrpc;
+import it.polito.verigraph.grpc.ToscaPolicy;
+import it.polito.verigraph.grpc.ToscaRequestID;
+import it.polito.verigraph.grpc.ToscaVerificationGrpc;
 import it.polito.verigraph.grpc.VerificationGrpc;
 import it.polito.verigraph.grpc.VerigraphGrpc;
-import it.polito.verigraph.exception.BadRequestException;
-import it.polito.verigraph.exception.DataNotFoundException;
-import it.polito.verigraph.exception.ForbiddenException;
 import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
@@ -44,6 +50,8 @@ import it.polito.verigraph.service.GraphService;
 import it.polito.verigraph.service.NeighbourService;
 import it.polito.verigraph.service.NodeService;
 import it.polito.verigraph.service.VerificationService;
+import it.polito.verigraph.tosca.converter.grpc.GraphToGrpc;
+import it.polito.verigraph.tosca.converter.grpc.GrpcToGraph;
 
 public class Service {
     /** Port on which the server should run. */
@@ -107,7 +115,7 @@ public class Service {
         }
     }
 
-    /**Here start method of my implementation*/
+    /** Here start methods */
     private class VerigraphImpl extends VerigraphGrpc.VerigraphImplBase{
 
         /** Here start methods of GraphResource*/
@@ -307,8 +315,7 @@ public class Service {
 
         @Override
         public void updateNode(NodeGrpc request, StreamObserver<NewNode> responseObserver) {
-            NewNode.Builder response = NewNode.newBuilder(); 
-            try{
+            NewNode.Builder response = NewNode.newBuilder();            try{
                 Node node = GrpcUtils.deriveNode(request);
                 node.setId(request.getId());
                 Node newNode = nodeService.updateNode(request.getIdGraph(), node);
@@ -340,7 +347,8 @@ public class Service {
                 }
                 Node node = nodeService.getNode(request.getIdGraph(), request.getIdNode());
                 if (node == null){
-                    throw new BadRequestException("Node with id " + request.getIdNode() + " not found in graph with id " + request.getIdGraph());
+                    throw new BadRequestException("Node with id " + request.getIdNode() +
+                            " not found in graph with id " + request.getIdGraph());
                 }
                 Configuration nodeConfiguration = GrpcUtils.deriveConfiguration(request);
                 Node nodeCopy = new Node();
@@ -386,8 +394,7 @@ public class Service {
                 NeighbourGrpc nr = NeighbourGrpc.newBuilder().setErrorMessage(internalError).build();
                 responseObserver.onNext(nr);
                 logger.log(Level.WARNING, ex.getMessage());
-            }           
-            responseObserver.onCompleted();
+            }                      responseObserver.onCompleted();
         }
 
         @Override
@@ -462,5 +469,149 @@ public class Service {
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
         }
+
+        /** Here start methods of TOSCA gRPC server */             @Override
+        public void getTopologyTemplates (GetRequest request, StreamObserver<TopologyTemplateGrpc> responseObserver) {
+            boolean not_correct = false;
+            try {
+                for(Graph item : graphService.getAllGraphs()) {
+                    TopologyTemplateGrpc topol = GraphToGrpc.obtainTopologyTemplate(item);
+                    responseObserver.onNext(topol);
+                }
+            } catch(Exception ex){
+                logger.log(Level.WARNING, ex.getMessage());
+                not_correct = true;
+            }
+            if(not_correct)
+                responseObserver.onNext(TopologyTemplateGrpc.newBuilder()
+                        .setErrorMessage("Internal Server Error while retrieving TopologyTemplate").build());
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void getTopologyTemplate (ToscaRequestID request, StreamObserver<TopologyTemplateGrpc> responseObserver) {
+            try {
+                Long graphID = Long.valueOf(request.getIdTopologyTemplate());
+                //this method will throw a NumberFormatException in case the ID is not representable as a long
+                Graph graph = graphService.getGraph(graphID);
+                TopologyTemplateGrpc topol = GraphToGrpc.obtainTopologyTemplate(graph);
+                responseObserver.onNext(topol);
+            } catch(ForbiddenException | DataNotFoundException ex) {
+                TopologyTemplateGrpc topolError = TopologyTemplateGrpc.newBuilder().setErrorMessage(ex.getMessage()).build();
+                responseObserver.onNext(topolError);
+                logger.log(Level.WARNING, ex.getMessage());
+            } catch(NumberFormatException ex) {
+                TopologyTemplateGrpc topolError = TopologyTemplateGrpc.newBuilder()
+                        .setErrorMessage("The TopologyTemplate ID must be a long value.").build();
+                responseObserver.onNext(topolError);
+                logger.log(Level.WARNING, ex.getMessage());
+            } catch(Exception ex) {
+                TopologyTemplateGrpc topolError = TopologyTemplateGrpc.newBuilder().setErrorMessage(internalError).build();
+                responseObserver.onNext(topolError);
+                logger.log(Level.WARNING, ex.getMessage());
+            }
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void createTopologyTemplate (TopologyTemplateGrpc request, StreamObserver<NewTopologyTemplate> responseObserver) {
+            NewTopologyTemplate.Builder response = NewTopologyTemplate.newBuilder();
+            try{
+                Graph graph = GrpcToGraph.deriveGraph(request);
+                Graph newGraph = graphService.addGraph(graph);
+                response.setSuccess(true).setTopologyTemplate(GraphToGrpc.obtainTopologyTemplate(newGraph));
+                } catch(BadRequestException ex) {
+                ex.printStackTrace();
+                response.setSuccess(false).setErrorMessage("Provided invalid request to the service.");
+                logger.log(Level.WARNING, ex.getClass().toString());
+                logger.log(Level.WARNING, ex.getMessage());
+            } catch(Exception ex) {
+                ex.printStackTrace();
+                response.setSuccess(false).setErrorMessage(internalError);
+                logger.log(Level.WARNING, ex.getClass().toString());
+                logger.log(Level.WARNING, ex.getMessage());
+            }
+            responseObserver.onNext(response.build());
+            responseObserver.onCompleted();
+        }
+
+
+        @Override
+        public void updateTopologyTemplate (TopologyTemplateGrpc request, StreamObserver<NewTopologyTemplate> responseObserver) {
+            NewTopologyTemplate.Builder response = NewTopologyTemplate.newBuilder();
+            try{
+                Graph graph = GrpcToGraph.deriveGraph(request);
+                Graph newGraph = graphService.updateGraph(graph);
+                response.setSuccess(true).setTopologyTemplate(GraphToGrpc.obtainTopologyTemplate(newGraph));
+            } catch(ForbiddenException | DataNotFoundException | BadRequestException ex){
+                response.setSuccess(false).setErrorMessage(ex.getMessage());
+                logger.log(Level.WARNING, ex.getMessage());
+            } catch(Exception ex){
+                response.setSuccess(false).setErrorMessage(internalError);
+                logger.log(Level.WARNING, ex.getMessage());
+            }
+            responseObserver.onNext(response.build());
+            responseObserver.onCompleted();
+        }
+
+
+        @Override
+        public void deleteTopologyTemplate (ToscaRequestID request, StreamObserver<Status> responseObserver) {
+            Status.Builder response = Status.newBuilder();
+            Long graphID = null;
+            try{
+                graphID = Long.valueOf(request.getIdTopologyTemplate());
+                //this method will throw a NumberFormatException in case the ID is not representable as a long
+                graphService.removeGraph(graphID);
+                response.setSuccess(true);
+            } catch(ForbiddenException | DataNotFoundException ex) {
+                response.setSuccess(false).setErrorMessage(ex.getMessage());
+                logger.log(Level.WARNING, ex.getMessage());
+            } catch(NumberFormatException ex) {
+                response.setSuccess(false).setErrorMessage("The TopologyTemplate ID must be a long value.");
+                logger.log(Level.WARNING, ex.getMessage());
+            } catch(Exception ex) {
+                response.setSuccess(false).setErrorMessage(internalError);
+                logger.log(Level.WARNING, ex.getMessage());
+            }
+            responseObserver.onNext(response.build());
+            responseObserver.onCompleted();
+        }
+
+
+        @Override
+        public void verifyToscaPolicy(ToscaPolicy request, StreamObserver<ToscaVerificationGrpc> responseObserver) {
+            try{
+                //Convert request
+                VerificationBean verify = new VerificationBean();
+                verify.setDestination(request.getDestination());
+                verify.setSource(request.getSource());
+                verify.setType(request.getType().toString());
+                verify.setMiddlebox(request.getMiddlebox());
+
+                //Convert Response
+                Long graphID = Long.valueOf(request.getIdTopologyTemplate());
+                //this method will throw a NumberFormatException in case the ID is not representable as a long
+                Verification ver = verificationService.verify(graphID, verify);
+                responseObserver.onNext(GraphToGrpc.obtainToscaVerification(ver));
+            } catch(ForbiddenException | DataNotFoundException | BadRequestException ex) {
+                ToscaVerificationGrpc verError = ToscaVerificationGrpc.newBuilder().setSuccessOfOperation(false)
+                        .setErrorMessage(ex.getMessage()).build();
+                responseObserver.onNext(verError);
+                logger.log(Level.WARNING, ex.getMessage());
+            } catch(NumberFormatException ex) {
+                ToscaVerificationGrpc verError = ToscaVerificationGrpc.newBuilder().setSuccessOfOperation(false)
+                        .setErrorMessage("The TopologyTemplate ID must be a long value.").build();
+                responseObserver.onNext(verError);
+                logger.log(Level.WARNING, ex.getMessage());
+            } catch(Exception ex) {
+                ToscaVerificationGrpc verError = ToscaVerificationGrpc.newBuilder().setSuccessOfOperation(false)
+                        .setErrorMessage(internalError).build();
+                responseObserver.onNext(verError);
+                logger.log(Level.WARNING, ex.getMessage());
+            }                     responseObserver.onCompleted();
+        }
+
+
     }
 }

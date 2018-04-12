@@ -11,7 +11,6 @@ package it.polito.verigraph.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.InternalServerErrorException;
@@ -20,6 +19,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.main.JsonSchema;
 import it.polito.neo4j.exceptions.MyInvalidIdException;
@@ -150,7 +150,19 @@ public class NodeService {
         if (configuration != null) {
             JsonNode configurationJsonNode = configuration.getConfiguration();
             // validate configuration against schema file
-            validateNodeConfigurationAgainstSchemaFile(node, configurationJsonNode);
+            try {
+                validateNodeConfigurationAgainstSchemaFile(node, configurationJsonNode);
+            }
+            catch(ForbiddenException e) {
+                node.setFunctional_type("fieldmodifier");
+                String FieldModifierJsonString = "{[]}";
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode FieldModifierConfigurationNode = null;
+                try {
+                    FieldModifierConfigurationNode = mapper.readTree(FieldModifierJsonString);
+                } catch (IOException e1) {}
+                configuration.setConfiguration(FieldModifierConfigurationNode);
+            }
             JsonValidationService jsonValidator = new JsonValidationService(graph, node);
             boolean hasCustomValidator = jsonValidator.validateNodeConfiguration();
             if (!hasCustomValidator) {

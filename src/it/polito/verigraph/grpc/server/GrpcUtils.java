@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Politecnico di Torino and others.
+ * Copyright (c) 2017/18 Politecnico di Torino and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Apache License, Version 2.0
@@ -12,22 +12,25 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+
 import it.polito.verigraph.grpc.ConfigurationGrpc;
 import it.polito.verigraph.grpc.GraphGrpc;
 import it.polito.verigraph.grpc.NeighbourGrpc;
 import it.polito.verigraph.grpc.NodeGrpc;
+import it.polito.verigraph.grpc.NodeGrpc.FunctionalType;
 import it.polito.verigraph.grpc.TestGrpc;
 import it.polito.verigraph.grpc.VerificationGrpc;
-import it.polito.verigraph.grpc.NodeGrpc.FunctionalType;
 import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.model.Test;
 import it.polito.verigraph.model.Verification;
+
 
 public class GrpcUtils {
     private static final Logger logger = Logger.getLogger(GrpcUtils.class.getName());
@@ -43,6 +46,7 @@ public class GrpcUtils {
         //id is not present
         Neighbour ne = new Neighbour();
         ne.setName(request.getName());
+        ne.setId(request.getId());
         return ne;
     }
 
@@ -86,12 +90,16 @@ public class GrpcUtils {
     }
 
     public static Node deriveNode(NodeGrpc request) {
-        //id is not present
+    	//id is not present
         Node node = new Node();
         node.setName(request.getName());
         node.setFunctional_type(request.getFunctionalType().toString());
         Configuration conf = deriveConfiguration(request.getConfiguration());
         node.setConfiguration(conf);
+        
+        //Modification for Tosca CLI
+        Long id = request.getId();
+        if( id != null) node.setId(request.getId());
 
         Map<Long,Neighbour> neighours = node.getNeighbours();
         long i = 1;
@@ -106,24 +114,26 @@ public class GrpcUtils {
     public static GraphGrpc obtainGraph(Graph graph){
         GraphGrpc.Builder gr = GraphGrpc.newBuilder();
         gr.setId(graph.getId());
-        for(Node node:graph.getNodes().values()){
+        for(Node node : graph.getNodes().values()){
             NodeGrpc ng = obtainNode(node);
             gr.addNode(ng);
         }
         return gr.build();
     }
-
+    
     public static Graph deriveGraph(GraphGrpc request) {
         //id is not present
         Graph graph = new Graph();
-
+        //Modification for Tosca CLI
+        Long id = request.getId();
+        if( id != null) graph.setId(request.getId());
+        
         long i=1;
         Map<Long, Node> nodes= graph.getNodes();
         for(NodeGrpc node:request.getNodeList()){
             Node ng = deriveNode(node);
             nodes.put(i++, ng);  
         }
-
         return graph;
     }
 
@@ -141,13 +151,14 @@ public class GrpcUtils {
         }
         return ver.build();
     }
-
-    /**Intended for string that begins with "?"
-     * */
+      
+    
+    /** Intended for string that begins with "?" */
     public static Map<String,String> getParamGivenString(String str){
         String string = str.substring(1);
         final Map<String, String> map = Splitter.on('&').trimResults().withKeyValueSeparator("=").
                 split(string);
         return map;
     }
+ 
 }

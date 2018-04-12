@@ -1,0 +1,67 @@
+##############################################################################
+# Copyright (c) 2018 Politecnico di Torino and others.
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+tosca_definitions_version: http://docs.oasis-open.org/tosca/ns/simple/yaml/1.0
+
+metadata:
+  template_name: MySimpleTemplate
+  template_author: Dummy
+  template_version: Dummy1.0
+
+description: sample of Tosca yaml service template exploiting verigraph
+
+repositories:
+  verigraph_repository:
+    url: https://github.com/netgroup-polito/verigraph
+
+imports:
+  - file: ..\tosca_support\yamlToscaDefinitions.yaml
+    repository: verigraph_repository
+    namespace_uri: #tobe defined
+    namespace_prefix: vt
+
+topology_template:
+  node_templates:
+    100:
+      name : host1
+      type: verigraph.nodeTypes.Endhost
+      properties:
+        body: ciao
+        protocol : HTTP_REQUEST
+        destination: webserver
+
+    101:
+      name : nat
+      type: verigraph.nodeTypes.Nat
+      properties:
+        sources:
+          - host1
+          - webserver
+
+    102:
+      name : webserver
+      type: verigraph.nodeTypes.WebServer
+      properties:
+        names:
+          - ciao
+
+  relationship_templates:
+    900:
+      type: verigraph.relationshipType.generic
+      properties:
+        name: 100to101
+        source_id: 100
+        target_id: 101
+
+    901:
+      type: verigraph.relationshipType.generic
+      properties:
+        name: 101to102
+        source_id: 101
+        target_id: 102

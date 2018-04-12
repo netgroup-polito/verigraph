@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2017 Politecnico di Torino and others.
+ Copyright (c) 2017/18 Politecnico di Torino and others.
 
  All rights reserved. This program and the accompanying materials
  are made available under the terms of the Apache License, Version 2.0
@@ -14,6 +14,9 @@
 
   <property name="root.location" location="." />
   <!-- The location to be used for class files -->
+  <property name="docker-grpc.dir" value="${root.location}/docker/gRPC" />
+  <property name="docker-rest.dir" value="${root.location}/docker/REST" />
+  <property name="cli.dir" value="${root.location}/VerigraphCLI" />
   <property name="src.dir" location="${root.location}/src" />
   <property name="gen.dir" location="${root.location}/gen-src" />
   <property name="war.dir" location="${root.location}/war" />
@@ -23,6 +26,9 @@
   <property name="lib.dir" location="${root.location}/lib" />
   <property name="schemadir" location="${root.location}/schema" />
   <property name="schemafile" value="xml_components.xsd" />
+  <property name="toscaschemadir" location="${root.location}/schema/tosca" />
+  <property name="toscaschemafile" value="TOSCA-v1.0.xsd" />
+  <property name="toscaverigraphschemafile" value="ToscaTypes_XMLconfig.xsd" />
   <property name="testfile" value="test.py" />
   <property name="target" value="1.8" />
   <property name="source" value="1.8" />
@@ -86,22 +92,38 @@
     <delete file="${lib.dir}/z3-4.5.0-x86-win.zip" />
   </target>
 
-	
-  <target name="-chk-bindings">
-    <uptodate property="generate-bindings.notRequired" targetfile="${src.dir}/.flagfile">
-      <srcfiles dir="${schemadir}" includes="${schemafile}" />
+
+  <target name="chk-bindings">
+    <uptodate property="generate-bindings.notRequired" targetfile="${gen.dir}/.flagfile">
+      <srcresources>
+        <fileset dir="${schemadir}" includes="${schemafile}" />
+        <fileset dir="${toscaschemadir}" includes="${toscaschemafile}" />
+        <fileset dir="${toscaschemadir}" includes="${toscaverigraphschemafile}" />
+      </srcresources>
     </uptodate>
   </target>
 
-	
-  <target name="generate-bindings" unless="generate-bindings.notRequired" depends="init" description="Create the value classes">
+  <target name="generate-bindings" unless="generate-bindings.notRequired" depends="init, chk-bindings" description="Create the value classes">
     <exec executable="xjc" failonerror="true">
       <arg line="-d ${gen.dir} -p it.polito.neo4j.jaxb ${schemadir}/${schemafile}" />
     </exec>
-    <touch file="${src.dir}/.flagfile" />
+    <exec executable="xjc" failonerror="true">
+      <arg line="-d ${gen.dir} -p it.polito.tosca.jaxb ${toscaschemadir}/${toscaschemafile}" />
+    </exec>
+    <mkdir dir="${root.location}/temp-gen" />
+    <exec executable="xjc" failonerror="true">
+      <arg line="-d ${root.location}/temp-gen -p it.polito.tosca.jaxb ${toscaschemadir}/${toscaverigraphschemafile}" />
+    </exec>
+
+    <copy toDir="${gen.dir}/it/polito/tosca/jaxb" overwrite="true">
+      <file name="${root.location}/temp-gen/it/polito/tosca/jaxb/Configuration.java" />
+    </copy>
+    <delete dir="${root.location}/temp-gen" />
+
+    <touch file="${gen.dir}/.flagfile" />
   </target>
 
-  	
+
   <!-- The target for compiling the Verigraph application -->
   <target name="build-service" depends="init, generate-bindings, mvn-init">
     <echo>Building verigraph (if needed)...</echo>
@@ -166,12 +188,10 @@
     </sequential>
   </macrodef>
 
-	
   <target name="war-exploded" depends="build-service">
     <war-exploded />
   </target>
 
-	
   <target name="generate-war" depends="war-exploded">
     <war destfile="${gen-war.dir}/${serviceName}.war" basedir="${gen-tomcat-service.dir}">
       <exclude name="protoc-dependencies/" />
@@ -181,7 +201,80 @@
     </war>
   </target>
 
-	
+  <target name="docker-rest-build" depends="generate-war">
+    <delete file="${docker-rest.dir}/verigraph.war" />
+
+    <copy file="${gen-war.dir}/verigraph.war" toDir="${docker-rest.dir}" />
+  </target>
+
+  <target name="docker-grpc-build" depends="build-service">
+    <delete dir="${docker-grpc.dir}/service_lib" />
+    <mkdir dir="${docker-grpc.dir}/service_lib" />
+
+    <copy toDir="${docker-grpc.dir}/service_lib" flatten="true" overwrite="true">
+      <fileset refid="runtime.fileset" />
+    </copy>
+    <copy file="${lib.dir}/com.microsoft.z3.jar" todir="${docker-grpc.dir}/service_lib" />
+
+    <delete file="${docker-grpc.dir}/server.properties" />
+    <delete dir="${docker-grpc.dir}/jsonschema" />
+    <copy file="${root.location}/server.properties" todir="${docker-grpc.dir}" />
+    <copydir src="${root.location}/jsonschema" dest="${docker-grpc.dir}/jsonschema" />
+
+    <path id="jars.path">
+      <fileset dir="${docker-grpc.dir}">
+        <include name="service_lib/*.jar" />
+      </fileset>
+    </path>
+
+    <pathconvert property="jars.mf" pathsep=" ">
+      <path refid="jars.path" />
+      <flattenmapper />
+      <map from="" to="service_lib/" />
+    </pathconvert>
+
+    <delete file="${docker-grpc.dir}/service.jar"/>
+    <jar destfile="${docker-grpc.dir}/service.jar">
+      <manifest>
+        <attribute name="Main-Class" value="it.polito.verigraph.grpc.server.Service"/>
+        <attribute name="Class-Path" value="${jars.mf}"/>
+      </manifest>
+      <fileset dir="${root.location}/build"/>
+    </jar>
+  </target>
+
+
+  <target name="build-cli-jar" depends="build-service">
+    <delete dir="${cli.dir}" />
+    <mkdir dir="${cli.dir}" />
+
+    <copy toDir="${cli.dir}/service_lib" flatten="true" overwrite="true">
+      <fileset refid="runtime.fileset" />
+    </copy>
+    <copy file="${src.dir}/it/polito/verigraph/tosca/README_CLI.txt" todir="${cli.dir}" />
+
+    <path id="jars.path">
+      <fileset dir="${cli.dir}">
+        <include name="service_lib/*.jar" />
+      </fileset>
+    </path>
+
+    <pathconvert property="jars.mf" pathsep=" ">
+      <path refid="jars.path" />
+      <flattenmapper />
+      <map from="" to="service_lib/" />
+    </pathconvert>
+
+    <delete file="${cli.dir}/VerigraphCLI.jar"/>
+    <jar destfile="${cli.dir}/VerigraphCLI.jar">
+      <manifest>
+        <attribute name="Main-Class" value="it.polito.verigraph.tosca.ToscaCLI"/>
+        <attribute name="Class-Path" value="${jars.mf}"/>
+      </manifest>
+      <fileset dir="${root.location}/build"/>
+    </jar>
+  </target>
+
   <!-- launch test python test -->
   <target name="run-test">
     <exec dir="${test.dir}" executable="python">
@@ -191,8 +284,6 @@
     </exec>
   </target>
 
-
-
   <!-- target for cleaning -->
   <target name="clean">
     <delete dir="${build.dir}" />
@@ -200,7 +291,12 @@
     <delete dir="${gen-tomcat-service.dir}" />
     <delete dir="${war.dir}" />
     <delete dir="${lib.dir}" />
+    <delete dir="${docker-grpc.dir}/service_lib" />
+    <delete dir="${docker-grpc.dir}/jsonschema" />
+    <delete file="${docker-grpc.dir}/server.properties" />
+    <delete file="${docker-grpc.dir}/service.jar" />
+    <delete file="${docker-rest.dir}/verigraph.war" />
+    <delete dir="${cli.dir}" />
   </target>
-
 
 </project>

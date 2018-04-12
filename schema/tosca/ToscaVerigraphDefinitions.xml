@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2018 Politecnico di Torino and others.
+
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Apache License, Version 2.0
+ which accompanies this distribution, and is available at
+ http://www.apache.org/licenses/LICENSE-2.0
+-->
+
+<Definitions id="Verigraph_Definitions" name="Verigraph Type Definition"
+  xmlns="http://docs.oasis-open.org/tosca/ns/2011/12"
+  targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition">
+
+  <import importType="http://www.w3.org/2001/XMLSchema"
+    namespace="http://docs.oasis-open.org/tosca/ns/2011/12/ToscaVerigraphDefinition"
+    location="./ToscaTypes_XMLconfig.xsd" />
+
+  <NodeType name="AntispamType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="CacheType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="DpiType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="EndhostType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="EndpointType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="FieldModifierType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="FirewallType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="MailclientType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="MailserverType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="NatType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="VpnAccessType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="VpnExitType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="WebclientType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <NodeType name="WebserverType">
+    <PropertiesDefinition element="Configuration" />
+  </NodeType>
+
+  <RelationshipType name="linkedTo" />
+
+</Definitions>
