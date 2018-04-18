@@ -3,7 +3,7 @@ gRPC Project
 
 This project contains the interfaces for a web service based on gRPC.
 Information about how gRPC interface supports TOSCA can be found
-`here`_.
+`here <https://github.com/netgroup-polito/verigraph/blob/master/README_TOSCA.rst>`_.
 
 How to install:
 ---------------
@@ -239,6 +239,7 @@ This ant file permit to run and compile the program in a simple way, it
 exploits the maven-ant-tasks-2.1.3.jar already present in project.
 
 .. _this link: https://github.com/grpc/grpc-java/blob/master/README.md
+
 It contains 3 fundamental tasks for gRPC interface: - **build:** compile
 the program
 
@@ -288,11 +289,11 @@ In this case we send a request that contains the id of the graph and the
 response is a list of Nodes that are inside graph.
 
 Further possibilities are available but in this project are not
-expolied. If you are curious see `here`_.
+expolied. If you are curious see `here <https://grpc.io/docs/tutorials/basic/java.html#defining-the-service>`_.
 
 Our ``.proto`` file also contains protocol buffer message type
 definitions for all the request and response types used in our service
-methods - for example, heres the ``RequestID`` message type:
+methods - for example, here is the ``RequestID`` message type:
 
 .. code:: xml
 
@@ -362,10 +363,6 @@ For further clarifications see `here`_
 Notes
 -----
 
-For gRPC interface you need that neo4jmanager service is already
-deployed, so if this is not the case, please follow the instructions at
-this `link`_.
-
 In this version there are some modified files compared to the original
 `Verigraph project`_
 
@@ -402,10 +399,10 @@ Python and Z3 must support the same architecture.
 Moreover you need the following dependencies installed on your python
 distribution:
 
- “requests” python package ->
-http://docs.python-requests.org/en/master/
+- “requests” python package ->
+  http://docs.python-requests.org/en/master/
 
- “jsonschema” python package -> https://pypi.python.org/pypi/jsonschema
+- “jsonschema” python package -> https://pypi.python.org/pypi/jsonschema
 
 HINT - to install a package you can raise the following command (Bash on
 Linux or DOS shell on Windows): python -m pip install jsonschema python
@@ -413,7 +410,7 @@ Linux or DOS shell on Windows): python -m pip install jsonschema python
 to modify the PATH environment variable because is necessary to address
 the python folder, used for verification phase.
 
-Remember to read the `README.rtf`_ and to follow the instructions in
+Remember to read the `README.rst`_ and to follow the instructions in
 order to deploy the Verigraph service.
 
 In the latest version of Maven there is the possibility that the
@@ -436,4 +433,4 @@ This project was also tested on Linux Ubuntu 15.10.
 .. _link: https://github.com/netgroup-polito/verigraph/blob/master/README.rst
 .. _Verigraph project: https://github.com/netgroup-polito/verigraph
 .. _download it: https://www.python.org/download/releases/2.7.3/
-.. _README.rtf: https://github.com/netgroup-polito/verigraph/blob/master/README.rst
+.. _README.rst: https://github.com/netgroup-polito/verigraph/blob/master/README.rst

@@ -99,8 +99,7 @@ can be found `here <https://github.com/netgroup-polito/verigraph/tree/master/exa
 
 ----
 
-By deploying the **tosca_support** branch of Verigraph with these 
-`instructions <https://github.com/netgroup-polito/verigraph/blob/master/README.rst>`__, 
+By deploying Verigraph with these `instructions <https://github.com/netgroup-polito/verigraph/blob/master/README.rst>`_, 
 TOSCA support is already seamlessly integrated with the **Verigraph** provided APIs.
 
 Below are detailed the extensions made to the RESTful and gRPC APIs:
