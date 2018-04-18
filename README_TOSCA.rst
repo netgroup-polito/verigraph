@@ -7,7 +7,7 @@
 **Verigraph** has been extended for **OASIS TOSCA**-based network service descriptors.
 **Verigraph** supports both **XML** and **YAML** TOSCA descriptions, provided both within its RESTful APIs and via gRPC.
 A visual representation of the **Verigraph** + **TOSCA** architecture can be found 
-`here <https://github.com/netgroup-polito/verigraph/blob/tosca-support/doc/TOSCA%20Verigraph%20architecture.pdf>`_.
+`here <https://github.com/netgroup-polito/verigraph/blob/master/doc/TOSCA%20Verigraph%20architecture.pdf>`_.
 
 **TOSCA** network service descriptors are interpreted by **Verigraph** with 
 the following mapping (``TOSCA -> Verigraph Model``):
@@ -95,12 +95,12 @@ can be specified in **TOSCA** **YAML** and **XML**:
   </RelationshipTemplate>
 
 Notice that the example reported above is not exhaustive, complete examples of NF-FGs (in YAML and XML)
-can be found `here <https://github.com/netgroup-polito/verigraph/tree/tosca-support/examples/tosca>`__.
+can be found `here <https://github.com/netgroup-polito/verigraph/tree/master/examples/tosca>`__.
 
 ----
 
 By deploying the **tosca_support** branch of Verigraph with these 
-`instructions <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README.rst>`__, 
+`instructions <https://github.com/netgroup-polito/verigraph/blob/master/README.rst>`__, 
 TOSCA support is already seamlessly integrated with the **Verigraph** provided APIs.
 
 Below are detailed the extensions made to the RESTful and gRPC APIs:
@@ -140,7 +140,7 @@ Below are detailed the extensions made to the RESTful and gRPC APIs:
 
 **Verigraph** gRPC implementation supports **TOSCA** YAML and XML representation with *Graph* granularity. 
 The messages used to send/receive information from/to the server/client are specified in the 
-`protocol buffer <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/verigraph.proto>`_:
+`protocol buffer <https://github.com/netgroup-polito/verigraph/blob/master/src/main/proto/verigraph.proto>`_:
 
 - ``TopologyTemplateGrpc``: represents the *Graph*
 - ``NodeTemplateGrpc``: represents the *Node* without its *Neighbours*
@@ -160,10 +160,10 @@ In order to obtain a gRPC object starting from file containing the NF-FG the fol
 - ``ToscaCLI.marshallToYaml(List<ServiceTemplateYaml>)`` prints on screen a string that contains a YAML format of the
   ServiceTemplateYaml
 - Moreover, other converting utility methods can be found in the package ``it.polito.verigraph.tosca.converter`` 
-  `(link) <https://github.com/netgroup-polito/verigraph/tree/tosca-support/src/it/polito/verigraph/tosca/converter>`_
+  `(link) <https://github.com/netgroup-polito/verigraph/tree/master/src/it/polito/verigraph/tosca/converter>`_
 
 The previous messages are used with the gRPC methods (specified in the 
-`protocol buffer <https://github.com/netgroup-polito/verigraph/blob/tosca-support/src/main/proto/verigraph.proto>`_) 
+`protocol buffer <https://github.com/netgroup-polito/verigraph/blob/master/src/main/proto/verigraph.proto>`_) 
 to perform CRUD operations on *Graphs* and to verify a specific policy:
 
 - ``GetTopologyTemplates(GetRequest)``: returns a list that contains all the *Graphs* stored in 

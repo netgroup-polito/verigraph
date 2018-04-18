@@ -82,7 +82,7 @@ You usually use JVM’s ``-D`` flags like the following:
     -Dos.detected.classifier=linux-x86_64
     
 
-.. _here: https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_TOSCA.rst
+.. _here: https://github.com/netgroup-polito/verigraph/blob/master/README_TOSCA.rst
 .. _m2e: https://www.eclipse.org/m2e/
 .. _Download ``os-maven-plugin-1.5.0.Final.jar``: http://repo1.maven.org/maven2/kr/motd/maven/os-maven-plugin/1.5.0.Final/os-maven-plugin-1.5.0.Final.jar
 
@@ -433,7 +433,7 @@ the file ``gson-2.3.pom`` in Maven repository, under
 
 This project was also tested on Linux Ubuntu 15.10.
 
-.. _link: https://github.com/netgroup-polito/verigraph/blob/a3c008a971a8b16552a20bf2484ebf8717735dd6/README.md
+.. _link: https://github.com/netgroup-polito/verigraph/blob/master/README.rst
 .. _Verigraph project: https://github.com/netgroup-polito/verigraph
 .. _download it: https://www.python.org/download/releases/2.7.3/
-.. _README.rtf: https://gitlab.com/serena.spinoso/DP2.2017.SpecialProject2.gRPC/tree/master
+.. _README.rtf: https://github.com/netgroup-polito/verigraph/blob/master/README.rst

@@ -61,8 +61,8 @@ You can generate a JAR for executing the CLI with the following steps:
   existing file  whose filename must be coherent with the currently selected data format. The server can accept or not
   the provided graph upon its validation against TOSCA Verigraph specification for YAML/XML or
   against Verigraph JSON schema. For further infos see the Verigraph
-  `service documentation <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README.rst>`__ 
-  and the Verigraph `TOSCA documentation <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README.rst>`_.
+  `service documentation <https://github.com/netgroup-polito/verigraph/blob/master/README.rst>`__ 
+  and the Verigraph `TOSCA documentation <https://github.com/netgroup-polito/verigraph/blob/master/README_TOSCA.rst>`_.
 
 - ``UPDATE <graphId> <validFilePath>``
 
@@ -70,8 +70,8 @@ You can generate a JAR for executing the CLI with the following steps:
   The provided filename must be coherent with the currently selected data format and the ``<LongId>`` must be a long
   integer corresponding to one of the *Graphs* previously created. The server can accept or not the provided graph upon
   its validation against TOSCA Verigraph specification for YAML/XML or against Verigraph JSON schema. For further infos
-  see the Verigraph `service documentation <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README.rst>`__
-  and the Verigraph `TOSCA documentation <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README.rst>`_.
+  see the Verigraph `service documentation <https://github.com/netgroup-polito/verigraph/blob/master/README.rst>`__
+  and the Verigraph `TOSCA documentation <https://github.com/netgroup-polito/verigraph/blob/master/README_TOSCA.rst>`_.
 
 - ``DELETE <graphId>``
 

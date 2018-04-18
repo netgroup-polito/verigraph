@@ -14,9 +14,9 @@ useful to read some parts of it even if you are only interested in other aspects
 Links to other sections of the documentation:
 
 - `gRPC API <https://github.com/netgroup-polito/verigraph/blob/master/README_gRPC.rst>`_
-- `OASIS TOSCA support <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_TOSCA.rst>`_
-- `How to build the Verigraph Docker images <https://github.com/netgroup-polito/verigraph/blob/tosca-support/docker/README.rst>`_
-- `CLI documentation <https://github.com/netgroup-polito/verigraph/blob/tosca-support/README_CLI.rst>`_
+- `OASIS TOSCA support <https://github.com/netgroup-polito/verigraph/blob/master/README_TOSCA.rst>`_
+- `How to build the Verigraph Docker images <https://github.com/netgroup-polito/verigraph/blob/master/docker/README.rst>`_
+- `CLI documentation <https://github.com/netgroup-polito/verigraph/blob/master/README_CLI.rst>`_
 
 
 ----
