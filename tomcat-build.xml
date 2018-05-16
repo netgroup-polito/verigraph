@@ -12,9 +12,9 @@
     Script for Controlling Tomcat (to be imported in main build)
   </description>
 
-  <property name="tomcatUsername" value="to_be_defined" />
-  <property name="tomcatPassword" value="to_be_defined" />
-  <property name="server.location" location="to_be_defined" />
+  <property name="tomcatUsername" value="admin" />
+  <property name="tomcatPassword" value="admin" />
+  <property name="server.location" location="C:\Program Files\Apache Software Foundation\Tomcat 8.5" />
   <property name="tomcatPort" value="8080" />
   <property name="tomcatUrl" value="http://localhost:${tomcatPort}/manager/text" />
   <property name="root.location" location="." />
@@ -31,8 +31,8 @@
     <pathelement location="${server.location}/bin/tomcat-juli.jar" />
   </path>
 
-  <!-- Configure the custom Ant tasks for the Manager application -->
-  <import file="${server.location}/bin/catalina-tasks.xml" />
+  <!-- Configure the custom Ant tasks for the Manager application  -->
+ <import file="${server.location}/bin/catalina-tasks.xml" />
 
 
   <!-- TOMCAT LIFECICLE MANAGEMENT-->

@@ -14,18 +14,29 @@ import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.random.GraphGen;
 import it.polito.verigraph.random.PolicyGen;
 import it.polito.verigraph.random.RandomGenerator;
-
+import it.polito.neo4j.jaxb.FunctionalTypes;
 //perform scalability tests with different scenarios of RandomGenerator
 public class TestRandom {
-	
+
 	private static Random random;
+	static Integer seed=(int) new Date().getTime();
+	static Integer maxMiddleboxes=6;
+	static FunctionalTypes type;
 	public static void main(String[] args) {
-		//TestRandom tr = new TestRandom();
-		if(args.length==0){
-			random = new Random(new Date().getTime());	
-		}else{
-			random = new Random(Integer.parseInt(args[0]));
+		//seed = 52545654;
+		if (System.getProperty("it.polito.verigraph.test.TestRandom.seed") != null) {
+			seed = Integer.parseInt(System.getProperty("it.polito.verigraph.test.TestRandom.seed"));
 		}
+		if (System.getProperty("it.polito.verigraph.test.TestRandom.middleboxes") != null) {
+			maxMiddleboxes = Integer.parseInt(System.getProperty("it.polito.verigraph.test.TestRandom.middleboxes"));
+		}
+		if (System.getProperty("it.polito.verigraph.test.TestRandom.type") != null) {
+			type = FunctionalTypes.valueOf(System.getProperty("it.polito.verigraph.test.TestRandom.type"));
+		}
+		
+		random = new Random(seed);
+		System.out.println("Seed: " + seed + " Middleboxes: "+maxMiddleboxes+" Type: "+ type);
+		
 		
 		try {
 			doTest();
@@ -34,18 +45,31 @@ public class TestRandom {
 		}
 
 	}
+
 	private static void doTest() throws VerifyClientException {
-		VerifyClient client = new VerifyClient("http://localhost:8080/verigraph/api");
-		//create graph and policies
-		GraphGen graph = new GraphGen(random,0);
-		Graph g = new Graph();
-		g.setNodes(graph.getNodes());
-		Graph createdGraph = client.createGraph(g).readEntity(Graph.class);
 		
-		for (PolicyGen policyGen : graph.getPolicies().values()) {
-			Verification result = client.getReachability(createdGraph.getId(), policyGen.getNodesrc().getName(), policyGen.getNodedst().getName());
-			System.out.println("Test returned " + result.getResult() + " for "+ policyGen.getName());
-		}
+		// create graph and policies
+		//int nodes=4;
+		//for (FunctionalTypes type : FunctionalTypes.values()) {
+		//FunctionalTypes type = FunctionalTypes.DPI;
+			//for(int i=2;i<=nodes;i++){
+				VerifyClient client = new VerifyClient("http://localhost:8080/verigraph/api");
+				GraphGen graph = new GraphGen(random, 1, 1, maxMiddleboxes,type,true);
+				Graph g = new Graph();
+				g.setNodes(graph.getNodes());
+				Graph createdGraph = client.createGraph(g).readEntity(Graph.class);
+				//client.printGraph(g);
+				for (PolicyGen policyGen : graph.getPolicies().values()) {
+					Verification result = client.getReachability(createdGraph.getId(), policyGen.getNodesrc().getName(),
+							policyGen.getNodedst().getName());
+
+					System.out.println("Test returned " + result.getResult() +" "+type);
+					System.out.println("Nodes: " + (graph.getNodes().values().size()-2) + " for " + policyGen.getName());
+				}
+			//}
+		//}
+		
+		
 		
 
 	}

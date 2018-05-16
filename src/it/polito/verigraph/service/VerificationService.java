@@ -82,7 +82,7 @@ public class VerificationService {
     }
 
     private void printListsOfStrings(String message, List<List<String>> lists) {
-        vlogger.logger.info(message);
+        //vlogger.logger.info(message);
         for (List<String> element : lists) {
             StringBuilder paths= new StringBuilder();
             for(String s : element){
@@ -405,7 +405,7 @@ public class VerificationService {
         }
 
         extractPathsWithoutMiddlebox(pathsBetweenSourceAndDestination, middleboxNode.getName());
-        printListsOfStrings("Paths without middlebox '" + middleboxNode.getName() + "'", pathsBetweenSourceAndDestination);
+        //printListsOfStrings("Paths without middlebox '" + middleboxNode.getName() + "'", pathsBetweenSourceAndDestination);
 
         if (pathsBetweenSourceAndDestination.isEmpty()) {
             return new Verification("SAT",
@@ -507,7 +507,7 @@ public class VerificationService {
 
         List<List<String>> sanitizedPaths = sanitizePaths(paths);
 
-        printListsOfStrings("Paths", sanitizedPaths);
+        //printListsOfStrings("Paths", sanitizedPaths);
 
         if (sanitizedPaths.isEmpty()) {
             return new Verification("UNSAT",
@@ -566,7 +566,15 @@ public class VerificationService {
         //Date start_time = cal.getTime();
 
         for(Map.Entry<Integer, GeneratorSolver> t : scenarios.entrySet()){
-            IsolationResult res = t.getValue().run(src, dst);
+        	
+        	long startTime = System.currentTimeMillis();
+        	IsolationResult res = t.getValue().run(src, dst);
+			long stopTime = System.currentTimeMillis();
+			long elapsedTime = stopTime - startTime;
+			
+			
+			vlogger.logger.info("################ "+t.getValue().getPaths());
+			vlogger.logger.info("################          Time: "+ elapsedTime +" Nodes:" +t.getValue().getPaths().size()+" ################");
 
             if (res.result == Status.UNSATISFIABLE){
                 result="UNSAT"; // Nodes a and b are isolated
@@ -583,8 +591,10 @@ public class VerificationService {
             List<Node> path = new ArrayList<Node>();
             for (String nodeString : t.getValue().getPaths()) {
                 Node node = graph.searchNodeByName(nodeString);
+               
                 path.add(node);
-            }
+            } 
+           
             Test test;
             if (res.model != null){
                 test = new Test(path, result, res.model.toString(), graph.getId());
@@ -688,7 +698,7 @@ public class VerificationService {
 
         List<List<String>> sanitizedPaths = sanitizePaths(all_paths);
 
-        printListsOfStrings("Paths", sanitizedPaths);
+        //printListsOfStrings("Paths", sanitizedPaths);
 
         if (sanitizedPaths.isEmpty()) {
             return null;
