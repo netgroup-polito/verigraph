@@ -1551,7 +1551,7 @@ public class Neo4jLibrary implements Neo4jDBInteraction
     }
 
     public it.polito.neo4j.jaxb.Paths findAllPathsBetweenTwoNodes(long graphId, String srcName, String dstName, String direction) throws MyNotFoundException{
-        vlogger.logger.info("findAllPathsBetweenTwoNodes");
+        //vlogger.logger.info("findAllPathsBetweenTwoNodes");
         Transaction tx = graphDB.beginTx();
         Set<String> pathPrinted = new HashSet<>();
 

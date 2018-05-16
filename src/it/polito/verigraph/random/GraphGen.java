@@ -30,6 +30,8 @@ public class GraphGen extends Graph {
 
     private PolicyGen.PolicyType types[]={PolicyType.REACHABILITY, PolicyType.ISOLATION,PolicyType.TRAVERSAL};
 
+	private boolean isChain=false;
+
     private static int count=0;
 
     public static void resetCounter() {
@@ -39,21 +41,40 @@ public class GraphGen extends Graph {
     public GraphGen(Random random, long seed) {
         super(count);
         count++;
-
         // create policies hash map
         policies = new HashMap<String,PolicyGen>();
-
         // create nodes
         clientNodes = createNodeSubset(clientTypes, random, 10);
         serverNodes = createNodeSubset(serverTypes, random, 10);
         middleNodes = createNodeSubset(middleTypes, random, 20);
-
         // create links
         createLinks(random);
-
         // create policies for this nffg
         createPolicies(random);
+    }
+    
+    public GraphGen(Random random, int maxClient, int maxServer, int maxMiddlebox, FunctionalTypes type, boolean isChain) {
+        super(count);
+        count++;
+        // create policies hash map
+        policies = new HashMap<String,PolicyGen>();
 
+        //only chain
+        this.isChain=isChain;
+        //consider only one type of middlebox
+        if(type!=null){
+        	FunctionalTypes fixedType[]={type};
+        	middleTypes=fixedType;
+        }
+        
+        // create nodes
+        clientNodes = createNodeSubset(clientTypes, random, maxClient);
+        serverNodes = createNodeSubset(serverTypes, random, maxServer);
+        middleNodes = createNodeSubset(middleTypes, random, maxMiddlebox);
+        // create links
+        createLinks(random);
+        // create policies for this nffg
+        createPolicies(random);
     }
 
     /**
@@ -71,9 +92,11 @@ public class GraphGen extends Graph {
             return new Node[0];
 
         int numNodes = random.nextInt(maxNum); // at least 1 node
-        if((numNodes%2)==0)
+        if(numNodes==0) numNodes +=1;
+        else if((numNodes%2)==0)
             numNodes +=2;
-        else numNodes +=1;
+        //if in chain mode, use max number of nodes
+        if(isChain)numNodes=maxNum;
         int existingnode = nodes.size();
         Vector<Node> nodeSubset = new Vector<Node>();
 
@@ -211,12 +234,16 @@ public class GraphGen extends Graph {
             neighbourfromnode= new HashMap<Long,Neighbour>();
 
             // connect the client via a bidirectional link to a randomly chosen middlebox
+             
             m = random.nextInt(middleNodes.length);
+            if(isChain) m = 0;
             node = new Neighbour(middleNodes[m].getId(), middleNodes[m].getName());
             neighbourfromnode.put(node.getId(), node);
 
             // create the other possible links for this client
-            int maxNumLinks = (middleNodes.length%4)+1;
+            int maxNumLinks = (middleNodes.length%4);
+            //chain
+            if(!isChain) 
             for (int i=0; i<maxNumLinks; i++) {
                 int j = random.nextInt(maxNumLinks);
                 if (j != m) {
@@ -237,7 +264,8 @@ public class GraphGen extends Graph {
             neighbourfromnode.put(middleNodes[m].getId(), node);
 
             // create the other possible links for this server
-            int maxNumLinks = (middleNodes.length%4)+1;
+            int maxNumLinks = (middleNodes.length%4);
+            if(isChain) maxNumLinks=1;
             for (int i=0; i<maxNumLinks; i++) {
                 int j = random.nextInt(maxNumLinks);
                 if (j != m) {
@@ -248,7 +276,9 @@ public class GraphGen extends Graph {
             nodes.get(server.getId()).setNeighbours(neighbourfromnode);
         }
 
+        
         // create possible links for middleboxes
+        if(!isChain)
         for (int i=0; i<middleNodes.length; i++) {
             neighbourfromnode= new HashMap<Long,Neighbour>();
             for (int j=0; j<middleNodes.length/4; j++) {
@@ -265,6 +295,38 @@ public class GraphGen extends Graph {
             neighbourfromnode.put(serverNodes[k].getId(), node);
             middleNodes.clone()[i].setNeighbours(neighbourfromnode);
         }
+        else
+        for (int i = 0; i < middleNodes.length; i++) {
+			neighbourfromnode = new HashMap<Long, Neighbour>();
+
+			if (i == 0) {
+				int h = random.nextInt(clientNodes.length);
+
+				node = new Neighbour(middleNodes[1].getId(), middleNodes[1].getName());
+				neighbourfromnode.put(middleNodes[1].getId(), node);
+
+				node = new Neighbour(clientNodes[h].getId(), clientNodes[h].getName());
+				neighbourfromnode.put(clientNodes[h].getId(), node);
+
+			} else if (i == middleNodes.length - 1) {
+				int k = random.nextInt(serverNodes.length);
+
+				node = new Neighbour(middleNodes[middleNodes.length - 2].getId(),
+						middleNodes[middleNodes.length - 2].getName());
+				neighbourfromnode.put(middleNodes[middleNodes.length - 1].getId(), node);
+
+				node = new Neighbour(serverNodes[k].getId(), serverNodes[k].getName());
+				neighbourfromnode.put(serverNodes[k].getId(), node);
+			} else {
+				node = new Neighbour(middleNodes[i - 1].getId(), middleNodes[i - 1].getName());
+				neighbourfromnode.put(middleNodes[i - 1].getId(), node);
+
+				node = new Neighbour(middleNodes[i + 1].getId(), middleNodes[i + 1].getName());
+				neighbourfromnode.put(middleNodes[i + 1].getId(), node);
+			}
+
+			middleNodes.clone()[i].setNeighbours(neighbourfromnode);
+		}
 
         return ;
     }

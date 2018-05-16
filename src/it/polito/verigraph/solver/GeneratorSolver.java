@@ -210,7 +210,7 @@ public class GeneratorSolver{
     }
 
     private void configureDevice() {
-        vlogger.logger.info("Configuration service");
+        //vlogger.logger.info("Configuration service");
         //System.out.println("Configuration Device");
         for(Map.Entry<String,Object> cd : mo.entrySet()){
             String name=cd.getKey();

@@ -65,7 +65,7 @@ public class Scenario {
         //for each node a map is created in order to insert the map in chn
         for(int i=0; i<nodes.size(); i++){
             String name=nodes.get(i).getName();
-            vlogger.logger.info("Nodes in the network: " + name);  //TO BE REMOVED
+            //vlogger.logger.info("Nodes in the network: " + name);  //TO BE REMOVED
             nodes_names.add(name);
             String type=nodes.get(i).getFunctional_type().toLowerCase();
             nodes_types.add(type);
