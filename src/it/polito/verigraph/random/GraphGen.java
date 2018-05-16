@@ -16,7 +16,7 @@ import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.random.PolicyGen.PolicyType;
 
-class GraphGen extends Graph {
+public class GraphGen extends Graph {
 
     private HashMap<String,PolicyGen> policies;
 
@@ -36,7 +36,7 @@ class GraphGen extends Graph {
         count=0;
     }
 
-    GraphGen(Random random, long seed) {
+    public GraphGen(Random random, long seed) {
         super(count);
         count++;
 
@@ -294,7 +294,7 @@ class GraphGen extends Graph {
         } // for each client
     }
 
-    HashMap<String, PolicyGen> getPolicies() {
+    public HashMap<String, PolicyGen> getPolicies() {
         return policies;
     }
 

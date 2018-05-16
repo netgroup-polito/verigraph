@@ -19,7 +19,7 @@ import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 
-class RandomGenerator {
+public class RandomGenerator {
 
     private Random random;
 
