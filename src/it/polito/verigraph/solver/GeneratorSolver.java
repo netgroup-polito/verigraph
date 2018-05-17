@@ -195,7 +195,8 @@ public class GeneratorSolver{
             mo.put(name, webserver);
         }else if(type.compareTo("webclient")==0){
             String conf=(scenario.config_obj.get(name)).get("webserver");
-            PolitoWebClient webclient=new PolitoWebClient(ctx, new Object[]{nctx.nm.get(name), net, nctx, nctx.am.get(conf)});
+            PolitoEndHost webclient=new PolitoEndHost(ctx, new Object[]{nctx.nm.get(name), net, nctx, nctx.am.get(conf)});
+            webclient.installAsWebClient(nctx.am.get(conf), null);
             mo.put(name, webclient);
         }else if(type.compareTo("dpi")==0){
             PolitoIDS dpi=new PolitoIDS(ctx, new Object[]{nctx.nm.get(name), net, nctx});
