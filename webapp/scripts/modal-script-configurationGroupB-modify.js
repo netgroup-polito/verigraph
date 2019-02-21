@@ -25,34 +25,59 @@
 
     var sourceNodeFirewall = "";
     var destinationNodeFirewall = "";
-    var demp = null;
-    var i = 0;
-    var key;
+    var sourcePortFirewall = "";
+    var destinationPortFirewall = "";
+
     rootCleanningModalModifyNode("B");
 
-    for (key in conf[0])
+    for(var i = 0; i<conf.length; i++)
     {
         if (i == 0)
         {
             document.getElementById("00B").remove();
-            demp = Object.keys(conf[0]);
-            sourceNodeFirewall = demp[0];
-            destinationNodeFirewall = conf[0][sourceNodeFirewall];
+
+            sourceNodeFirewall = conf[i].source_id;
+            destinationNodeFirewall = conf[i].destination_id;
+            sourcePortFirewall = conf[i].source_port;
+            destinationPortFirewall = conf[i].destination_port;
+
+            var tcpSelected = "", udpSelected = ""; // Needed to preselect the right function type
+            // Preselect the right function type
+            if(conf[i].protocol == "TCP")
+              tcpSelected = "selected";
+            else
+              udpSelected = "selected";
+
             $(wrapper).append
             (
                 "<div id=\"00B\">" +
                 "Source existing node" +
                 "<input class=\"form-control\" id=\"0B\" type=\"text\" name=\"mytext[]\" value='" + sourceNodeFirewall + "'> <br>" +
                 "Destination existing source" +
-                "<input class=\"form-control\" id=\"0BB\" type=\"text\" name=\"mytext[]\" value='" + destinationNodeFirewall + "'></div>" +
+                "<input class=\"form-control\" id=\"0BB\" type=\"text\" name=\"mytext[]\" value='" + destinationNodeFirewall + "'> <br>" +
+                "Source port" +
+                "<input class=\"form-control\" id=\"0BC\" type=\"text\" name=\"mytext[]\" value='" + sourcePortFirewall + "'> <br>" +
+                "Destination port" +
+                "<input class=\"form-control\" id=\"0BD\" type=\"text\" name=\"mytext[]\" value='" + destinationPortFirewall + "'> <br>" +
+                "Value of protocol: <select id=\"0BE\">" +
+                  "<option value=\"TCP\" " + tcpSelected + ">TCP PROTOCOL</option>" +
+                  "<option value=\"UDP\" " + udpSelected + ">UDP PROTOCOL</option>" +
+                "</select>" +
                 "</div>"
             );
         }
-
         else {
-            //demp = key;
-            sourceNodeFirewall = key;
-            destinationNodeFirewall = conf[0][sourceNodeFirewall];
+          sourceNodeFirewall = conf[i].source_id;
+          destinationNodeFirewall = conf[i].destination_id;
+          sourcePortFirewall = conf[i].source_port;
+          destinationPortFirewall = conf[i].destination_port;
+
+          var tcpSelected = "", udpSelected = ""; // Needed to preselect the right function type
+          // Preselect the right function type
+          if(conf[i].protocol == "TCP")
+            tcpSelected = "selected";
+          else
+            udpSelected = "selected";
 
             configurationGroupAcounterB++; //text box increment
             configurationGroupAcounterBisB++;
@@ -60,23 +85,21 @@
             vectorIdElementB.push(tempId);
 
             $(wrapper).append(
-                '<div id="sB' + configurationGroupAcounterB.toString() +
-                '"><br>Source existing node<input id="' + configurationGroupAcounterB.toString()
-                + 'B"class="form-control" type="text" name="mytext[]" value="' + sourceNodeFirewall + '"/>' +
-
-                '<br>Destination existing source<input id="'
-                + configurationGroupAcounterB.toString()
-                + 'BB"class="form-control" type="text" name="mytext[]"' +
-                ' value="' + destinationNodeFirewall + '" />' +
+                '<div id="sB'+ configurationGroupAcounterB.toString()
+                + '"><br>Source existing node <input id="' + configurationGroupAcounterB.toString()
+                + 'B"class="form-control" type="text" name="mytext[]" ' + sourceNodeFirewall + '/>' +
+                '<br>Destination existing source <input id="' + configurationGroupAcounterB.toString() + 'BB"class="form-control" type="text" name="mytext[]" ' + destinationNodeFirewall + '/>' +
+                '<br />Source port <input id="' + configurationGroupAcounterB.toString() + 'BC"class="form-control" type="text" name="mytext[]" ' + sourcePortFirewall + '/>' +
+                '<br />Destination port <input id="' + configurationGroupAcounterB.toString() + 'BD"class="form-control" type="text" name="mytext[]" ' + + destinationPortFirewall + + '/>' +
+                '<br />Value of protocol: ' +
+                '<select id="' + configurationGroupAcounterB.toString() + 'BE">' +
+                    '<option value="TCP" ' + tcpSelected + '>TCP PROTOCOL</option>' +
+                    '<option value="UDP" ' + tcpSelected + '>UDP PROTOCOL</option>' +
+                '</select>' +
                 '<a href="#" class="remove_field">Remove</a></div>');
-
         }
         i++;
     }
 
 
 }
-
-
-
-

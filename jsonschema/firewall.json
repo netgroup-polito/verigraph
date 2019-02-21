@@ -4,7 +4,14 @@
     "description": "Polito Firewall",
     "type": "array",
     "items": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+            "source_id": { "type": "string"},
+            "destination_id": { "type": "string"},
+			"source_port" : { "type": "integer"},
+			"destination_port" : { "type": "integer"},
+			"protocol" : { "type": "string"}
+		}
     },
     "minItems": 0,
     "uniqueItems": true

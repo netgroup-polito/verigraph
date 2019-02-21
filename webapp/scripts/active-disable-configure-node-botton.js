@@ -80,7 +80,6 @@ function verifyAdSettings()
     //No configuration
     if (dempVarNewFunctionalType.localeCompare("endpoint") == 0 ||
         dempVarNewFunctionalType.localeCompare("webserver")==0 ||
-        dempVarNewFunctionalType.localeCompare("fieldmodifier")==0 ||
         dempVarNewFunctionalType.localeCompare("mailserver")==0)
     {
         return "2";

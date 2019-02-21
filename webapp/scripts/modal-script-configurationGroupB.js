@@ -30,9 +30,16 @@ $(document).ready(function() {
         configurationGroupAcounterBisB++;
         var tempId ="sB"  + configurationGroupAcounterB.toString();
         vectorIdElementB.push(tempId);
-        $(wrapper).append('<div id="sB'+ configurationGroupAcounterB.toString()+ '"><br>Source existing node<input id="' + configurationGroupAcounterB.toString() + 'B"class="form-control" type="text" name="mytext[]"/>' +
-
-            '<br>Destination existing source<input id="' + configurationGroupAcounterB.toString() + 'BB"class="form-control" type="text" name="mytext[]"/>' +
+        $(wrapper).append(
+            '<div id="sB'+ configurationGroupAcounterB.toString()+ '"><br>Source existing node <input id="' + configurationGroupAcounterB.toString() + 'B"class="form-control" type="text" name="mytext[]"/>' +
+            '<br>Destination existing source <input id="' + configurationGroupAcounterB.toString() + 'BB"class="form-control" type="text" name="mytext[]"/>' +
+            '<br />Source port <input id="' + configurationGroupAcounterB.toString() + 'BC"class="form-control" type="text" name="mytext[]"/>' +
+            '<br />Destination port <input id="' + configurationGroupAcounterB.toString() + 'BD"class="form-control" type="text" name="mytext[]"/>' +
+            '<br />Value of protocol: ' +
+            '<select id="' + configurationGroupAcounterB.toString() + 'BE">' +
+                '<option value="TCP">TCP PROTOCOL</option>' +
+                '<option value="UDP">UDP PROTOCOL</option>' +
+            '</select>' +
             '<a href="#" class="remove_field">Remove</a></div>'); //add input box
 
 
@@ -75,11 +82,29 @@ $(document).ready(function() {
     {
         //Get all value and save into the global variable-> and finish configuration for configurationGroupA
         var countB;
+        var jsonVariable = [];
 
+        if(isNaN(parseInt(($("#0BC").val()))))
+        {
+            alertError("At least one of the source ports is not a number!");
+            return false;
+        }
 
-        var jsonVariable = {};
+        if(isNaN(parseInt(($("#0BD").val()))))
+        {
+            alertError("At least one of the destination ports is not a number!");
+            return false;
+        }
 
-        jsonVariable[$("#0B").val()] = $("#0BB").val();
+        jsonVariable.push(
+            {
+                source_id: $("#0B").val(),
+                destination_id: $("#0BB").val(),
+                source_port: parseInt($("#0BC").val()),
+                destination_port: parseInt($("#0BD").val()),
+                protocol: $("#0BE").val()
+            }
+        );
 
 
         for(countB=0; countB<configurationGroupAcounterB; countB ++)
@@ -91,14 +116,27 @@ $(document).ready(function() {
             {
                 tempsB++;
 
+                if(isNaN(parseInt(($("#0BC").val()))))
+                {
+                    alertError("At least one of the source ports is not a number!");
+                    return false;
+                }
 
-                var confNode1B = $("#" + tempsB.toString() + "B").val();
-                var confNode2B = $("#" + tempsB.toString() + "BB").val();
+                if(isNaN(parseInt(($("#0BD").val()))))
+                {
+                    alertError("At least one of the destination ports is not a number!");
+                    return false;
+                }
 
-                jsonVariable[confNode1B] = confNode2B;
-
-
-
+                jsonVariable.push(
+                    {
+                        source_id: $("#" + tempsB.toString() + "B").val(),
+                        destination_id: $("#" + tempsB.toString() + "BB").val(),
+                        source_port: parseInt($("#" + tempsB.toString() + "BC").val()),
+                        destination_port: parseInt($("#" + tempsB.toString() + "BD").val()),
+                        protocol: $("#" + tempsB.toString() + "BE").val()
+                    }
+                );
             }
         }
 
@@ -106,7 +144,7 @@ $(document).ready(function() {
         {
             NFFGcyto.nodes[changedNodeConfigurationInt].data.configuration = [];
 
-            NFFGcyto.nodes[changedNodeConfigurationInt].data.configuration.push(jsonVariable);
+            NFFGcyto.nodes[changedNodeConfigurationInt].data.configuration = jsonVariable;
             if(updateOrChangeConfigurationFuncType==1)
                 NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType=$("#idSelectorModifyNode").val();
             changedNodeConfigurationInt=-1;
@@ -116,7 +154,7 @@ $(document).ready(function() {
         else
         {
             saveAndDraw();
-            NFFGcyto.nodes[NFFGcyto.nodes.length - 1].data.configuration.push(jsonVariable);
+            NFFGcyto.nodes[NFFGcyto.nodes.length - 1].data.configuration = jsonVariable;
         }
         configurationGroupAmodelcleanB();
         change = 1;
@@ -145,24 +183,17 @@ $(document).ready(function() {
             else {
                 tempsB++;
 
-
-
                 var elemB = document.getElementById("sB" + tempsB.toString());
                 elemB.parentNode.removeChild(elemB);
             }
-
-
         }
+
         $("#0B").val('');
         $("#0BB").val('');
+        $("#0BC").val('');
+        $("#0BD").val('');
         configurationGroupAcounterB = 0; //initlal text Aox count
         configurationGroupAcounterBisB=0;
         vectorIdElementB = [];
 
     }
-
-
-
-
-
-

@@ -66,6 +66,22 @@ function searchEdge(source, target) {
 }
 
 /**
+ * @description Search duplicate policy. Returns true if the policy exist otherwise false
+ * @param {string} policyName - Name of the policy.
+ * @returns {boolean} - Returns true if a policy with the given name was found, otherwise false.
+ */
+function searchPolicy(policyName) {
+
+    for (var i = 0; i < NFFGcyto.policies.length; i++) {
+        var obj = NFFGcyto.policies[i];
+        if (obj.policy.policyName == policyName) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * @description This function is able to search a node into the NFFG. If finds the node it return the index,
  * otherwise it returns -1.
  * @param  {string} nameOfnode - Name of the node
@@ -76,6 +92,24 @@ function searchIndexElementReturnElment(nameOfnode)
     for (var i=0; i<NFFGcyto.nodes.length; i++)
     {
         if(NFFGcyto.nodes[i].data.id.localeCompare(nameOfnode)==0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * @description This function is able to search a policy into the NFFG. If it finds the policy
+ * it returns the index, otherwise it returns -1.
+ * @param  {string} policyName - Name of the policy
+ * @return {number} - Return -1 if has not found the policy or the index of the policy.
+ */
+function searchPolicyAndReturnIndex(policyName)
+{
+    for (var i=0; i<NFFGcyto.policies.length; i++)
+    {
+        if(NFFGcyto.policies[i].policy.policyName.localeCompare(policyName)==0)
         {
             return i;
         }

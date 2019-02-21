@@ -134,7 +134,8 @@ function addNewGraph()
 
     var tempJson =
         {
-            nodes: []
+            nodes: [],
+            policies: []
         };
 
     indexServerLast = indexServer;

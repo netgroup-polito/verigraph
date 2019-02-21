@@ -83,7 +83,8 @@ var NFFGcyto =
     {
         id:[],
         nodes: [],
-        edges: []
+        edges: [],
+        policies: []
     };
 
 
@@ -156,6 +157,21 @@ var rootAddressServer =  location.host;
  */
 //var  addressServer  = "http://" + location.host + "/verigraph/api/graphs/";
 var  addressServer  = "http://" + rootAddressServer + "/verigraph/api/graphs/";
+
+/**
+ * @description This variable is used when the user wishes to change the restrictions with another one.
+ * This variable memorise the index of the object that stays the NFFG into NFFGcyto variable.
+ * @type {number}
+ */
+var changedPolicyInt = -1;
+
+/**
+ * @description It used in order to understand if it's possible to update the policy during the edit opertion.
+ * In other word if the user wishes to change the settings of a policy, this variable is sets to one. So when the
+ * new policy is saved, also the new policy is saved. After that, it is set again with zero.
+ * @type {number}
+ */
+var updateOrChangeRestrictionsType = 0;
 
 /**
  * @description Summary table of the configuration node modal scheme.
@@ -709,7 +725,3 @@ var  addressServer  = "http://" + rootAddressServer + "/verigraph/api/graphs/";
             }
     };
  */
-
-
-
-

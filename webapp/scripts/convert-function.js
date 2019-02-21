@@ -32,92 +32,184 @@
  */
 function NFFGfromCytoToVerigraphFlagSave(flagSave)
 {
-    //Initialize variable.
-    var tempJson =
-        {
-            id: 1,
-            nodes: []
-        };
-
-
-    //Get the NFFGcyto element and to cycle it in order to get all elements and to put into tempJson variable.
-    for (var x = 0; x < NFFGcyto.nodes.length; x++)
+    /*if(flagSave.localeCompare("save")==0)
     {
-
-        //Create a template and after it will be filled and it will put inside to tempJson.
-        var nodeTemplate = {
-            name: 3,
-            functional_type: 3,
-            neighbours: [
-            ],
-            configuration :[
-            ]
-
-        };
-
-        //Inside it, the functin will store all the neighbours of a node.
-        var neighboursVet = [];
-
-        //Save nema and fucntional type.
-        nodeTemplate.name = NFFGcyto.nodes[x].data.id;
-        nodeTemplate.functional_type = NFFGcyto.nodes[x].data.funcType;
+      //Initialize variable.
+      var tempJson =
+          {
+              id: 1,
+              nodes: []
+          };
 
 
-        //Get the configuration if the element has the configuration.
-        if (NFFGcyto.nodes[x].data.hasOwnProperty("configuration"))
-        {
-            nodeTemplate.configuration = NFFGcyto.nodes[x].data.configuration;
-        }
+      //Get the NFFGcyto element and to cycle it in order to get all elements and to put into tempJson variable.
+      for (var x = 0; x < NFFGcyto.nodes.length; x++)
+      {
+
+          //Create a template and after it will be filled and it will put inside to tempJson.
+          var nodeTemplate = {
+              name: 3,
+              functional_type: 3,
+              neighbours: [
+              ],
+              configuration :[
+              ]
+
+          };
+
+          //Inside it, the functin will store all the neighbours of a node.
+          var neighboursVet = [];
+
+          //Save nema and fucntional type.
+          nodeTemplate.name = NFFGcyto.nodes[x].data.id;
+          nodeTemplate.functional_type = NFFGcyto.nodes[x].data.funcType;
 
 
-        //Get all the neighbours of the node.
-        for (var i = 0; i < NFFGcyto.edges.length; i++)
-        {
+          //Get the configuration if the element has the configuration.
+          if (NFFGcyto.nodes[x].data.hasOwnProperty("configuration"))
+          {
+              nodeTemplate.configuration = NFFGcyto.nodes[x].data.configuration;
+          }
 
-            //Get the source node.
-            var source = nodeTemplate.name;
-            //It search the destination node from the source node.
-            if (source.localeCompare(NFFGcyto.edges[i].data.source)==0)
-            {
-                //Template for neighbours
-                var neighbours =
-                    {
-                        name: "NAT"
-                    };
-                //Get the destination node and save into neighboursVet.
-                neighbours.name = NFFGcyto.edges[i].data.target;
-                neighboursVet.push(neighbours);
-            }//End search destination node
 
-        }
+          //Get all the neighbours of the node.
+          for (var i = 0; i < NFFGcyto.edges.length; i++)
+          {
 
-        //Save into tempJson.
-        nodeTemplate.neighbours = neighboursVet;
-        tempJson.nodes.push(nodeTemplate);
-    }//End translate.
+              //Get the source node.
+              var source = nodeTemplate.name;
+              //It search the destination node from the source node.
+              if (source.localeCompare(NFFGcyto.edges[i].data.source)==0)
+              {
+                  //Template for neighbours
+                  var neighbours =
+                      {
+                          name: "NAT"
+                      };
+                  //Get the destination node and save into neighboursVet.
+                  neighbours.name = NFFGcyto.edges[i].data.target;
+                  neighboursVet.push(neighbours);
+              }//End search destination node
 
+          }
+
+          //Save into tempJson.
+          nodeTemplate.neighbours = neighboursVet;
+          tempJson.nodes.push(nodeTemplate);
+      }//End translate.
+    }
+    else
+    {*/
+      //Initialize variable.
+      var tempJson =
+          {
+              id: 1,
+              nodes: [],
+              policies: []
+          };
+
+
+      //Get the NFFGcyto element and to cycle it in order to get all elements and to put into tempJson variable.
+      for (var x = 0; x < NFFGcyto.nodes.length; x++)
+      {
+          //Create a template and after it will be filled and it will put inside to tempJson.
+          var nodeTemplate = {
+              name: 3,
+              functional_type: 3,
+              neighbours: [
+              ],
+              configuration :[
+              ]
+
+          };
+
+          //Inside it, the functin will store all the neighbours of a node.
+          var neighboursVet = [];
+
+          //Save nema and fucntional type.
+          nodeTemplate.name = NFFGcyto.nodes[x].data.id;
+          nodeTemplate.functional_type = NFFGcyto.nodes[x].data.funcType;
+
+
+          //Get the configuration if the element has the configuration.
+          if (NFFGcyto.nodes[x].data.hasOwnProperty("configuration"))
+          {
+              nodeTemplate.configuration = NFFGcyto.nodes[x].data.configuration;
+          }
+
+
+          //Get all the neighbours of the node.
+          for (var i = 0; i < NFFGcyto.edges.length; i++)
+          {
+
+              //Get the source node.
+              var source = nodeTemplate.name;
+              //It search the destination node from the source node.
+              if (source.localeCompare(NFFGcyto.edges[i].data.source)==0)
+              {
+                  //Template for neighbours
+                  var neighbours =
+                      {
+                          name: "NAT"
+                      };
+                  //Get the destination node and save into neighboursVet.
+                  neighbours.name = NFFGcyto.edges[i].data.target;
+                  neighboursVet.push(neighbours);
+              }//End search destination node
+
+          }
+
+          //Save into tempJson.
+          nodeTemplate.neighbours = neighboursVet;
+          tempJson.nodes.push(nodeTemplate);
+      }//End translate.
+
+      //Get the NFFGcyto element and to cycle it in order to get all elements and to put into tempJson variable.
+      for (var x = 0; x < NFFGcyto.policies.length; x++)
+      {
+          //Create a template to be filled and to be put inside to tempJson.
+          var policyTemplate = {
+              policyName: NFFGcyto.policies[x].policy.policyName,
+              source: NFFGcyto.policies[x].policy.source,
+              target: NFFGcyto.policies[x].policy.target,
+              trafficFlow: NFFGcyto.policies[x].policy.trafficFlow,
+              restrictions: {
+                type: NFFGcyto.policies[x].policy.restrictions.type,
+                functions: []
+              }
+          };
+
+          //Get all the restrictions' functions of the policy.
+          for (var i = 0; i < NFFGcyto.policies[x].policy.restrictions.functions.length; i++)
+          {
+              policyTemplate.restrictions.functions.push(NFFGcyto.policies[x].policy.restrictions.functions[i].function);
+          }
+
+          tempJson.policies.push(policyTemplate);
+      }//End translate.
+    //}
 
     if(flagSave.localeCompare("save")==0)
+    {
+        //Save into NFFGsServer
+        if(useLastId==1)
         {
-            //Save into NFFGsServer
-            if(useLastId==1)
-            {
 
-                tempJson.id = NFFGsServer[indexServerLast].id;
+            tempJson.id = NFFGsServer[indexServerLast].id;
 
-            }
-
-            else
-            {
-                tempJson.id=NFFGsServer[indexServer].id; //Get the id of the sever.
-            }
-
-
-            overWriteCell(tempJson);
-            return tempJson;
         }
+
+        else
+        {
+            tempJson.id=NFFGsServer[indexServer].id; //Get the id of the sever.
+        }
+
+
+        overWriteCell(tempJson);
+        return tempJson;
+    }
     else
-        return(tempJson); //Return when it has not the necessary to save
+        return(tempJson); //Return when it is not necessary to save
 }
 
 
@@ -134,25 +226,22 @@ function singleNFFGfromVerigraphToCytoAndCheck(newName)
     initVarCyto();
     var foundIdVector;
 
-
-
     for(
         var iteratorVectorIndexServerClient=0;
         iteratorVectorIndexServerClient<vectorIndexServerClient.idDropdown.length;
         iteratorVectorIndexServerClient++
         )
-        if(vectorIndexServerClient.idDropdown[iteratorVectorIndexServerClient]==newName)
-        {
-            foundIdVector= iteratorVectorIndexServerClient;
+    {
+      if(vectorIndexServerClient.idDropdown[iteratorVectorIndexServerClient]==newName)
+      {
+          foundIdVector= iteratorVectorIndexServerClient;
 
-        }
-
-
+      }
+    }
 
     //Search the element to translate
     var tempServer = NFFGsServer[foundIdVector];
         //searchGraph(foundIdVector);
-
 
     //Create a template in order to store inside all the information.
     var nodeTemplate =
@@ -174,58 +263,90 @@ function singleNFFGfromVerigraphToCytoAndCheck(newName)
             {
                 id: 3
             };
-        //Get the id and stores it in idTemplate variable.
-        idTemplate.id=tempServer.id;
-        //Memorise inside NFFGcyto the id.
-        NFFGcyto.id.push(idTemplate);
 
-        //Start to cycling on the nodes.
-        for (var i = 0; i < tempServer.nodes.length; i++)
+    //Get the id and stores it in idTemplate variable.
+    idTemplate.id=tempServer.id;
+    //Memorise inside NFFGcyto the id.
+    NFFGcyto.id.push(idTemplate);
+
+    //Start to cycling on the nodes.
+    for (var i = 0; i < tempServer.nodes.length; i++)
+    {
+        //Create a template in order to store inside all the information about the node.
+        var nodeTemplate = {
+            data: {
+                id: 3,
+                funcType: 3,
+                configuration:
+                    [
+                        {
+                        }
+                    ]
+            }
+        };
+        //Get the name and functional type of the node and store into nodeTemplate
+        nodeTemplate.data.id = tempServer.nodes[i].name;
+        nodeTemplate.data.funcType = tempServer.nodes[i].functional_type;
+
+        //Check if there is a configuration.
+        if (tempServer.nodes[i].hasOwnProperty("configuration"))
         {
-            //Create a template in order to store inside all the information about the node.
-            var nodeTemplate = {
+            //Get also the configuration
+            nodeTemplate.data.configuration = tempServer.nodes[i].configuration;
+
+        }
+
+        //Memorise the node into NFFGcyto.nodes
+        NFFGcyto.nodes.push(nodeTemplate);
+
+        // Add the neighbours as edges for this node
+        for (var j = 0; j < tempServer.nodes[i].neighbours.length; j++)
+        {
+            //Create a template in order to store inside all the information about the the edge.
+            var edgeTemplate = {
                 data: {
-                    id: 3,
-                    funcType: 3,
-                    configuration:
-                        [
-                            {
-                            }
-                        ]
+                    source: null,
+                    target: null,
+                    id: null
                 }
             };
-            //Get the name and functional type of the node and store into nodeTemplate
-            nodeTemplate.data.id = tempServer.nodes[i].name;
-            nodeTemplate.data.funcType = tempServer.nodes[i].functional_type;
-
-            //Check if there is a configuration.
-            if (tempServer.nodes[i].hasOwnProperty("configuration"))
-            {
-                //Get also the configuration
-                nodeTemplate.data.configuration = tempServer.nodes[i].configuration;
-
-            }
-
-            //Memorise the node into NFFGcyto.nodes
-            NFFGcyto.nodes.push(nodeTemplate);
-
-            // Add the neighbours as edges for this node
-            for (var j = 0; j < tempServer.nodes[i].neighbours.length; j++)
-            {
-                //Create a template in order to store inside all the information about the the edge.
-                var edgeTemplate = {
-                    data: {
-                        source: null,
-                        target: null,
-                        id: null
-                    }
-                };
-                //Store the information about the edge.
-                edgeTemplate.data.source = tempServer.nodes[i].name;
-                edgeTemplate.data.target = tempServer.nodes[i].neighbours[j].name;
-                NFFGcyto.edges.push(edgeTemplate);
-            }
+            //Store the information about the edge.
+            edgeTemplate.data.source = tempServer.nodes[i].name;
+            edgeTemplate.data.target = tempServer.nodes[i].neighbours[j].name;
+            NFFGcyto.edges.push(edgeTemplate);
         }
+    }
+
+    //Start to cycling on the policies.
+    for (var i = 0; i < tempServer.policies.length; i++)
+    {
+        //Create a template to be filled and put inside to tempJson.
+        var policyTemplate = {
+            policy: {
+              policyName: tempServer.policies[i].policyName,
+              source: tempServer.policies[i].source,
+              target: tempServer.policies[i].target,
+              trafficFlow: tempServer.policies[i].trafficFlow,
+              restrictions: {
+                type: tempServer.policies[i].restrictions.type,
+                functions: []
+              }
+            }
+        };
+
+        //Get all the restrictions' functions of the policy.
+        for (var j = 0; j < tempServer.policies[i].restrictions.functions.length; j++)
+        {
+            var funcTemplate = {
+                function: tempServer.policies[i].restrictions.functions[j]
+            };
+
+            policyTemplate.policy.restrictions.functions.push(funcTemplate);
+        }
+
+        NFFGcyto.policies.push(policyTemplate);
+    }
+
     //Draw the new graph
     drawWithParametre(NFFGcyto);
 
@@ -307,7 +428,7 @@ function fromSingleNffgVerigraphToNffCyte(nffgVerigraph)
 {
 
     initVarCyto();
-    
+
     //Create a template in order to store inside  the id.
     var idTemplate =
         {
@@ -364,5 +485,35 @@ function fromSingleNffgVerigraphToNffCyte(nffgVerigraph)
             edgeTemplate.data.target = nffgVerigraph.nodes[i].neighbours[j].name;
             NFFGcyto.edges.push(edgeTemplate);
         }
+    }
+
+    //Start to cycling on the policies.
+    for (var i = 0; i < nffgVerigraph.policies.length; i++)
+    {
+        //Create a template to be filled and put inside to tempJson.
+        var policyTemplate = {
+            policy: {
+              policyName: nffgVerigraph.policies[i].policyName,
+              source: nffgVerigraph.policies[i].source,
+              target: nffgVerigraph.policies[i].target,
+              trafficFlow: nffgVerigraph.policies[i].trafficFlow,
+              restrictions: {
+                type: nffgVerigraph.policies[i].restrictions.type,
+                functions: []
+              }
+            }
+        };
+
+        //Get all the neighbours of the node.
+        for (var j = 0; j < nffgVerigraph.policies[i].restrictions.functions.length; j++)
+        {
+            var funcTemplate = {
+                function: nffgVerigraph.policies[i].restrictions.functions[j]
+            };
+
+            policyTemplate.policy.restrictions.functions.push(funcTemplate);
+        }
+
+        NFFGcyto.policies.push(policyTemplate);
     }
 }

@@ -62,7 +62,7 @@ function verifyAdSettingsModifyNodeConfiguration()
     if(selectorInputValue.localeCompare("mailclient")==0 ||
         selectorInputValue.localeCompare("vpnaccess")==0 ||
         selectorInputValue.localeCompare("vpnexit")==0 ||
-        selectorInputValue.localeCompare("webclient")==0)
+        selectorInputValue.localeCompare("webclient")==0 )
     {
         return  "1";
     }
@@ -72,7 +72,6 @@ function verifyAdSettingsModifyNodeConfiguration()
     //Put here the node that you don't wish that have the configuration
     if (selectorInputValue.localeCompare("endpoint") == 0 ||
         selectorInputValue.localeCompare("webserver")==0 ||
-        selectorInputValue.localeCompare("fieldmodifier")==0 ||
         selectorInputValue.localeCompare("mailserver")==0)
     {
         return "2";

@@ -26,6 +26,7 @@ import it.polito.verigraph.exception.BadRequestException;
 import it.polito.verigraph.exception.InternalServerErrorException;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
+import it.polito.verigraph.model.Policy;
 
 
 /**
@@ -67,20 +68,45 @@ public class GraphCustomDeserializer extends JsonDeserializer<Graph>{
         catch (IOException e) {
             throw new InternalServerErrorException("I/O error parsing a graph: " + e.getMessage());
         }
+        
+        JsonNode policiesJson = root.get("policies");
+
+        if(policiesJson == null)
+            throw new BadRequestException("Invalid graph");
+
+        List<Policy> policyList = null;
+        try {
+        	policyList = new ObjectMapper().readValue(policiesJson.toString(), TypeFactory.defaultInstance().constructCollectionType(List.class, Policy.class));
+        }
+        catch (JsonParseException e) {
+            throw new BadRequestException("Invalid content for a graph: " + e.getMessage());
+        }
+        catch (JsonMappingException e) {
+            throw new BadRequestException("Invalid input json structure for a graph: " + e.getMessage());
+        }
+        catch (IOException e) {
+            throw new InternalServerErrorException("I/O error parsing a graph: " + e.getMessage());
+        }
 
         Graph graph = new Graph();
         if(root.get("id") != null){
             long graphId = root.get("id").asLong();
             graph.setId(graphId);
         }
+        
         Map<Long, Node> nodes = graph.getNodes();
-
         long numberOfNodes = 0;
         for (Node node : nodeList){
             nodes.put(++numberOfNodes, node);
         }
+        
+        Map<Long, Policy> policies = graph.getPolicies();
+        long numberOfPolicies = 0;
+        for (Policy policy : policyList){
+        	policies.put(++numberOfPolicies, policy);
+        }
+        
         return graph;
-
     }
 
 }

@@ -134,7 +134,7 @@ function updateGraphForVerificationPolicy(urlVerificationPolicy)
 
     swal({
             title: "Warning",
-            text: "It is not possible to verificated the graph because it has not been saved!!!",
+            text: "It is not possible to verify the graph because it has not been saved!!!",
             type: "warning",
             showCancelButton: true,
             confirmButtonClass: "#DD6B53",

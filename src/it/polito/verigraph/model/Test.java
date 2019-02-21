@@ -11,10 +11,16 @@ package it.polito.verigraph.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Test {
     private List<Node> nodes= new ArrayList<Node>();
     private String result;
-
+    private String comment = "";
+    @JsonIgnore
+    private String textPath;
+    @JsonIgnore
+    private Node blockingNode;
     public Test() {
 
     }
@@ -35,19 +41,41 @@ public class Test {
             break;
         }
         this.nodes = paths;
+        
+        textPath = "";
+        for(Node n : paths) {
+        	if(textPath.equals("")) {
+        		textPath = n.getName();
+        	} else {
+        		textPath += " " + n.getName();
+        	}
+        }
     }
 
     public Test(List<Node> paths, String result) {
         this.nodes = paths;
         this.result = result;
+        
+        textPath = "";
+        for(Node n : paths) {
+        	if(textPath.equals("")) {
+        		textPath = n.getName();
+        	} else {
+        		textPath += " " + n.getName();
+        	}
+        }
     }
 
     public List<Node> getPath() {
         return nodes;
     }
+    
+    public String getTextPath() {
+        return textPath;
+    }
 
-    public void setPath(List<Node> paths) {
-        this.nodes = paths;
+    public void setTextPath(String textPath) {
+        this.textPath = textPath;
     }
 
     public String getResult() {
@@ -58,4 +86,15 @@ public class Test {
         this.result = result;
     }
 
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+    
+    public String getComment() {
+        return comment;
+    }
+    
+    public void setBlockingNode(Node blockingNode) {
+        this.blockingNode = blockingNode;
+    }
 }

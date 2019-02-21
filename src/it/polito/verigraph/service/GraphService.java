@@ -20,6 +20,7 @@ import it.polito.neo4j.exceptions.MyNotFoundException;
 import it.polito.verigraph.exception.ForbiddenException;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
+import it.polito.verigraph.model.Policy;
 
 public class GraphService {
 
@@ -50,6 +51,7 @@ public class GraphService {
         if (graph.getId() < 0) {
             throw new ForbiddenException("Illegal graph id: " + graph.getId());
         }
+        
         validateGraph(graph);
         Graph localGraph=new Graph();
         localGraph=manager.updateGraph(graph);
@@ -77,6 +79,9 @@ public class GraphService {
     public static void validateGraph(Graph graph) throws JsonProcessingException {
         for (Node node : graph.getNodes().values()) {
             NodeService.validateNode(graph, node);
+        }
+        for (Policy policy : graph.getPolicies().values()) {
+            PolicyService.validatePolicy(graph, policy);
         }
     }
 }

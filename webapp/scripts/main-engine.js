@@ -21,12 +21,8 @@ $(document).ready(function() {
     //Check graph saved or no
     checkGraphSavedOrNotSaved();
 
-
     //for a better debugging, (maybe) disable the polling
     serverPolling();
-
-
-
 
     //add node
     /**
@@ -271,7 +267,104 @@ $(document).ready(function() {
         change = 1;
     });
 
+    //Add policy
+    /**
+     * @description This function is able to add a policy.
+     * This function gets from the DOM four values: the name of the policy, the source and target node id and the type of the policy.
+     * The function checks if the first three fields are not empty: if at least one of them is empty, the function returns false.
+     * After that, it checks if the ids (or names) of the nodes exist in the graph. If they don't exist, the function returns false
+     * otherwise it adds the policy (in the global client structure).
+     */
+    $("#addPolicy").click(function() {
+        //Get the ids of the policy and of the source and target nodes.
+        var policyName = $("#policyID").val();
+        var src = $("#newPolicySource").val();
+        var target = $("#newPolicyTarget").val();
 
+        // Get value from the selector of the policy types
+        var restrictionType = $('#selectNewPolicyType').val();
+
+        //Check if the ids of the policy and of the source and target nodes are right
+        if (!(checkNameOfPolicy(policyName) && checkSourceTarget(src, target))) {
+            return false;
+        }
+
+        //Check if the source and target nodes exists
+        var existSource = searchNodeElement(src);
+        var existTarget = searchNodeElement(target);
+
+        if (existSource == false && existTarget == false) {
+            alertError("It is not possible to add the policy because the source and target node do not exist ");
+            return false;
+        }
+
+        if (src.localeCompare(target) == 0) {
+            alertError("It is not possible to add the policy because the source and target node are the same ");
+            return false;
+        }
+
+        //searchNodeElement: 1 if the node does not exist, 0 if the  node exists
+        if (false == existSource) {
+            alertError("It is not possible to add the policy because the source node does not exist ");
+            return false;
+        }
+
+        //searchNodeElement:  1 if the node does not exist, 0 if the node exists
+        if (false == existTarget) {
+            alertError("It is not possible to add the policy because the  target node does not exist ");
+            return false;
+        }
+
+        // Check if the policy exists or not
+        //searchPolicy: 1 if the policy exists, 0 if the node does not exist
+        if (true == searchPolicy(policyName)) {
+            alertError("It is not possible to add a policy because the policyID already exist");
+            return false;
+        }
+
+        cleanningModal=true;
+
+        setPolicyRestrictions(restrictionType);
+        createAndPushPolicy(policyName, src, target, restrictionType);
+
+        $('#newPolicyDrop').collapse('hide');
+
+        //The graph has changed so the flag about the change graph is updated.
+        change = 1;
+    });
+
+    //remove the policy
+    /**
+     * @description The function is able to remove a policy from the graph.
+     * The function gets the name of the policy and it checks if it is empty or not.
+     * If the field is empty the function returns false. After that, the function checks if the policy exists, so the function
+     * can remove the node from the global variable.
+     */
+    $("#removePolicy").click(function() {
+        //Get the name of the policy
+        var policyName = $("#policyToRemove").val();
+
+        //Check if the field is empty or not
+        if (policyName == "") {
+            alertError("Error: The policy ID field is empty");
+            return false;
+        }
+
+        // Check if the policy exists or no
+        //searchPolicy -> 1 policy exists, 0 -> policy does not exist
+        if (false == searchPolicy(policyName)) {
+            alertError("It is not possible to remove the policy because this id does not exist.");
+            return false;
+        }
+
+        //Remove policy
+        removePolicy(policyName);
+
+        $('#removePolicyD').collapse('hide');
+
+        //The graph has changed so the flag about the change graph is updated.
+        change = 1;
+    });
 });
 
 
@@ -364,4 +457,29 @@ function createAndPushNode(nameOfNode, tmpgetVaueFunctionalType, flag) {
     }
 
 
+}
+
+/**
+ * @description Add new policy to the graph
+ * @param {string} policyName - Name/ID of the policy.
+ * @param {string} source - Source node of the policy.
+ * @param {string} target - Destination node of the policy.
+ * @param {string} type - Type of restrictions of the policy.
+ */
+function createAndPushPolicy(policyName, source, target, type) {
+  // Policy template
+  var policyTemplate = {
+      policy: {
+          policyName: policyName,
+          source: source,
+          target: target,
+          trafficFlow: [],
+          restrictions: {
+            type: type,
+            functions: []
+          }
+      }
+  };
+  //Update the variable
+  NFFGcyto.policies.push(policyTemplate);
 }

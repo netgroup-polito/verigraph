@@ -1,5 +1,5 @@
 /**
- * @file Manage modal for the node configuration.
+ * @file Manage modal for the node configuration and policy trafficFlow and restriction.
  */
 
 /**
@@ -134,8 +134,13 @@ function choseconfiguration(configuration)
         }
 
         case "fieldmodifier": {
-            //$('#configurationGroupBmodalB').modal('show');
-            break;
+          if(cleanningModal==true)
+          {
+              cleaningModalC();
+              cleanningModal = false;
+          }
+          $('#configurationGroupBmodalC').modal('show');
+          break;
         }
 
 
@@ -152,3 +157,60 @@ function choseconfiguration(configuration)
 
 }
 
+/**
+ * @description Manages the modal to be shown for the definition of the restrictions of a policy.
+ * Before that, it checks if it is necessary to clean the modal through the cleanningModal variable.
+ * If it is true, it launch a specific function to clean the modal.
+ * At the end it sets two variables (changedNodeConfigurationInt and updateOrChangeConfigurationFuncType)
+ * if they are to be set. They have been memorises in two
+ * temporary variables (changeNodeConf and updateFunc) at the beginning of the function.
+ * @param {string} configuration - The selected node type (selected from the select element).
+ */
+function setPolicyTrafficFlow()
+{
+      var changePolicy = changedPolicyInt;
+
+      if(cleanningModal==true)
+      {
+        cleaningModalTrafficFlow();
+        cleanningModal = false;
+      }
+      $('#configurationModalTrafficFlow').modal('show');
+
+      if(flagChangeConfigurationWithNewSetting ==true)
+      {
+          flagChangeConfigurationWithNewSetting=false;
+
+          changedPolicyInt = changePolicy;
+      }
+}
+
+/**
+ * @description Manages the modal to be shown for the definition of the restrictions of a policy.
+ * Before that, it checks if it is necessary to clean the modal through the cleanningModal variable.
+ * If it is true, it launch a specific function to clean the modal.
+ * At the end it sets two variables (changedNodeConfigurationInt and updateOrChangeConfigurationFuncType)
+ * if they are to be set. They have been memorises in two
+ * temporary variables (changeNodeConf and updateFunc) at the beginning of the function.
+ * @param {string} configuration - The selected node type (selected from the select element).
+ */
+function setPolicyRestrictions(restrictionType)
+{
+      var changePolicy = changedPolicyInt;
+      var updateRes = updateOrChangeRestrictionsType;
+
+      if(cleanningModal==true)
+      {
+        cleaningModalRestrictions();
+        cleanningModal = false;
+      }
+      $('#configurationModalRestrictions').modal('show');
+
+      if(flagChangeConfigurationWithNewSetting ==true)
+      {
+          flagChangeConfigurationWithNewSetting=false;
+
+          changedPolicyInt = changePolicy;
+          updateOrChangeRestrictionsType = updateFunc;
+      }
+}

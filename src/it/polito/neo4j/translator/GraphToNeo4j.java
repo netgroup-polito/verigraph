@@ -54,19 +54,22 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.JSONWrappedObject;
 
+
+import it.polito.neo4j.jaxb.AddressType;
 import it.polito.neo4j.jaxb.Antispam;
 import it.polito.neo4j.jaxb.Cache;
 import it.polito.neo4j.jaxb.Dpi;
 import it.polito.neo4j.jaxb.Elements;
-import it.polito.neo4j.jaxb.Endhost;
 import it.polito.neo4j.jaxb.Endpoint;
-import it.polito.neo4j.jaxb.Fieldmodifier;
 import it.polito.neo4j.jaxb.Firewall;
 import it.polito.neo4j.jaxb.FunctionalTypes;
 import it.polito.neo4j.jaxb.Graph;
 import it.polito.neo4j.jaxb.Node;
 import it.polito.neo4j.jaxb.ObjectFactory;
+import it.polito.neo4j.jaxb.PacketType;
+import it.polito.neo4j.jaxb.Policy;
 import it.polito.neo4j.jaxb.ProtocolTypes;
+import it.polito.neo4j.jaxb.TransportProtocolTypes;
 import it.polito.neo4j.jaxb.Vpnaccess;
 import it.polito.neo4j.jaxb.Vpnexit;
 import it.polito.neo4j.jaxb.Webclient;
@@ -111,10 +114,35 @@ public class GraphToNeo4j {
             nodes.add(node);
         }
         graph.getNode().addAll(nodes);
+        
+        // Add policies to neo4j graph object
+        List<it.polito.neo4j.jaxb.Policy> policyList = new ArrayList<it.polito.neo4j.jaxb.Policy>();
+        for(Map.Entry<Long, it.polito.verigraph.model.Policy> p : gr.getPolicies().entrySet()){
+            it.polito.neo4j.jaxb.Policy policy=(new ObjectFactory()).createPolicy();
+            policy.setId(p.getValue().getId());
+            policy.setName(p.getValue().getName());
+            policy.setSource(p.getValue().getSource());
+            policy.setDestination(p.getValue().getDestination());
+            
+            JsonNode trafficFlow = p.getValue().getTrafficFlow();
+            setTrafficFlow(policy, trafficFlow);
+
+            // setRestrictions
+            it.polito.neo4j.jaxb.Restrictions restrictions = (new ObjectFactory()).createRestrictions();
+            JsonNode json=p.getValue().getRestrictions().getRestrictions();
+            setRestrictions(restrictions, p.getValue(), json);
+            policy.setRestrictions(restrictions);
+            policyList.add(policy);
+        }
+        
+        it.polito.neo4j.jaxb.Policies policies = (new ObjectFactory()).createPolicies();
+        policies.getPolicy().addAll(policyList);
+        graph.setPolicies(policies);
+        
         return graph;
     }
 
-    public static it.polito.neo4j.jaxb.Configuration ConfToNeo4j(it.polito.verigraph.model.Configuration nodeConfiguration, it.polito.verigraph.model.Node node) throws JsonParseException, JsonMappingException, IOException {
+	public static it.polito.neo4j.jaxb.Configuration ConfToNeo4j(it.polito.verigraph.model.Configuration nodeConfiguration, it.polito.verigraph.model.Node node) throws JsonParseException, JsonMappingException, IOException {
         it.polito.neo4j.jaxb.Configuration configuration=(new ObjectFactory()).createConfiguration();
         JsonNode nodes=nodeConfiguration.getConfiguration();
         setConfiguration(configuration, node, nodes);
@@ -134,44 +162,28 @@ public class GraphToNeo4j {
             Firewall firewall=new Firewall();
             List<Elements> elements_list=new ArrayList<Elements>();
 
-            if(!nodes.toString().equals(empty)){
-                ObjectMapper mapper=new ObjectMapper();
-                java.util.Map<String, String> map=new LinkedHashMap();
-                String input;
-                Matcher matcher = Pattern.compile("\\[([^\\]]*)\\]").matcher(nodes.toString());
-                if(matcher.find()){
-                    input=matcher.group(1);
-                }else
-                    input=nodes.toString();
-                Pattern pattern=Pattern.compile("\\{([^\\}]*)\\}");
-                List<String> list = new ArrayList<String>();
-                Matcher match= pattern.matcher(input);
-                while (match.find()) {
-                    list.add(match.group());
-                }
 
-                try{
-                    for(String string : list){
-                        map.putAll(mapper.readValue(string, LinkedHashMap.class));
-                    }
-                    for(java.util.Map.Entry<String, String> m : map.entrySet()){
-                        Elements e=new Elements();
-                        e.setDestination(m.getKey());
-                        e.setSource(m.getValue());
-                        elements_list.add(e);
-                    }
-
-                }catch(JsonGenerationException e) {
-                    e.printStackTrace();
-                } catch (JsonMappingException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+        	if (nodes.isArray()) {
+    			for (JsonNode objNode : nodes) {
+                    String src_id = objNode.get("source_id").textValue();
+                    String dest_id = objNode.get("destination_id").textValue();
+                    BigInteger src_port = objNode.get("source_port").bigIntegerValue();
+                    BigInteger dest_port = objNode.get("destination_port").bigIntegerValue();
+                    String proto = objNode.get("protocol").textValue();
+                    
+                    Elements e=new Elements();
+                    e.setSource(src_id);
+                    e.setDestination(dest_id);
+                    e.setSrcPort(src_port);
+                    e.setDestPort(dest_port);
+                    e.setProtocol(TransportProtocolTypes.fromValue(proto));;
+                    elements_list.add(e);
                 }
-            }
+        	}
             else{
                 vlogger.logger.info("elements_list of Firewall " +node.getName()+" empty");
             }
+        	
             firewall.getElements().addAll(elements_list);
             configuration.setFirewall(firewall);
             break;
@@ -179,7 +191,8 @@ public class GraphToNeo4j {
         case "ANTISPAM":{
             configuration.setName(node.getFunctional_type().toLowerCase());
             Antispam antispam=new Antispam();
-            List<String> source=new ArrayList<String>();
+            List<AddressType> source=new ArrayList<AddressType>();
+            //List<String> source=new ArrayList<String>();
 
             if(!nodes.toString().equals(empty)){
                 ObjectMapper mapper=new ObjectMapper();
@@ -190,7 +203,9 @@ public class GraphToNeo4j {
                     list = mapper.readValue(nodes.toString(), ArrayList.class);
 
                     for(String s : list){
-                        source.add(s);
+                    	AddressType address = new AddressType();
+                    	address.setName(s);
+                        source.add(address);
                     }
 
                 } catch (JsonGenerationException e) {
@@ -212,7 +227,8 @@ public class GraphToNeo4j {
         case "CACHE":{
             configuration.setName(node.getFunctional_type().toLowerCase());
             Cache cache=new Cache();
-            List<String> resource=new ArrayList<String>();
+            List<AddressType> resource=new ArrayList<AddressType>();
+            //List<String> resource=new ArrayList<String>();
 
             if(!nodes.toString().equals(empty)){
                 ObjectMapper mapper=new ObjectMapper();
@@ -223,7 +239,9 @@ public class GraphToNeo4j {
                     list = mapper.readValue(nodes.toString(), ArrayList.class);
 
                     for(String s : list){
-                        resource.add(s);
+                    	AddressType address = new AddressType();
+                    	address.setName(s);
+                        resource.add(address);
                     }
 
                 } catch (JsonGenerationException e) {
@@ -277,9 +295,10 @@ public class GraphToNeo4j {
             configuration.setDpi(dpi);
             break;
         }
-        case "ENDHOST":{
+        case "ENDHOST":
+        case "FIELDMODIFIER":{
             configuration.setName(node.getFunctional_type().toLowerCase());
-            Endhost endhost=new Endhost();
+            PacketType endhost=new PacketType();
 
             if(!nodes.toString().equals(empty)){
                 ObjectMapper mapper=new ObjectMapper();
@@ -347,14 +366,14 @@ public class GraphToNeo4j {
             configuration.setEndpoint(endpoint);
             break;
         }
-        case "FIELDMODIFIER":{
+        /*case "FIELDMODIFIER":{
 
             configuration.setName(node.getFunctional_type());
-            Fieldmodifier fieldmodifier=new  Fieldmodifier();
+            PacketType fieldmodifier=new  PacketType();
             configuration.setFieldmodifier(fieldmodifier);
             break;
         }
-
+		*/
         case "MAILCLIENT":{
             configuration.setName(node.getFunctional_type().toLowerCase());
             Mailclient mailclient=new Mailclient();
@@ -411,7 +430,8 @@ public class GraphToNeo4j {
         case "NAT":{
             configuration.setName(node.getFunctional_type().toLowerCase());
             Nat nat=new Nat();
-            List<String> source=new ArrayList<String>();
+            List<AddressType> source=new ArrayList<AddressType>();
+            //List<String> source=new ArrayList<String>();
 
             if(!nodes.toString().equals(empty)){
                 ObjectMapper mapper=new ObjectMapper();
@@ -421,7 +441,9 @@ public class GraphToNeo4j {
                     list = mapper.readValue(nodes.toString(), ArrayList.class);
 
                     for(String s : list){
-                        source.add(s);
+                    	AddressType address = new AddressType();
+                    	address.setName(s);
+                        source.add(address);
                     }
                 } catch (JsonGenerationException e) {
                     e.printStackTrace();
@@ -610,5 +632,135 @@ public class GraphToNeo4j {
         setConfiguration(configuration, n, json);
         nodeRoot.setConfiguration(configuration);
         return nodeRoot;
+    }
+    
+    public static Policy PolicyToNeo4j(it.polito.verigraph.model.Policy p) throws JsonParseException, JsonMappingException, IOException{
+        Policy policyRoot;
+        it.polito.neo4j.jaxb.Restrictions restrictions=(new ObjectFactory()).createRestrictions();
+        policyRoot=(new ObjectFactory()).createPolicy();
+        
+        policyRoot.setId(p.getId());
+        policyRoot.setName(p.getName());
+        policyRoot.setSource(p.getSource());
+        policyRoot.setDestination(p.getDestination());
+        
+        JsonNode trafficFlow = p.getTrafficFlow();
+        setTrafficFlow(policyRoot, trafficFlow);
+
+        // setRestrictions
+        JsonNode json=p.getRestrictions().getRestrictions();
+        setRestrictions(restrictions, p, json);
+        policyRoot.setRestrictions(restrictions);
+        
+        return policyRoot;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static void setRestrictions(it.polito.neo4j.jaxb.Restrictions restrictions, it.polito.verigraph.model.Policy policy, JsonNode nodes) throws JsonParseException, JsonMappingException, IOException {
+        
+        String empty="[]";
+    	
+        restrictions.setType(it.polito.neo4j.jaxb.RestrictionTypes.fromValue(policy.getRestrictions().getType().toUpperCase()));
+        
+        List<Object> functions_list=new ArrayList<Object>();
+        if(!nodes.toString().equals(empty)){
+        	if (nodes.isArray()) {
+                for (JsonNode objNode : nodes) {
+                    String type = objNode.get("funcType").textValue();
+                    
+                    if(type.equals("exact")) {
+                    	it.polito.neo4j.jaxb.ExactFunction f = new it.polito.neo4j.jaxb.ExactFunction();
+                		f.setName(objNode.get("funcName").textValue());
+                        functions_list.add(f);
+                    } else if (type.equals("generic")) {
+                    	it.polito.neo4j.jaxb.GenericFunction f = new it.polito.neo4j.jaxb.GenericFunction();
+                		f.setType(it.polito.neo4j.jaxb.FunctionalTypes.fromValue(objNode.get("funcName").textValue().toUpperCase()));
+                        functions_list.add(f);
+                        
+                    	vlogger.logger.info("Added funcname: \n" + objNode.get("funcName").textValue());
+
+                    }
+                }
+        	}
+        }
+        else{
+            vlogger.logger.info("Function_list of the policy " + policy.getName() + " empty");
+        }
+        
+        restrictions.getGenericFunctionOrExactFunction().addAll(functions_list);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void setTrafficFlow(Policy policy, JsonNode tf) {
+        String empty="[]";
+
+        PacketType trafficFlow = new PacketType();
+
+        if(!tf.toString().equals(empty)){
+            ObjectMapper mapper=new ObjectMapper();
+            java.util.Map<String, String> map=new LinkedHashMap();
+            String input;
+            Matcher matcher = Pattern.compile("\\[([^\\]]*)\\]").matcher(tf.toString());
+            if(matcher.find()){
+                input=matcher.group(1);
+            }else
+                input=tf.toString();
+
+            try{
+                map = mapper.readValue(input, java.util.LinkedHashMap.class);
+                for(java.util.Map.Entry<String, String> m : map.entrySet()){
+                    switch(m.getKey()){
+                    case "body":{
+                        trafficFlow.setBody(m.getValue());
+                        break;
+                    }
+                    case"sequence":{
+                        trafficFlow.setSequence(new BigInteger(m.getValue()));
+                        break;
+                    }
+                    case "protocol":{
+                        trafficFlow.setProtocol(ProtocolTypes.fromValue(m.getValue()));
+                        break;
+                    }
+                    case "email_from":{
+                        trafficFlow.setEmailFrom(m.getValue());
+                        break;
+                    }
+                    case "url":{
+                        trafficFlow.setUrl(m.getValue());
+                        break;
+                    }
+                    case "option":{
+                        trafficFlow.setOptions(m.getValue());
+                        break;
+                    }
+                    case "destination":{
+                        trafficFlow.setDestination(m.getValue());
+                        break;
+                    }
+                    }
+                }
+
+            }catch(JsonGenerationException e) {
+                e.printStackTrace();
+            } catch (JsonMappingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else{
+            vlogger.logger.info("Traffic flow for policy " + policy.getName() + " empty");
+        }
+        
+		policy.setTrafficflow(trafficFlow);
+	}
+    
+    public static it.polito.neo4j.jaxb.Restrictions RestrictionsToNeo4j(it.polito.verigraph.model.Restrictions policyRestrictions, it.polito.verigraph.model.Policy policy) throws JsonParseException, JsonMappingException, IOException {
+        it.polito.neo4j.jaxb.Restrictions restrictions = (new ObjectFactory()).createRestrictions();
+        JsonNode nodes = policyRestrictions.getRestrictions();
+        setRestrictions(restrictions, policy, nodes);
+
+        return restrictions;
     }
 }

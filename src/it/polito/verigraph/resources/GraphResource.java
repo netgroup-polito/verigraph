@@ -19,11 +19,13 @@ import it.polito.neo4j.exceptions.MyNotFoundException;
 import it.polito.verigraph.model.ErrorMessage;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
+import it.polito.verigraph.model.Policy;
 import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.resources.beans.VerificationBean;
 import it.polito.verigraph.service.GraphService;
 import it.polito.verigraph.service.TopologyTemplateService;
 import it.polito.verigraph.service.VerificationService;
+import it.polito.verigraph.service.VerigraphLogger;
 import it.polito.verigraph.tosca.MappingUtils;
 import it.polito.tosca.jaxb.Definitions;
 import it.polito.tosca.jaxb.TServiceTemplate;
@@ -189,7 +191,7 @@ public class GraphResource {
 
     @DELETE
     @Path("/{graphId}")
-    @ApiOperation(httpMethod = "DELETE", value = "Deletes a graph", notes = "Deletes a signle graph")
+    @ApiOperation(httpMethod = "DELETE", value = "Deletes a graph", notes = "Deletes a single graph")
     @ApiResponses(value = {
         @ApiResponse(code = 403, message = "Invalid graph id", response = ErrorMessage.class),
         @ApiResponse(code = 500, message = "Internal server error", response = ErrorMessage.class),
@@ -199,7 +201,7 @@ public class GraphResource {
     }
 
     @GET
-    @Path("/{graphId}/policy")
+    @Path("/{graphId}/policyVerifier")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/x-yaml"})
     @ApiOperation(httpMethod = "GET",
         value = "Verifies a given policy in a graph",
@@ -283,5 +285,10 @@ public class GraphResource {
     @Path("/{graphId}/nodes")
     public NodeResource getNodeResource() {
         return new NodeResource();
+    }
+    
+    @Path("/{graphId}/policies")
+    public PolicyResource getPolicyResource() {
+        return new PolicyResource();
     }
 }

@@ -25,11 +25,11 @@ import it.polito.neo4j.exceptions.MyNotFoundException;
 public interface Neo4jDBInteraction {
     public enum NodeType implements Label
     {
-        Nffg, Node, Firewall, EndHost, EndPoint, Antispam, Cache, DPI, Mailclient, Mailserver, NAT, VPNAccess, VPNExit, Webclient, Webserver, Configuration, Fieldmodifier;
+        Nffg, Node, Firewall, EndHost, EndPoint, Antispam, Cache, DPI, Mailclient, Mailserver, NAT, VPNAccess, VPNExit, Webclient, Webserver, Configuration, Fieldmodifier, Policy, Restrictions, ExactFunction, GenericFunction, PacketType;
     }
     public enum RelationType implements RelationshipType
     {
-        PathRelationship, OwnerRelationship, ConfigurationRelantionship, ElementRelationship;
+        PathRelationship, OwnerRelationship, ConfigurationRelantionship, ElementRelationship, PolicyRelationship, RestrictionsRelationship, FunctionRelationship, TrafficFlowRelationship;
     }
 
     public void createGraphs(Graphs graphs) throws MyNotFoundException, MyInvalidIdException;

@@ -193,7 +193,8 @@ function initVarCyto ()
         {
             id:[],
             nodes: [],
-            edges: []
+            edges: [],
+            policies: []
         };
 
 }

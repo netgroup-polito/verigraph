@@ -14,7 +14,7 @@ import it.polito.verigraph.model.Node;
 import it.polito.verigraph.validation.exception.ValidationException;
 
 
-public class EndhostValidator implements ValidationInterface {
+public class PacketTypeValidator implements ValidationInterface {
 
     @Override
     public void validate(Graph graph, Node node, Configuration configuration) throws ValidationException {

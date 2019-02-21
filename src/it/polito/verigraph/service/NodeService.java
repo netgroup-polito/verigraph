@@ -180,7 +180,13 @@ public class NodeService {
     }
 
     public static void validateNodeConfigurationAgainstSchemaFile(Node node, JsonNode configurationJson) {
-        String schemaFileName = node.getFunctional_type() + ".json";
+    	String schemaFileName;
+    	
+    	if( node.getFunctional_type().equals("endhost") || node.getFunctional_type().equals("fieldmodifier"))
+    		schemaFileName = "packettype.json";
+    	else	
+    		schemaFileName = node.getFunctional_type() + ".json";
+        
 
         File schemaFile = new File(System.getProperty("catalina.base") + "/webapps/verigraph/jsonschema/" + schemaFileName);
 

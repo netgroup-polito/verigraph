@@ -246,7 +246,10 @@ function  changeSettingConfiguration()
         populatedAgainModalB()
 
     }
-    if (NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType.localeCompare("endhost")==0)
+    if  (
+            NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType.localeCompare("endhost")==0 ||
+            NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType.localeCompare("fieldmodifier")==0
+        )
     {
         //modal C
         populatedAgainModalC();
@@ -285,7 +288,6 @@ function  changeSettingConfiguration()
     if(
         NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType.localeCompare("endpoint")==0 ||
         NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType.localeCompare("webserver")==0 ||
-        NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType.localeCompare("fieldmodifier")==0 ||
         NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType.localeCompare("mailserver")==0
     )
         alertError("For " + NFFGcyto.nodes[changedNodeConfigurationInt].data.funcType + " node no configuration available!");
@@ -312,7 +314,7 @@ function deleteSettingConfiguration ()
     drawWithParametre(NFFGcyto);
     change=1;
     alertSuccess("Modification done!");
-    
+
 }
 
 /**
@@ -334,4 +336,3 @@ function checksNameAndSetChangedNodeConfigurationIntVarialble()
     return true;
 
 }
-

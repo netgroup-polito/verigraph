@@ -38,6 +38,9 @@ public class Graph {
     @ApiModelProperty(required = false, hidden = true)
     @XmlTransient
     private Set<Link>links= new HashSet<Link>();
+    
+    @ApiModelProperty(name = "policies", notes = "Policies", dataType = "List[it.polito.verigraph.model.Policy]")
+    private Map<Long, Policy>policies= new HashMap<Long, Policy>();
 
     public Graph() {
 
@@ -62,6 +65,15 @@ public class Graph {
 
     public void setNodes(Map<Long, Node> nodes) {
         this.nodes = nodes;
+    }
+    
+    @JsonSerialize(using = CustomMapSerializer.class)
+    public Map<Long, Policy> getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(Map<Long, Policy> policies) {
+        this.policies = policies;
     }
 
     @XmlTransient
@@ -98,4 +110,20 @@ public class Graph {
         return occurrences;
     }
 
+	public Policy searchPolicyByName(String name) {
+		for (Policy policies : this.policies.values()) {
+            if (policies.getName().equals(name))
+                return policies;
+        }
+        return null;
+	}
+
+	public int policiesWithName(String name) {
+        int occurrences = 0;
+        for (Policy policy : this.policies.values()) {
+            if (policy.getName().equals(name))
+                occurrences++;
+        }
+        return occurrences;
+    }
 }

@@ -134,3 +134,32 @@ function removeNeighboringEdge(node)
     }
 
 }
+
+/**
+ * @description Remove a policy by its ID
+ * @param {string} policyName - Id of the policy.
+ */
+function removePolicy(policyName)
+{
+    NFFGcyto.policies = NFFGcyto.policies.filter(function (jsonObject) {
+        return jsonObject.policy.policyName != policyName;
+    });
+}
+
+/**
+ * @description The function is specific to check the input of the name of a policy.
+ * If the input is empty, it is able to send a message. It returns true if there have not been problems,
+ * in other cases it returns false.
+ * @param {string} nameOfPolicy - Name of the policy.
+ * @returns {boolean} Returns false there is a problem, returns true if there is not a problem.
+ */
+function checkNameOfPolicy(nameOfPolicy) {
+
+   if (nameOfPolicy == "") {
+        alertError("Error: The policy ID field is empty");
+        return false; // was 0
+    }
+
+    //return true if there have not been problems in other cases it returns false
+    return true;
+}

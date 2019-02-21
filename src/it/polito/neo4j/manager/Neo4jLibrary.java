@@ -47,16 +47,17 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.polito.neo4j.jaxb.AddressType;
 import it.polito.neo4j.jaxb.Antispam;
 import it.polito.neo4j.jaxb.Cache;
 import it.polito.neo4j.jaxb.Configuration;
 import it.polito.neo4j.jaxb.Dpi;
 import it.polito.neo4j.jaxb.Elements;
-import it.polito.neo4j.jaxb.Endhost;
 import it.polito.neo4j.jaxb.Endpoint;
-import it.polito.neo4j.jaxb.Fieldmodifier;
+import it.polito.neo4j.jaxb.ExactFunction;
 import it.polito.neo4j.jaxb.Firewall;
 import it.polito.neo4j.jaxb.FunctionalTypes;
+import it.polito.neo4j.jaxb.GenericFunction;
 import it.polito.neo4j.jaxb.Graph;
 import it.polito.neo4j.jaxb.Graphs;
 import it.polito.neo4j.jaxb.Mailclient;
@@ -64,7 +65,12 @@ import it.polito.neo4j.jaxb.Mailserver;
 import it.polito.neo4j.jaxb.Nat;
 import it.polito.neo4j.jaxb.Neighbour;
 import it.polito.neo4j.jaxb.ObjectFactory;
+import it.polito.neo4j.jaxb.PacketType;
+import it.polito.neo4j.jaxb.Policies;
+import it.polito.neo4j.jaxb.Policy;
 import it.polito.neo4j.jaxb.ProtocolTypes;
+import it.polito.neo4j.jaxb.Restrictions;
+import it.polito.neo4j.jaxb.TransportProtocolTypes;
 import it.polito.neo4j.jaxb.Vpnaccess;
 import it.polito.neo4j.jaxb.Vpnexit;
 import it.polito.neo4j.jaxb.Webclient;
@@ -181,6 +187,14 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                 }
 
             }
+            
+            // Add the policies to the graph
+            for(it.polito.neo4j.jaxb.Policy p : graph.getPolicies().getPolicy()){
+                Node newNode = createPolicy(nffgRoot, p, graph);
+                p.setId(newNode.getId());
+                it.polito.neo4j.jaxb.Restrictions r = p.getRestrictions();
+                createRestrictions(newNode, r);
+            }
 
             tx.success();
 
@@ -219,8 +233,11 @@ public class Neo4jLibrary implements Neo4jDBInteraction
             if(!list.isEmpty()){
                 for(Elements e : list){
                     Node newElem=graphDB.createNode(NodeType.Firewall);
-                    newElem.setProperty("source", e.getSource());
-                    newElem.setProperty("destination", e.getDestination());
+                    newElem.setProperty("source_id", e.getSource());
+                    newElem.setProperty("destination_id", e.getDestination());
+                    newElem.setProperty("source_port", e.getSrcPort().toString());
+                    newElem.setProperty("destination_port", e.getDestPort().toString());
+                    newElem.setProperty("protocol", e.getProtocol().value());
 
                     Relationship firewall=newElem.createRelationshipTo(newConf, RelationType.ElementRelationship);
                     firewall.setProperty("id", newConf.getId());
@@ -234,11 +251,12 @@ public class Neo4jLibrary implements Neo4jDBInteraction
         }
 
         case "ANTISPAM":{
-            List<String> list=c.getAntispam().getSource();
+        	List<AddressType> list=c.getAntispam().getSource();
+            //List<String> list=c.getAntispam().getSource();
             if(!list.isEmpty()){
-                for(String s : list){
+                for(AddressType s : list){
                     Node newElem=graphDB.createNode(NodeType.Antispam);
-                    newElem.setProperty("source", s);
+                    newElem.setProperty("source", s.getName());
                     Relationship antispam=newElem.createRelationshipTo(newConf, RelationType.ElementRelationship);
                     antispam.setProperty("id", newConf.getId());
                 }
@@ -251,11 +269,12 @@ public class Neo4jLibrary implements Neo4jDBInteraction
 
         }
         case "CACHE":{
-            List<String> list=c.getCache().getResource();
+        	List<AddressType> list=c.getCache().getResource();
+            //List<String> list=c.getCache().getResource();
             if(!list.isEmpty()){
-                for(String s : list){
+                for(AddressType s : list){
                     Node newElem=graphDB.createNode(NodeType.Cache);
-                    newElem.setProperty("resource", s);
+                    newElem.setProperty("resource", s.getName());
                     Relationship cache=newElem.createRelationshipTo(newConf, RelationType.ElementRelationship);
                     cache.setProperty("id", newConf.getId());
                 }
@@ -281,7 +300,8 @@ public class Neo4jLibrary implements Neo4jDBInteraction
             }
             break;
         }
-        case "ENDHOST":{
+        case "ENDHOST":
+        case "FIELDMODIFIER":{
             String destination=c.getEndhost().getDestination();
             String body=c.getEndhost().getBody();
             String email_from=c.getEndhost().getEmailFrom();
@@ -348,13 +368,13 @@ public class Neo4jLibrary implements Neo4jDBInteraction
 
             break;
         }
-        case "FIELDMODIFIER":{
+        /*case "FIELDMODIFIER":{
             vlogger.logger.info("It is a FIELMODIFIER");
 
             break;
 
         }
-
+		*/
         case "MAILCLIENT":{
             String list=c.getMailclient().getMailserver();
             if(list!=null){
@@ -375,12 +395,12 @@ public class Neo4jLibrary implements Neo4jDBInteraction
             break;
         }
         case "NAT":{
-
-            List<String> list=c.getNat().getSource();
+        	List<AddressType> list=c.getNat().getSource();
+            //List<String> list=c.getNat().getSource();
             if(!list.isEmpty()){
-                for(String s : list){
+                for(AddressType s : list){
                     Node newElem=graphDB.createNode(NodeType.NAT);
-                    newElem.setProperty("source", s);
+                    newElem.setProperty("source", s.getName());
                     Relationship nat=newElem.createRelationshipTo(newConf, RelationType.ElementRelationship);
                     nat.setProperty("id", newConf.getId());
                 }
@@ -591,9 +611,11 @@ public class Neo4jLibrary implements Neo4jDBInteraction
             Set<Node> nodes = retrieveNodesOfSpecificGraph(id);
 
             for(Node nodo : nodes){
-
                 graph.getNode().add(retrieveNode(nodo));
             }
+            
+            graph.setPolicies(retrievePoliciesOfSpecificGraph(id)); 
+            
             tx.success();
         }
         catch(MyNotFoundException e){
@@ -606,7 +628,7 @@ public class Neo4jLibrary implements Neo4jDBInteraction
         return graph;
     }
 
-    private Set<Node> retrieveNodesOfSpecificGraph(long graphId){
+	private Set<Node> retrieveNodesOfSpecificGraph(long graphId){
         Set<Node> nodi = new HashSet<>();
 
         Node nodo;
@@ -624,6 +646,26 @@ public class Neo4jLibrary implements Neo4jDBInteraction
         }
         return nodi;
     }
+
+    private Policies retrievePoliciesOfSpecificGraph(long graphId) {
+    	Policies p = obFactory.createPolicies();
+
+        Node node;
+        ResourceIterator<Node> nodes = graphDB.findNodes(NodeType.Policy);
+        while (nodes.hasNext())
+        {
+            node = nodes.next();
+            Relationship rel = node.getSingleRelationship(RelationType.PolicyRelationship, Direction.BOTH);
+            if(rel != null){
+                Node[] nodeRelation = rel.getNodes();
+                if((nodeRelation[0].getId()==graphId || nodeRelation[1].getId()==graphId))
+                    if((long)rel.getProperty("id")==graphId)
+                        p.getPolicy().add(retrievePolicy(node));
+            }
+        }
+        
+        return p;
+	}
 
     private Node findGraph(long graphId) throws MyNotFoundException{
         Node graph;
@@ -721,8 +763,11 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                             Node element = relConf.getStartNode();
                             if(element.hasLabel(NodeType.Firewall)){
                                 Elements e=new Elements();
-                                e.setDestination(element.getProperty("destination").toString());
-                                e.setSource(element.getProperty("source").toString());
+                                e.setSource(element.getProperty("source_id").toString());
+                                e.setDestination(element.getProperty("destination_id").toString());
+                                e.setSrcPort(new BigInteger(element.getProperty("source_port").toString()));
+                                e.setDestPort(new BigInteger(element.getProperty("destination_port").toString()));
+                                e.setProtocol(TransportProtocolTypes.fromValue(element.getProperty("protocol").toString()));
                                 element_list.add(e);
                             }
                         }
@@ -736,13 +781,14 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                         Iterable<Relationship> confs= conf.getRelationships(RelationType.ElementRelationship);
                         Iterator<Relationship> confsIt = confs.iterator();
                         Antispam antispam=new Antispam();
-                        List<String> source=new ArrayList<String>();
+                        List<AddressType> source=new ArrayList<AddressType>();
                         while(confsIt.hasNext()){
                             Relationship relConf = confsIt.next();
                             Node element = relConf.getStartNode();
                             if(element.hasLabel(NodeType.Antispam)){
-                                String s=element.getProperty("source").toString();
-                                source.add(s);
+                                AddressType address = new AddressType();
+                            	address.setName(element.getProperty("source").toString());
+                                source.add(address);
                             }
                         }
                         antispam.getSource().addAll(source);
@@ -754,13 +800,14 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                         Iterable<Relationship> confs= conf.getRelationships(RelationType.ElementRelationship);
                         Iterator<Relationship> confsIt = confs.iterator();
                         Cache cache=new Cache();
-                        List<String> resource=new ArrayList<String>();
+                        List<AddressType> resource=new ArrayList<AddressType>();
                         while(confsIt.hasNext()){
                             Relationship relConf = confsIt.next();
                             Node element = relConf.getStartNode();
                             if(element.hasLabel(NodeType.Cache)){
-                                String s=element.getProperty("resource").toString();
-                                resource.add(s);
+                            	AddressType address = new AddressType();
+                            	address.setName(element.getProperty("source").toString());
+                                resource.add(address);
                             }
                         }
                         cache.getResource().addAll(resource);
@@ -785,10 +832,11 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                         break;
                     }
 
-                    case "ENDHOST":{
+                    case "ENDHOST":
+                    case "FIELDMODIFIER":{
                         Iterable<Relationship> confs= conf.getRelationships(RelationType.ElementRelationship);
                         Iterator<Relationship> confsIt = confs.iterator();
-                        Endhost endhost=new Endhost();
+                        PacketType endhost=new PacketType();
                         String destination=new String();
                         String body=new String();
                         String email_from=new String();
@@ -843,13 +891,13 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                         c.setEndpoint(endpoint);
                         break;
                     }
-
+                    /*
                     case "FIELDMODIFIER":{
 
-                        Fieldmodifier field=new Fieldmodifier();
+                    	PacketType field=new PacketType();
                         c.setFieldmodifier(field);
                         break;
-                    }
+                    }*/
                     case "MAILCLIENT":{
                         Iterable<Relationship> confs= conf.getRelationships(RelationType.ElementRelationship);
                         Iterator<Relationship> confsIt = confs.iterator();
@@ -878,13 +926,14 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                         Iterable<Relationship> confs= conf.getRelationships(RelationType.ElementRelationship);
                         Iterator<Relationship> confsIt = confs.iterator();
                         Nat nat=new Nat();
-                        List<String> list=new ArrayList<String>();
+                        List<AddressType> list=new ArrayList<AddressType>();
                         while(confsIt.hasNext()){
                             Relationship relConf = confsIt.next();
                             Node element = relConf.getStartNode();
                             if(element.hasLabel(NodeType.NAT)){
-                                String s=element.getProperty("source").toString();
-                                list.add(s);
+                                AddressType address = new AddressType();
+                            	address.setName(element.getProperty("source").toString());
+                                list.add(address);
                             }
                         }
                         nat.getSource().addAll(list);
@@ -980,6 +1029,16 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                 else
                     deleteNode(nodes[1]);
             }
+            
+            // Delete the policies
+            for(Relationship rel: graph.getRelationships(RelationType.PolicyRelationship)){
+                Node[] nodes = rel.getNodes();
+                if(nodes[0].hasLabel(NodeType.Policy))
+                    deletePolicy(nodes[0]);
+                else
+                    deletePolicy(nodes[1]);
+            }
+            
             deleteNode(graph);
             tx.success();
         }
@@ -1317,8 +1376,6 @@ public class Neo4jLibrary implements Neo4jDBInteraction
         return neigh;
     }
 
-
-
     public Graph updateGraph(Graph graph, long graphId) throws MyNotFoundException,DuplicateNodeException,MyInvalidObjectException, MyInvalidIdException{
         Transaction tx = graphDB.beginTx();
         Node nodo;
@@ -1344,8 +1401,6 @@ public class Neo4jLibrary implements Neo4jDBInteraction
             }
 
             //modify neighbours ids inserting ids relationship
-
-
             for(it.polito.neo4j.jaxb.Node tmpnodo : graph.getNode()){
                 Map<String, Neighbour> neighs = addNeighbours(tmpnodo, graph);
 
@@ -1354,8 +1409,23 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                     neig.setId(n.getId());
 
                 }
+            }
+            
+            // Update the policies
+            
+            for(Relationship rel: graph_old.getRelationships(RelationType.PolicyRelationship)){
+                Node[] nodes = rel.getNodes();
+                if(nodes[0].hasLabel(NodeType.Policy))
+                    deletePolicy(nodes[0]);
+                else
+                	deletePolicy(nodes[1]);
+            }
 
-
+            for(it.polito.neo4j.jaxb.Policy tmpPolicy : graph.getPolicies().getPolicy()){
+                Node newNode = createPolicy(graph_old, tmpPolicy, graph);
+                tmpPolicy.setId(newNode.getId());
+                it.polito.neo4j.jaxb.Restrictions r = tmpPolicy.getRestrictions();
+                createRestrictions(newNode, r);
             }
 
             tx.success();
@@ -1365,8 +1435,6 @@ public class Neo4jLibrary implements Neo4jDBInteraction
         }
         return graph;
     }
-
-
 
     private boolean ValidGraph(Graph graph) {
         if (duplicateNodesInsideGraph(graph))
@@ -1580,6 +1648,538 @@ public class Neo4jLibrary implements Neo4jDBInteraction
         }
         return returnedConf;
     }
+    
+    public it.polito.neo4j.jaxb.Policy createPolicy(it.polito.neo4j.jaxb.Policy policy, long graphId) throws MyNotFoundException, DuplicateNodeException, MyInvalidIdException{
+        Node graph;
+        Transaction tx = graphDB.beginTx();
 
+        try{
+            graph = findGraph(graphId);
+            Graph myGraph = getGraph(graphId);
+            if(DuplicatePolicy( policy, myGraph))
+                throw new DuplicateNodeException("This policy is already present");
+            Node newNode = createPolicy(graph, policy, myGraph);
+            policy.setId(newNode.getId());
+            
+            it.polito.neo4j.jaxb.Restrictions r = policy.getRestrictions();
+            createRestrictions(newNode, r);
+            
+            tx.success();
+        }
+        finally{
+            tx.close();
+        }
+        return policy;
+    }
 
+    /*
+     *	Checks if the policy to be inserted in the neo4j graph exists already  
+     */
+    private boolean DuplicatePolicy(it.polito.neo4j.jaxb.Policy policy, Graph myGraph) {
+        for(it.polito.neo4j.jaxb.Policy p : myGraph.getPolicies().getPolicy()){
+            if(p.getName().compareTo(policy.getName()) == 0)
+                return true;
+        }
+        return false;
+    }
+    
+    private Node createPolicy(Node nffgRoot, it.polito.neo4j.jaxb.Policy policy, it.polito.neo4j.jaxb.Graph graph){
+        Node newNode = graphDB.createNode(NodeType.Policy);
+        newNode.setProperty("name", policy.getName());
+        newNode.setProperty("source", policy.getSource());
+        newNode.setProperty("destination", policy.getDestination());
+        policy.setId(newNode.getId());
+        newNode.setProperty("id", newNode.getId());
+        
+        // Set the traffic flow
+        createTrafficFlow(newNode, policy);
+        
+        Relationship r=newNode.createRelationshipTo(nffgRoot, RelationType.PolicyRelationship);
+        r.setProperty("id", graph.getId());
+
+        return newNode;
+    }
+    
+    private void createTrafficFlow(Node newNode, it.polito.neo4j.jaxb.Policy policy) {
+    	// Set the traffic flow
+        String destination= policy.getTrafficflow().getDestination();
+        String body= policy.getTrafficflow().getBody();
+        String email_from= policy.getTrafficflow().getEmailFrom();
+        ProtocolTypes protocol= policy.getTrafficflow().getProtocol();
+        String options= policy.getTrafficflow().getOptions();
+        String url= policy.getTrafficflow().getUrl();
+        BigInteger sequence= policy.getTrafficflow().getSequence();
+        
+        if(destination!=null){
+            Node dest=graphDB.createNode(NodeType.PacketType);
+            dest.setProperty("destination", destination);
+            Relationship d=dest.createRelationshipTo(newNode,  RelationType.TrafficFlowRelationship);
+            d.setProperty("id", newNode.getId());
+            d.setProperty("name", "destination");
+        }
+        if(body!=null){
+            Node b=graphDB.createNode(NodeType.PacketType);
+            b.setProperty("body", body);
+            Relationship bo=b.createRelationshipTo(newNode,  RelationType.TrafficFlowRelationship);
+            bo.setProperty("id", newNode.getId());
+            bo.setProperty("name", "body");
+
+        }
+        if(email_from!=null){
+            Node email=graphDB.createNode(NodeType.PacketType);
+            email.setProperty("email_from", email_from);
+            Relationship e_from=email.createRelationshipTo(newNode,  RelationType.TrafficFlowRelationship);
+            e_from.setProperty("id", newNode.getId());
+            e_from.setProperty("name", "email_from");
+        }
+        if(protocol!=null){
+            String protocolValue = policy.getTrafficflow().getProtocol().value();
+            Node proto=graphDB.createNode(NodeType.PacketType);
+            proto.setProperty("protocol", protocolValue);
+            Relationship p=proto.createRelationshipTo(newNode,  RelationType.TrafficFlowRelationship);
+            p.setProperty("id", newNode.getId());
+            p.setProperty("name", "protocol");
+        }
+        if(options!=null){
+            Node opt=graphDB.createNode(NodeType.PacketType);
+            opt.setProperty("options", options);
+            Relationship o=opt.createRelationshipTo(newNode,  RelationType.TrafficFlowRelationship);
+            o.setProperty("id", newNode.getId());
+            o.setProperty("name", "options");
+        }
+        if(url!=null){
+            Node u=graphDB.createNode(NodeType.PacketType);
+            u.setProperty("url", url);
+            Relationship ur=u.createRelationshipTo(newNode,  RelationType.TrafficFlowRelationship);
+            ur.setProperty("id", newNode.getId());
+            ur.setProperty("name", "url");
+        }
+        if(sequence != null && !sequence.equals(BigInteger.ZERO)){
+            Node seq=graphDB.createNode(NodeType.PacketType);
+            seq.setProperty("sequence", sequence);
+            Relationship seque=seq.createRelationshipTo(newNode,  RelationType.TrafficFlowRelationship);
+            seque.setProperty("id", newNode.getId());
+            seque.setProperty("name", "sequence");
+        }	    
+	}
+
+	public Set<it.polito.neo4j.jaxb.Policy> getPolicies(long graphId) throws MyNotFoundException{
+		Node graph;
+        Transaction tx = graphDB.beginTx();
+        Set<it.polito.neo4j.jaxb.Policy> set = new HashSet<>();
+
+        try{
+            graph = findGraph(graphId);
+            for(Relationship rel : graph.getRelationships(RelationType.PolicyRelationship)){
+                Node[] nodes = rel.getNodes();
+                it.polito.neo4j.jaxb.Policy policyAdded=null;
+                for(Label l: nodes[0].getLabels()){
+                    if(l.name().compareTo(NodeType.Nffg.name())==0){
+                    	policyAdded = retrievePolicy(nodes[1]);
+                    }else{
+                    	policyAdded = retrievePolicy(nodes[0]);
+                    }
+                }
+                set.add(policyAdded);
+            }
+            tx.success();
+        }
+        finally{
+            tx.close();
+        }
+        
+        VerigraphLogger.getVerigraphlogger().logger.info("Size of returned set " + set.size());
+
+        return set;
+	}
+	
+	private it.polito.neo4j.jaxb.Policy retrievePolicy(Node n){
+        it.polito.neo4j.jaxb.Policy p = obFactory.createPolicy();
+
+        p.setId(n.getId());
+        p.setName(n.getProperty("name").toString());
+        p.setSource(n.getProperty("source").toString());
+        p.setDestination(n.getProperty("destination").toString());
+        
+        p = retrieveTrafficFlow(p, n);
+
+        //Retrieve restriction:
+        it.polito.neo4j.jaxb.Restrictions r = obFactory.createRestrictions();
+        r = retrieveRestrictions(n);
+        p.setRestrictions(r);
+
+        return p;
+    }
+	
+	private it.polito.neo4j.jaxb.Policy retrieveTrafficFlow(it.polito.neo4j.jaxb.Policy p, Node n) {
+        PacketType trafficFlow=new PacketType();
+        String destination=new String();
+        String body=new String();
+        String email_from=new String();
+        String protocol=new String();
+        String options=new String();
+        String url=new String();
+        BigInteger sequence=null;
+        
+        Iterable<Relationship> data= n.getRelationships(RelationType.TrafficFlowRelationship);
+        Iterator<Relationship> dataIt = data.iterator();
+        while(dataIt.hasNext()){
+            Relationship relConf = dataIt.next();
+            Node element = relConf.getStartNode();
+            if(element.hasLabel(NodeType.PacketType)){
+                String type=relConf.getProperty("name").toString();
+                if(type.compareTo("destination")==0){
+                    destination=element.getProperty("destination").toString();
+                }else 
+                    if(type.compareTo("body")==0){
+                        body=element.getProperty("body").toString();
+                    }else
+                        if(type.compareTo("email_from")==0){
+                            email_from=element.getProperty("email_from").toString();
+                        }else
+                            if(type.compareTo("protocol")==0){
+                                protocol=element.getProperty("protocol").toString();
+                            }else
+                                if(type.compareTo("options")==0){
+                                    options=element.getProperty("options").toString();
+                                }else
+                                    if(type.compareTo("url")==0){
+                                        url=element.getProperty("url").toString();
+                                    }else
+                                        if(type.compareTo("sequence")==0){
+                                            sequence=new BigInteger((byte[]) element.getProperty("sequence"));
+                                        }
+
+            }
+        }
+
+        trafficFlow.setBody(body);
+        trafficFlow.setDestination(destination);
+        trafficFlow.setEmailFrom(email_from);
+        trafficFlow.setOptions(options);
+        trafficFlow.setSequence(sequence);
+        trafficFlow.setUrl(url);
+        if(!protocol.isEmpty())
+        	trafficFlow.setProtocol(ProtocolTypes.fromValue(protocol));
+        p.setTrafficflow(trafficFlow);
+
+        return p;	    
+	}
+    
+	public it.polito.neo4j.jaxb.Policy getPolicyById(long policyId, long graphId) throws MyNotFoundException {
+        Node policy;
+        Transaction tx = graphDB.beginTx();
+
+        try{
+            findGraph(graphId);
+
+            policy = findPolicyByIdAndSpecificGraph(policyId, graphId);
+            tx.success();
+            if(policy==null){
+                return null;
+            }else
+                return retrievePolicy(policy);
+        }
+        catch(MyNotFoundException e){
+            tx.close();
+            throw new MyNotFoundException(e.getMessage());
+        }
+        finally{
+            tx.close();
+        }
+    }
+
+    public it.polito.neo4j.jaxb.Policy getPolicyByName(String name, long graphId) throws MyNotFoundException {
+        Node policy;
+        Transaction tx = graphDB.beginTx();
+
+        try{
+            findGraph(graphId);
+
+            policy = findPolicyByNameOfSpecificGraph(name, graphId);
+            tx.success();
+            if(policy!=null)
+                return retrievePolicy(policy);
+            else
+                return null;
+        }
+        catch(MyNotFoundException e){
+            tx.close();
+            throw new MyNotFoundException(e.getMessage());
+        }
+        finally{
+            tx.close();
+        }
+    }
+	
+    private void deletePolicy(Node n)
+    {
+        n.getAllProperties().clear();
+        
+        deleteTrafficFlow(n);
+
+        deleteRestrictions(n);
+
+        for (Relationship r : n.getRelationships())
+        {
+            r.getAllProperties().clear();
+            r.delete();
+        }
+
+        n.delete();
+    }
+    
+    private void deleteTrafficFlow(Node n) {
+        Iterable<Relationship> tf = n.getRelationships(RelationType.TrafficFlowRelationship);
+        Iterator<Relationship> tfIt = tf.iterator();
+        while(tfIt.hasNext()){
+            Relationship relTf = tfIt.next();
+            Node element = relTf.getStartNode();
+            element.getAllProperties().clear();
+            relTf.getAllProperties().clear();
+            relTf.delete();
+            element.delete();
+        }
+    }
+
+	public void deletePolicy(long graphId, long nodeId) throws MyNotFoundException{
+        Node node;
+        Transaction tx = graphDB.beginTx();
+
+        try{
+            findGraph(graphId);
+            node = findPolicy(nodeId);
+            if(node==null){
+                tx.failure();
+                throw new MyNotFoundException("There is no Node whose id is '" + nodeId+"'");
+            }
+
+            deletePolicy(node);
+            tx.success();
+        }
+        finally{
+            tx.close();
+        }
+    }
+    
+    public it.polito.neo4j.jaxb.Policy updatePolicy(it.polito.neo4j.jaxb.Policy policy, long graphId, long policyId) throws MyInvalidObjectException,MyNotFoundException, MyInvalidIdException{
+        Node node;
+        Transaction tx = graphDB.beginTx();
+        it.polito.neo4j.jaxb.Policy returnedPolicy;
+
+        try{
+            findGraph(graphId);
+            node = findPolicy(policyId);
+            if(validPolicy(policy,getGraph(graphId)) == false)
+                throw new MyInvalidObjectException("Invalid policy");
+            node.setProperty("name", policy.getName());
+            node.setProperty("source", policy.getSource());
+            node.setProperty("destination", policy.getDestination());
+
+            deleteTrafficFlow(node);
+            createTrafficFlow(node, policy);
+            
+            deleteRestrictions(node);
+            createRestrictions(node, policy.getRestrictions());
+            returnedPolicy = retrievePolicy(node);
+            tx.success();
+        }
+        finally{
+            tx.close();
+        }
+        return returnedPolicy;
+    }
+
+    /*
+     * Check the validity of the given policy
+     */
+    private boolean validPolicy(it.polito.neo4j.jaxb.Policy policy, Graph graph) {
+        for(it.polito.neo4j.jaxb.Policy p : graph.getPolicies().getPolicy()){
+            if(policy.getId() != p.getId() && policy.getName().compareTo(p.getName()) == 0)
+                return false;
+        }
+
+        return true;
+    }
+
+	/*
+	 *	Create the entry in the NEO4j graph for the restrictions given as an input 
+	 */
+	private Node createRestrictions(Node newNode, Restrictions r) throws MyInvalidIdException {
+
+		Node newConf=graphDB.createNode(NodeType.Restrictions);
+        newConf.setProperty("type", r.getType().value());
+		Relationship rel = newConf.createRelationshipTo(newNode, RelationType.RestrictionsRelationship);
+		rel.setProperty("id", newNode.getId());
+        setRestrictions(newConf, r);
+
+        return newConf;
+
+    }
+
+	/*
+	 *	To correctly initialize the restrictions element create the ExactFunction/NodeFunction type 
+	 * 
+	 */
+    private void setRestrictions(Node newConf, it.polito.neo4j.jaxb.Restrictions r) throws MyInvalidIdException {
+    	List<Object> list= r.getGenericFunctionOrExactFunction();     
+        if(!list.isEmpty()){
+            for(Object e : list){
+            	if(e instanceof it.polito.neo4j.jaxb.GenericFunction){ 
+            		it.polito.neo4j.jaxb.GenericFunction gf = (it.polito.neo4j.jaxb.GenericFunction) e;
+            		Node newElem=graphDB.createNode(NodeType.GenericFunction);
+                    newElem.setProperty("type", gf.getType().value());
+                    
+                    Relationship genericFunc=newElem.createRelationshipTo(newConf, RelationType.FunctionRelationship);
+                    genericFunc.setProperty("id", newConf.getId());
+            	} else if(e instanceof it.polito.neo4j.jaxb.ExactFunction){
+            		it.polito.neo4j.jaxb.ExactFunction ef = (it.polito.neo4j.jaxb.ExactFunction) e;
+            		Node newElem=graphDB.createNode(NodeType.ExactFunction);
+                    newElem.setProperty("name", ef.getName());
+
+                    Relationship exactFunc=newElem.createRelationshipTo(newConf, RelationType.FunctionRelationship);
+                    exactFunc.setProperty("id", newConf.getId());
+            	}else {
+            		throw new MyInvalidIdException("Function node not valid");
+            	}
+            }
+        } else {
+            vlogger.logger.info("Restrictions element empty");
+        }
+    }
+
+    private void deleteRestrictions(Node n) {
+        //delete configuration
+        Relationship rel = n.getSingleRelationship(RelationType.RestrictionsRelationship, Direction.BOTH);
+        if(rel != null){
+            Node restriction=rel.getStartNode();
+            Iterable<Relationship> funcs= restriction.getRelationships(RelationType.FunctionRelationship);
+            Iterator<Relationship> funcsIt = funcs.iterator();
+            while(funcsIt.hasNext()){
+                Relationship relConf = funcsIt.next();
+                Node element = relConf.getStartNode();
+                element.getAllProperties().clear();
+                relConf.getAllProperties().clear();
+                relConf.delete();
+                element.delete();
+            }
+            restriction.getAllProperties().clear();
+            restriction.delete();
+            rel.getAllProperties().clear();
+            rel.delete();
+        }
+    }
+
+	/*
+	 * Retrieve from the NEO4j graph the restrictions element related to the Policy given as an input
+	 * 
+	 */
+	private it.polito.neo4j.jaxb.Restrictions retrieveRestrictions(Node node) {
+		it.polito.neo4j.jaxb.Restrictions r = obFactory.createRestrictions();
+		
+        Relationship rel = node.getSingleRelationship(RelationType.RestrictionsRelationship, Direction.BOTH);
+        if(rel != null){
+            Node restr;
+            Node[] nodeRelation = rel.getNodes();
+            if((nodeRelation[0].getId()==node.getId() || nodeRelation[1].getId()==node.getId())){
+                if((long)rel.getProperty("id") == node.getId()){
+                    if(nodeRelation[0].hasLabel(NodeType.Restrictions)){
+                        restr=nodeRelation[0];
+                    }else{
+                        restr=nodeRelation[1];
+                    }
+                    
+                    r.setType( it.polito.neo4j.jaxb.RestrictionTypes.fromValue(restr.getProperty("type").toString().toUpperCase()));
+                    
+                    // Set the list of functions
+                    Iterable<Relationship> restrs= restr.getRelationships(RelationType.FunctionRelationship);
+                    Iterator<Relationship> restrsIt = restrs.iterator();
+                    
+                    List<Object> funcList=new ArrayList<Object>();
+                    while(restrsIt.hasNext()){
+                        Relationship relConf = restrsIt.next();
+                        Node func = relConf.getStartNode();
+                        if(func.hasLabel(NodeType.GenericFunction)){
+                            GenericFunction gf = new GenericFunction();
+                            gf.setType(it.polito.neo4j.jaxb.FunctionalTypes.fromValue(func.getProperty("type").toString().toUpperCase()));
+                            funcList.add(gf);
+                        } else if(func.hasLabel(NodeType.ExactFunction)) {
+                        	ExactFunction ef = new ExactFunction();
+                            ef.setName(func.getProperty("name").toString());
+                            funcList.add(ef);
+                        }
+                    }
+                    r.getGenericFunctionOrExactFunction().addAll(funcList);
+                }
+            }
+        }
+        return r;
+    }
+	
+	public it.polito.neo4j.jaxb.Restrictions updateRestrictions(long policyId, long graphId, it.polito.neo4j.jaxb.Restrictions policyRestrictions) throws MyNotFoundException, MyInvalidIdException {
+        Node policy;
+        Transaction tx = graphDB.beginTx();
+        it.polito.neo4j.jaxb.Restrictions returnedRestr;
+
+        try{
+            findGraph(graphId);
+            policy=findPolicy(policyId);
+            deleteRestrictions(policy);
+            createRestrictions(policy, policyRestrictions);
+            returnedRestr = retrieveRestrictions(policy);
+            tx.success();
+        }
+        finally{
+            tx.close();
+        }
+        return returnedRestr;
+    }
+	
+	private Node findPolicy(long policyId) throws MyNotFoundException{
+        Node node;
+
+        try{
+            node=graphDB.findNode(NodeType.Policy, "id", policyId);
+            if(node==null)
+                throw new DataNotFoundException("There is no policy whose id is '" + policyId + "'");
+        }
+        catch(NotFoundException e){
+            throw new MyNotFoundException("There is no policy whose id is '" + policyId + "'");
+        }
+
+        return node;
+    }
+	
+	private Node findPolicyByIdAndSpecificGraph(long policyId, long graphId) throws MyNotFoundException {
+        Node node=graphDB.findNode(NodeType.Policy, "id", policyId);
+
+        if(node == null)
+            throw new DataNotFoundException("There is no policy whose id is '" + policyId + "'");
+        else{
+
+            for(Relationship rel : node.getRelationships(RelationType.PolicyRelationship)){
+                Node[] nodes = rel.getNodes();
+                if(nodes[0].getId() == graphId || nodes[1].getId() == graphId){
+                    if((long)rel.getProperty("id") == graphId)
+                        return node;
+                }
+            }
+        }
+        return node;
+    }
+
+    private Node findPolicyByNameOfSpecificGraph(String policyName, long graphId){
+        ResourceIterator<Node> nodesIt = graphDB.findNodes(NodeType.Policy, "name", policyName);
+        while (nodesIt.hasNext()){
+            Node n = nodesIt.next();
+            for(Relationship rel : n.getRelationships(RelationType.PolicyRelationship)){
+                Node[] nodes = rel.getNodes();
+                if((nodes[0].getId() == graphId || nodes[1].getId()== graphId)){
+                    if((long)rel.getProperty("id") == graphId)
+                        return n;
+                }
+            }
+        }
+        return null;
+    }
 }

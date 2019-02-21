@@ -21,6 +21,9 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.polito.neo4j.jaxb.Elements;
+import it.polito.neo4j.jaxb.TransportProtocolTypes;
 import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
@@ -105,7 +108,18 @@ public class Scenario {
         case "FIREWALL":{
             Map<String, String> map=new LinkedHashMap();
 
-            if(!configuration.toString().equals(empty)){
+            if (configuration.isArray()) {
+    			for (JsonNode objNode : configuration) {
+                    String src_id = objNode.get("source_id").textValue();
+                    String dest_id = objNode.get("destination_id").textValue();
+                    
+                    map.put(dest_id, src_id);
+                }
+        	}
+            else{
+                vlogger.logger.info("Firewall "+name+" empty");
+            }
+            /*if(!configuration.toString().equals(empty)){
                 ObjectMapper mapper=new ObjectMapper();
                 Map<String, String> map_tmp=new LinkedHashMap();
                 String input;
@@ -135,7 +149,7 @@ public class Scenario {
             }
             else{
                 vlogger.logger.info("Firewall "+name+" empty");
-            }
+            }*/
             config_obj.put(name, map);
             break;
         }
@@ -207,7 +221,7 @@ public class Scenario {
             config_array.put(name, notAllowed);
             break;
         }
-        case "ENDHOST":{
+        case "ENDHOST": {
             Map<String, String> map=new LinkedHashMap();
             if(!configuration.toString().equals(empty)){
                 ObjectMapper mapper=new ObjectMapper();
@@ -218,6 +232,7 @@ public class Scenario {
                     input=matcher.group(1);
                 }else
                     input=configuration.toString();
+                
                 try{
                     map=mapper.readValue(input, java.util.LinkedHashMap.class);
                     String ip=map.get("destination");

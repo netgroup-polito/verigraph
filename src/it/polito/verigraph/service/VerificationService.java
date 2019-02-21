@@ -33,11 +33,13 @@ import it.polito.verigraph.exception.DataNotFoundException;
 import it.polito.verigraph.exception.ForbiddenException;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Node;
+import it.polito.verigraph.model.Policy;
 import it.polito.verigraph.model.Test;
 import it.polito.verigraph.model.Verification;
 import it.polito.verigraph.resources.beans.VerificationBean;
 import it.polito.verigraph.solver.GeneratorSolver;
 import it.polito.verigraph.solver.Scenario;
+import it.polito.verigraph.validation.exception.ValidationException;
 
 public class VerificationService {
 
@@ -119,14 +121,18 @@ public class VerificationService {
         if (destinationNode == null) {
             throw new BadRequestException("The 'destination' parameter '" + destination + "' is not valid, please insert the name of an existing node");
         }
-        if ((!type.equals("reachability")) && (!type.equals("isolation")) && (!type.equals("traversal"))) {
+        if ((!type.equals("reachability")) && (!type.equals("isolation")) && (!type.equals("traversal"))
+        		&& (!type.equals("vOne")) && (!type.equals("vOnly")) && (!type.equals("vMore"))
+        		&& (!type.equals("vAll")) && (!type.equals("vNone")) && (!type.equals("vOthers"))) {
             throw new BadRequestException("The 'type' parameter '"+ type
-                    + "' is not valid: valid types are: 'reachability', 'isolation' and 'traversal'");
+                    + "' is not valid: valid types are: 'reachability', 'isolation', 'traversal', 'vOne', 'vOnly', 'vMore', 'vAll', 'vNone' and 'vOthers'");
         }
 
         Verification v = null;
         String middlebox;
         Node middleboxNode;
+        String policyName;
+        Policy policyToVerify;
         switch (type) {
         case "reachability":
             v = reachabilityVerification(graph, sourceNode, destinationNode);
@@ -164,12 +170,33 @@ public class VerificationService {
             v = traversalVerification(graph, sourceNode, destinationNode, middleboxNode);
             break;
         default:
+        	policyName = verificationBean.getPolicyName();
+            if (policyName == null || policyName.equals("")) {
+                throw new BadRequestException("Please specify the 'policyId' parameter in your request");
+            }
+
+            policyToVerify = graph.searchPolicyByName(policyName);
+            if (policyToVerify == null) {
+                throw new BadRequestException("The 'policyId' parameter '" + policyName + "' is not valid, please insert the name of an existing policy");
+            }
+            
+            if(!policyToVerify.getSource().equals(source)) {
+            	throw new BadRequestException("The 'source' parameter '" + source + "' and the source node of the policy '" + 
+            			policyToVerify.getSource() + "' are different. Please modify the 'source' parameter accordingly to the policy'");
+            }
+            
+            if(!policyToVerify.getDestination().equals(destination)) {
+            	throw new BadRequestException("The 'destination' parameter '" + destination + "' and the destination node of the policy '" + 
+            			policyToVerify.getDestination() + "' are different. Please modify the 'destination' parameter accordingly to the policy'");
+            }
+            
+            v = policyVerification(graph, sourceNode, destinationNode, policyToVerify, type);
             break;
         }
         return v;
     }
 
-    private Verification isolationVerification(Graph graph, Node sourceNode, Node destinationNode, Node middleboxNode) throws MyInvalidDirectionException {
+	private Verification isolationVerification(Graph graph, Node sourceNode, Node destinationNode, Node middleboxNode) throws MyInvalidDirectionException {
         Long time_isolation=(long) 0;
         Calendar cal_isolation = Calendar.getInstance();
         Date start_time_isolation = cal_isolation.getTime();
@@ -461,9 +488,7 @@ public class VerificationService {
                     "There are no available paths between '"+ sourceNode.getName() + "' and '"
                             + destinationNode.getName() + "'");
         }
-
         Map<Integer, GeneratorSolver> scenarios=createScenarios(sanitizedPaths, graph);
-
         List<Test> tests = run(graph, scenarios, sourceNode.getName(), destinationNode.getName());
 
         Calendar cal_reachability_after_run = Calendar.getInstance();
@@ -500,6 +525,33 @@ public class VerificationService {
                 path.add(node);
             }
             Test test = new Test(path, result);
+            
+            // Depending on the result of the test, set a different comment for the test
+            if(result.equals("SAT"))
+            	test.setComment( "'" + src + "' is able to reach '" + dst + "'");
+            else if(result.equals("UNSAT")) {
+            	// If the result is "UNSAT" we also need to find which is the node that is blocking
+            	// the packet from reaching the destination
+            	String previousNode = "";
+            	
+            	/* 
+            	 * Check the reachability from the source to each intermediate node.
+            	 * If a node is not reachable it means that the previous node in the chain is blocking
+            	 * the traffic.
+            	 */
+            	for (String nodeString : t.getValue().getPaths()) {
+                    if(!nodeString.equals(src) && t.getValue().run(src, nodeString).equals("UNSAT")) 
+                    	break;
+                    
+                    previousNode = nodeString;
+                }
+            	test.setComment("'" + src + "' is unable to reach '" + dst 
+            			+ "' because of node '" + previousNode + "'");
+            	test.setBlockingNode(graph.searchNodeByName(previousNode));
+            }
+            else if(result.equals("UNKNOWN"))
+            	test.setComment("Path from '"+ src + "' to '" + dst + "' is unknown");
+            	
             tests.add(test);
         }
 
@@ -559,8 +611,506 @@ public class VerificationService {
 
         return v;
     }
+    
+    private Verification policyVerification(Graph graph, Node sourceNode, Node destinationNode, Policy policyToVerify, String type) throws MyInvalidDirectionException {
+    	Long time_verification=(long) 0;
+        Calendar cal_verification = Calendar.getInstance();
+        Date start_time_verification = cal_verification.getTime();
 
-    public List<List<Node>> getPaths(long graphId, String source, String destination) throws JsonParseException, JsonMappingException, JAXBException, IOException, MyInvalidDirectionException {
+        Paths paths = getPaths(graph, sourceNode, destinationNode);
+
+        if (paths.getPath().size() == 0) {
+            return new Verification("UNSAT",
+                    "There are no available paths between '"+ sourceNode.getName() + "' and '"
+                            + destinationNode.getName() + "'");
+        }
+
+        List<List<String>> sanitizedPaths = sanitizePaths(paths);
+        // List of the paths that satisfies the policies
+        List<List<String>> validPaths = new ArrayList<List<String>>(sanitizePaths(paths));
+        int numberOfPaths = sanitizedPaths.size();
+
+        printListsOfStrings("Paths", sanitizedPaths);
+
+        if (sanitizedPaths.isEmpty()) {
+            return new Verification("UNSAT",
+                    "There are no available paths between '"+ sourceNode.getName() + "' and '"
+                            + destinationNode.getName() + "'");
+        }
+        
+        // Based on the restrictions type of the policy different checks will be performed
+        // The returned list can be considered as the list of chains that safisfy the stf()
+        // function (see paper "Reachability Verification of security function graph")
+        switch(policyToVerify.getRestrictions().getType()) {
+        case "selection":
+        	validPaths = extractPathsVerifyingSelection(validPaths, policyToVerify, graph);
+        	break;
+        case "set":
+        	validPaths = extractPathsVerifyingSet(validPaths, policyToVerify, graph);
+        	break;
+        case "sequence":
+        	validPaths = extractPathsVerifyingSequence(validPaths, policyToVerify, graph);
+        	break;
+        case "list":
+        	validPaths = extractPathsVerifyingList(validPaths, policyToVerify, graph);
+        	break;
+        }
+        
+        Map<Integer, GeneratorSolver> scenarios = createScenarios(sanitizedPaths, graph);
+        List<Test> tests = run(graph, scenarios, sourceNode.getName(), destinationNode.getName());
+        
+        Calendar cal_verification_after_run = Calendar.getInstance();
+        time_verification = time_verification +(cal_verification_after_run.getTime().getTime() - start_time_verification.getTime());
+        vlogger.logger.info("Time verification after run: " + time_verification);
+
+        Verification verification= evaluatePolicyVerificationResult(tests, validPaths, sourceNode.getName(), destinationNode.getName(), type, numberOfPaths);
+
+        Calendar cal_verification_stop = Calendar.getInstance();
+        time_verification = time_verification +(cal_verification_stop.getTime().getTime() - start_time_verification.getTime());
+        vlogger.logger.info("Time to check verification policy: " + time_verification);
+
+        return verification;
+	}
+    
+    private Verification evaluatePolicyVerificationResult(List<Test> tests, List<List<String>> validPaths, String source, String destination, String type, int numberOfPaths) {
+        Verification vSat = new Verification();
+    	vSat.setResult("SAT");
+        Verification vUnsat = new Verification();
+    	vUnsat.setResult("UNSAT");
+        
+        // List of strings that represent each path
+        List<String> validPathsString = getListOfPathStrings(validPaths);
+
+        int sat = 0;
+        int unsat = 0;
+        boolean isSat = false;
+        for (Test t : tests) {
+            if (t.getResult().equals("SAT")) {
+            	boolean foundPath = false;
+            	
+            	// Check if the path is in the list of paths that satisfy the verification policy
+            	for (String validPath : validPathsString) {
+                    if (t.getTextPath().equals(validPath)) {
+                    	foundPath = true;
+                    	break;
+                    }
+            	}
+            	
+        		// If the path is in the list of paths that satisfy the verification policy, than that path must be ignored.
+            	if(foundPath) { // Set the path as unsatisfied and move on
+            		sat++;
+            		t.setComment( "'" + source + "' is able to reach '" + destination 
+            				+ "' and the path satisfies the selected policy");
+                    vSat.getTests().add(t);
+            	} else {
+            		t.setResult("UNSAT");
+            		t.setComment( "'" + source + "' is able to reach '" + destination 
+            				+ "', but the path does not satisfy the selected policy");
+                    unsat++;
+                    vUnsat.getTests().add(t);
+            	}
+            }
+
+            else if (t.getResult().equals("UNKNOWN")) {
+            	vUnsat.setResult("UNKNWON");
+            	vUnsat.setComment("Verification from '"+ source + "' to '" + destination
+                        + "' is unknown. See all the checked paths below");
+                vUnsat.getTests().add(t);
+            }
+            else if (t.getResult().equals("UNSAT")) {
+                unsat++;
+                vUnsat.getTests().add(t);
+            }
+        }
+        
+        // Based on the verification type different checks will be performed
+        switch(type) {
+        case "vOne":
+        	// If at least one path satisfies the policy, then the policy verification is successful;.
+        	if (sat > 0) {
+        		isSat = true;
+        		vSat.setComment("There is at least one path that '"+ source + "' can use to reach '" + destination
+                        + "' and that satisfies the selected policy. See all the valid paths below");
+            }
+        	break;
+        case "vOnly":
+        	// If the paths that satisfy the policy are more than one, then the policy verification is failed.
+        	if( sat > 1 ) {
+        		vSat.setComment("The number of paths that '"+ source + "' can use to reach '" + destination
+                        + "' and that satisfy the selected policy is more than one");
+        		vSat.setResult("UNSAT");
+            	isSat = true;
+        	} else if (sat > 0) {
+                vSat.setComment("There is only one path that '"+ source + "' can use to reach '" + destination
+                        + "' and that satisfies the selected policy. See all the valid paths below"); 
+            	isSat = true;       		
+            } 
+        	break;
+        case "vMore":
+        	// If the paths that satisfy the policy are zero or one, then the policy verification is failed.
+        	if( sat > 1 ) {
+                vSat.setComment("There are more than one path that '"+ source + "' can use to reach '" + destination
+                        + "' and that satisfy the selected policy. See all the valid paths below");
+        		isSat = true;
+        	} else if (sat == 1) {
+                vUnsat.setComment("There is only one path that '"+ source + "' can use to reach '" + destination
+                        + "' and that satisfies the selected policy. See all the invalid paths below");
+            }
+        	break;
+        case "vAll":
+        	// If all the paths satisfy the policy, then the policy verification is successful.
+        	if( sat == numberOfPaths ) {
+                vSat.setComment("All the paths used by '"+ source + "' to reach '" + destination
+                        + "' satisfy the selected policy. See all the valid paths below");
+        		isSat = true;
+        	} else if (sat > 0) {
+                vUnsat.setComment("Not all paths used by '"+ source + "' to reach '" + destination
+                        + "' satisfy the selected policy. See all the invalid paths below");
+            }
+        	break;
+        case "vNone":
+        	// If no path satisfy the policy, then the policy verification is successful.
+        	if( sat == 0 ) {
+        		vSat.setComment("There isn't any path that '"+ source + "' can use to reach '" + destination 
+                		+ "' and that satisfies the selected policy");
+        	} else if (sat > 0) {
+        		vSat.setComment("There is at least one path that '"+ source + "' can use to reach '" + destination
+                        + "' and that satisfies the selected policy. See all the valid paths below");
+            }
+    		isSat = true;
+        	break;
+        case "vOthers":
+        	// If at least one path doesn't satisfy the policy, then the policy verification is successful.
+            if (unsat > 0) {
+                vUnsat.setResult("SAT");
+                vUnsat.setComment("There is at least one path that either '"+ source + "' cannot use to reach '" + destination
+                        + "' or that does not satisfy the selected policy. See all the invalid paths below");
+
+            }
+            else if (sat == tests.size()) {
+                vSat.setResult("UNSAT");
+                vSat.setComment("Every path that '"+ source + "' uses can reach '" + destination
+                        + "' and can also satisfy the selected policy. See all the checked paths below");
+        		isSat = true;
+            }
+        	break;
+        }
+        
+        if (unsat == tests.size() && !type.equals("vOthers")) {
+        	vUnsat.setComment("There isn't any path that '"+ source + "' can use to reach '" + destination
+                    + "' and that satisfies the selected policy. See all checked paths below");
+        }
+        
+        return (isSat) ? vSat : vUnsat;
+    }
+
+    /**
+     * Extract from the current list of sanitized paths the paths that satisfy a policy of type selection
+     * 
+     * @param sanitizedPaths The list of paths from where the correct paths will be extracted
+     * @param policyToVerify The policy that is currently being verified
+     * @param graph The graph to which the above policy belong
+     * @return The list of paths that satisfy the given policy of type selection
+     */
+    private List<List<String>> extractPathsVerifyingSelection(List<List<String>> sanitizedPaths, Policy policyToVerify, Graph graph) {
+    	
+    	// The list of functions to verify
+    	List<List<String>> functions = policyToVerify.getFunctions();
+    	List<List<String>> pathsToBeRemoved = new ArrayList<List<String>>();
+    	
+    	// For each path
+        for (List<String> path : sanitizedPaths) {
+            boolean satisfyPolicy = true;
+            List<String> tempPath = new ArrayList<String>(path);
+            
+            // Remove the head and the tail from the list of auxiliary paths
+            tempPath.remove(0);
+            tempPath.remove(tempPath.size()-1);
+            
+            // If the two lists have not the same number of elements, than it is impossible that they contain
+            // exactly the same elements.
+            if(tempPath.size() < functions.size()) {
+            	pathsToBeRemoved.add(path);
+            	continue;
+            }
+            
+            // For each function in the functions list
+            for (List<String>  func : functions) {
+                // Different behaviors are expected depending on whether the function is exact or generic.
+            	if(func.get(0).equals("exact")) {
+            		boolean isSatisfied = false;
+            		String toDelete = "";
+            		
+            		// For each node in the path
+                    for (String node : tempPath) {
+                    	// Check if the node name is equal to the name of the function
+                        if(node.equals(func.get(1))) { 
+                        	isSatisfied = true;
+                        	toDelete = node;
+                        	break;
+                        }
+                    }
+                    
+                    if(isSatisfied == true) {
+                    	tempPath.remove(toDelete);
+                    } else {
+                    	satisfyPolicy = false;
+                    	break;
+                    }
+                } else if (func.get(0).equals("generic")) {
+                	boolean isSatisfied = false;
+                	String toDelete = "";
+                	
+            		// For each node in the path
+                    for (String node : tempPath) {
+                    	Node selectedNode = graph.searchNodeByName(node);
+                    	                    	
+                    	// Check if the node name is equal to the name of the function
+                        if(selectedNode.getFunctional_type().equals(func.get(1))) { 
+                        	isSatisfied = true;
+                        	toDelete = node;
+                        	break;
+                        }
+                    }
+                    
+                    if(isSatisfied == true) {
+                    	tempPath.remove(toDelete);
+                    } else {
+                    	satisfyPolicy = false;
+                    	break;
+                    }
+                }
+            }
+            
+            if (!satisfyPolicy) {
+                pathsToBeRemoved.add(path);
+            }
+        }
+        for (List<String> path : pathsToBeRemoved) {
+            sanitizedPaths.remove(path);
+        }
+        
+        return sanitizedPaths;
+	}
+    
+    /**
+     * Extract from the current list of sanitized paths the paths that satisfy a policy of type set
+     * 
+     * @param sanitizedPaths The list of paths from where the correct paths will be extracted
+     * @param policyToVerify The policy that is currently being verified
+     * @param graph The graph to which the above policy belong
+     * @return The list of paths that satisfy the given policy of type set
+     */
+    private List<List<String>> extractPathsVerifyingSet(List<List<String>> sanitizedPaths, Policy policyToVerify, Graph graph) {
+    	// The list of functions to verify
+    	List<List<String>> functions = policyToVerify.getFunctions();
+    	List<List<String>> pathsToBeRemoved = new ArrayList<List<String>>();
+    	
+    	// For each path
+        for (List<String> path : sanitizedPaths) {
+            boolean satisfyPolicy = true;
+            List<String> tempPath = new ArrayList<String>(path);
+            
+            // Remove the head and the tail from the list of auxiliary paths
+            tempPath.remove(0);
+            tempPath.remove(tempPath.size()-1);
+            
+            // If the two lists have not the same number of elements, than it is impossible that they contain
+            // exactly the same elements.
+            if(tempPath.size() != functions.size()) {
+            	pathsToBeRemoved.add(path);
+            	continue;
+            }
+            
+            // For each function in the functions list
+            for (List<String>  func : functions) {
+                // Different behaviors are expected depending on whether the function is exact or generic.
+            	if(func.get(0).equals("exact")) {
+            		boolean isSatisfied = false;
+            		String toDelete = "";
+            		
+            		// For each node in the path
+                    for (String node : tempPath) {
+                    	// Check if the node name is equal to the name of the function
+                        if(node.equals(func.get(1))) { 
+                        	isSatisfied = true;
+                        	toDelete = node;
+                        	break;
+                        }
+                    }
+                    
+                    if(isSatisfied == true) {
+                    	tempPath.remove(toDelete);
+                    } else {
+                    	satisfyPolicy = false;
+                    	break;
+                    }
+                } else if (func.get(0).equals("generic")) {
+                	boolean isSatisfied = false;
+                	String toDelete = "";
+                	
+            		// For each node in the path
+                    for (String node : tempPath) {
+                    	Node selectedNode = graph.searchNodeByName(node);
+                    	                    	
+                    	// Check if the node name is equal to the name of the function
+                        if(selectedNode.getFunctional_type().equals(func.get(1))) { 
+                        	isSatisfied = true;
+                        	toDelete = node;
+                        	break;
+                        }
+                    }
+                    
+                    if(isSatisfied == true) {
+                    	tempPath.remove(toDelete);
+                    } else {
+                    	satisfyPolicy = false;
+                    	break;
+                    }
+                }
+            }
+            
+            if (!satisfyPolicy) {
+                pathsToBeRemoved.add(path);
+            }
+        }
+        for (List<String> path : pathsToBeRemoved) {
+            sanitizedPaths.remove(path);
+        }
+        
+        return sanitizedPaths;
+	}
+    
+    /**
+     * Extract from the current list of sanitized paths the paths that satisfy a policy of type sequence
+     * 
+     * @param sanitizedPaths The list of paths from where the correct paths will be extracted
+     * @param policyToVerify The policy that is currently being verified
+     * @param graph The graph to which the above policy belong
+     * @return The list of paths that satisfy the given policy of type sequence
+     */
+    private List<List<String>> extractPathsVerifyingSequence(List<List<String>> sanitizedPaths, Policy policyToVerify, Graph graph) {
+    	// The list of functions to verify
+    	List<List<String>> functions = policyToVerify.getFunctions();
+    	List<List<String>> pathsToBeRemoved = new ArrayList<List<String>>();
+    	
+    	// For each path
+        for (List<String> path : sanitizedPaths) {
+            List<String> tempPath = new ArrayList<String>(path);
+            
+            // Remove the head and the tail from the list of auxiliary paths
+            tempPath.remove(0);
+            tempPath.remove(tempPath.size()-1);
+            
+            // If the two lists have not the same number of elements, than it is impossible that they contain
+            // exactly the same elements.
+            if(tempPath.size() < functions.size()) {
+            	pathsToBeRemoved.add(path);
+            	continue;
+            }
+            
+            int j = 0;
+                        
+            // For each element of tempPath and functions
+            for(int i = 0; (i < tempPath.size()) && (j < functions.size()); i++) {
+            	List<String>  func = functions.get(j);
+            	String  node = tempPath.get(i);
+            	
+            	// Different behaviors are expected depending on whether the function is exact or generic.
+            	if(func.get(0).equals("exact")) {
+            		// Check if the node name is equal to the name of the function.
+            		// If the check is positive, move to the next function
+                    if(node.equals(func.get(1))) { 
+                    	j++;
+                    } else if(j > 0){ // Otherwise, set the functions index to zero and start from the beginning
+                    	i--;
+                    	j = 0;
+                    }
+                } else if (func.get(0).equals("generic")) {
+                	Node selectedNode = graph.searchNodeByName(node);
+                	                    	
+                	// Check if the node name is equal to the name of the function.
+            		// If the check is positive, move to the next function
+                    if(selectedNode.getFunctional_type().equals(func.get(1))) { 
+                    	j++;
+                    } else if(j > 0){ // Otherwise, set the functions index to zero and start from the beginning
+                    	i--;
+                    	j = 0;
+                    }
+                }
+            }
+            
+            if(j != functions.size()) {
+            	pathsToBeRemoved.add(path);
+            }
+        }
+        for (List<String> path : pathsToBeRemoved) {
+            sanitizedPaths.remove(path);
+        }
+        
+        return sanitizedPaths;
+	}
+    
+    /**
+     * Extract from the current list of sanitized paths the paths that satisfy a policy of type list
+     * 
+     * @param sanitizedPaths The list of paths from where the correct paths will be extracted
+     * @param policyToVerify The policy that is currently being verified
+     * @param graph The graph to which the above policy belong
+     * @return The list of paths that satisfy the given policy of type list
+     */
+    private List<List<String>> extractPathsVerifyingList(List<List<String>> sanitizedPaths, Policy policyToVerify, Graph graph) {
+    	// The list of functions to verify
+    	List<List<String>> functions = policyToVerify.getFunctions();
+    	List<List<String>> pathsToBeRemoved = new ArrayList<List<String>>();
+    	
+    	// For each path
+        for (List<String> path : sanitizedPaths) {
+            List<String> tempPath = new ArrayList<String>(path);
+            
+            // Remove the head and the tail from the list of auxiliary paths
+            tempPath.remove(0);
+            tempPath.remove(tempPath.size()-1);
+            
+            // If the two lists have not the same number of elements, than it is impossible that they contain
+            // exactly the same elements.
+            if(tempPath.size() != functions.size()) {
+            	pathsToBeRemoved.add(path);
+            	continue;
+            }
+                        
+            // For each element of tempPath and functions
+            for(int i = 0; i < tempPath.size(); i++) {
+            	List<String>  func = functions.get(i);
+            	String  node = tempPath.get(i);
+            	
+            	// Different behaviors are expected depending on whether the function is exact or generic.
+            	if(func.get(0).equals("exact")) {
+                	// Check if the node name is equal to the name of the function
+                    if(!node.equals(func.get(1))) { 
+                    	pathsToBeRemoved.add(path);
+                    	break;
+                    }
+                } else if (func.get(0).equals("generic")) {
+                	Node selectedNode = graph.searchNodeByName(node);
+                	                    	
+                	// Check if the node name is equal to the name of the function
+                    if(!selectedNode.getFunctional_type().equals(func.get(1))) { 
+                    	pathsToBeRemoved.add(path);
+                    	break;
+                    }
+                    
+                }
+            }
+        }
+        for (List<String> path : pathsToBeRemoved) {
+            sanitizedPaths.remove(path);
+        }
+        
+        return sanitizedPaths;
+	}
+
+	public List<List<Node>> getPaths(long graphId, String source, String destination) throws JsonParseException, JsonMappingException, JAXBException, IOException, MyInvalidDirectionException {
         if (graphId < 0) {
             throw new ForbiddenException("Illegal graph id: " + graphId);
         }
@@ -622,4 +1172,27 @@ public class VerificationService {
         else
             return null;
     }
+	
+	/**
+	 * Utility function that, starting from a list of list of strings that represents a set of paths, returns a list of strings,
+	 * each representing a path
+	 * @param paths A list of list of strings that represents a set of paths
+	 * @return List of strings, each representing a path
+	 */
+    private List<String> getListOfPathStrings(List<List<String>> paths) {
+    	List<String> pathsString = new ArrayList<String>();
+    	
+    	for( List<String> path : paths ) {
+    		String pathString = "";
+    		for(String node : path) {
+            	if(pathString.equals("")) {
+            		pathString = node;
+            	} else {
+            		pathString += " " + node;
+            	}
+            }
+    		pathsString.add(pathString);
+    	}
+    	return pathsString;
+	}
 }

@@ -41,6 +41,8 @@ import it.polito.verigraph.model.Configuration;
 import it.polito.verigraph.model.Graph;
 import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
+import it.polito.verigraph.model.Policy;
+import it.polito.verigraph.model.Restrictions;
 import it.polito.verigraph.service.VerigraphLogger;
 
 public class Neo4jDBManager {
@@ -93,7 +95,6 @@ public class Neo4jDBManager {
 
         it.polito.neo4j.jaxb.Graph graph_xml=GraphToNeo4j.generateObject(graph);
         it.polito.neo4j.jaxb.Graph graphReturned;
-        it.polito.neo4j.jaxb.Node node;
 
         try{
             graphReturned = lib.createGraph(graph_xml);
@@ -377,5 +378,124 @@ public class Neo4jDBManager {
             throw new NotFoundException();
         }
     }
+    
+    public Map<Long, Policy> getPolicies(long graphId) throws JsonProcessingException  {
+		Map<Long, Policy> policies = new HashMap<Long, Policy>();
+        try
+        {
+            Set<it.polito.neo4j.jaxb.Policy> set= lib.getPolicies(graphId);
+            policies=Neo4jToGraph.PoliciesToVerigraph(set);
+        }
+        catch(MyNotFoundException e1){
+            e1.printStackTrace();
+            throw new NotFoundException();
+        }
+        return policies;
+	}
+	
+	public Restrictions updateRestrictions(long policyId, long graphId, Restrictions policyRestrictions, Policy policy) throws JsonParseException, JsonMappingException, IOException, MyInvalidIdException {
+        try{
+            it.polito.neo4j.jaxb.Restrictions restr = GraphToNeo4j.RestrictionsToNeo4j(policyRestrictions, policy);
+            it.polito.neo4j.jaxb.Restrictions r = lib.updateRestrictions(policyId, graphId, restr);
+            Restrictions returnedRestr = Neo4jToGraph.RestrictionsToVerigraph(r);
+            return returnedRestr;
+        }
+        catch(MyNotFoundException e2){
+            e2.printStackTrace();
+            throw new NotFoundException();
+        }
+    }
+	
+	public it.polito.verigraph.model.Policy addPolicy(long graphId, it.polito.verigraph.model.Policy policy) throws IOException, MyInvalidIdException {
+        it.polito.neo4j.jaxb.Policy policy_xml=GraphToNeo4j.PolicyToNeo4j(policy);
+        it.polito.neo4j.jaxb.Policy policyReturned;
+        it.polito.verigraph.model.Policy policy_v = new it.polito.verigraph.model.Policy();
+        try
+        {
+            policyReturned = lib.createPolicy(policy_xml, graphId);
+            policy_v=Neo4jToGraph.PolicyToVerigraph(policyReturned);
+        }
+        catch(MyNotFoundException e1){
+            e1.printStackTrace();
+            throw new NotFoundException();
+        }
 
+        catch(DuplicateNodeException e3){
+            e3.printStackTrace();
+            throw new BadRequestException();
+        }
+        return policy_v;
+    }
+
+    public Policy updatePolicy(long graphId, Policy policy, long id) throws IOException, MyInvalidIdException {
+        it.polito.neo4j.jaxb.Policy policy_xml=GraphToNeo4j.PolicyToNeo4j(policy);
+        it.polito.neo4j.jaxb.Policy policyReturned;
+        Policy policy_v;
+        try{
+            policyReturned = lib.updatePolicy(policy_xml, graphId, id);
+            policy_v = Neo4jToGraph.PolicyToVerigraph(policyReturned);
+            return policy_v;
+        }
+        catch(MyNotFoundException e2){
+            e2.printStackTrace();
+            throw new NotFoundException();
+        }
+        catch(MyInvalidObjectException e3){
+            e3.printStackTrace();
+            throw new BadRequestException(e3.getMessage());
+        }
+
+    }
+
+    public Policy deletePolicy(long graphId, long policyId) {
+
+        try{
+            it.polito.neo4j.jaxb.Policy p = lib.getPolicyById(policyId, graphId);
+            lib.deletePolicy(graphId, policyId);
+            return Neo4jToGraph.PolicyToVerigraph(p);
+        }
+        catch(MyNotFoundException e1){
+            throw new NotFoundException("graph or node not found");
+        } catch (JsonProcessingException e) {
+            throw new NotFoundException("jsonprocessing node");
+        }
+    }
+    
+    public Policy getPolicyByName(long graphId, String name) throws JsonProcessingException {
+
+        it.polito.verigraph.model.Policy policy;
+        try
+        {
+            it.polito.neo4j.jaxb.Policy set= lib.getPolicyByName(name, graphId);
+            if(set==null)
+                return null;
+            else{
+                policy=Neo4jToGraph.PolicyToVerigraph(set);
+                return policy;
+            }
+        }
+        catch(MyNotFoundException e1){
+            e1.printStackTrace();
+            throw new NotFoundException();
+        }
+
+    }
+
+    public Policy getPolicyById(long policyId, long graphId) throws JsonProcessingException {
+        it.polito.verigraph.model.Policy policy;
+        try
+        {
+            it.polito.neo4j.jaxb.Policy set= lib.getPolicyById(policyId, graphId);
+            if(set==null)
+                return null;
+            else{
+                policy=Neo4jToGraph.PolicyToVerigraph(set);
+                return policy;
+            }
+        }
+        catch(MyNotFoundException e1){
+            e1.printStackTrace();
+            throw new NotFoundException();
+        }
+    }
 }

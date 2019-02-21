@@ -60,7 +60,8 @@ function loadNFFGfromServerWithSuccesMessage()
                 {
                     id:[],
                     nodes: [],
-                    edges: []
+                    edges: [],
+                    policies: []
                 };
 
 
@@ -117,16 +118,14 @@ function postGraphToServer(packet, i)
 
     $("#watingServerId").show();
 
-
-
-    var pachetStringify = JSON.stringify(packet);
+    var packetStringify = JSON.stringify(packet);
 
     $.ajax({
         url: addressServer, //yes
         type: "post",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: pachetStringify,
+        data: packetStringify,
         success :function (respond)
     {
         switch (i)
@@ -185,14 +184,14 @@ function postGraphToServer(packet, i)
 function postGraphToServerFromFile(packet)
 {
     $("#watingServerId").show();
-    var pachetStringify = JSON.stringify(packet);
+    var packetStringify = JSON.stringify(packet);
 
     $.ajax({
         url: addressServer, //yes
         type: "post",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: pachetStringify,
+        data: packetStringify,
         success :function (respond)
         {
 
@@ -310,14 +309,14 @@ function verifyGraphToServer(packet)
 
     $("#watingServerId").show();
 
-    var pachetStringify = JSON.stringify(packet);
+    var packetStringify = JSON.stringify(packet);
 
     $.ajax({
         url: addressServer, //yes
         type: "post",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: pachetStringify,
+        data: packetStringify,
         success :function (respond)
         {
 
@@ -381,7 +380,7 @@ function deliteGraphFromServerVerify(id)
 function updateGraphToServer (packet, id, flag)
 {
     $("#watingServerId").show();
-    var pachetStringify = JSON.stringify(packet);
+    var packetStringify = JSON.stringify(packet);
 
 
     var url = addressServer +  id;
@@ -390,7 +389,7 @@ function updateGraphToServer (packet, id, flag)
         type: "PUT",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: pachetStringify,
+        data: packetStringify,
         success: function (respond)
         {
 
@@ -648,8 +647,7 @@ function updateGraphToServerAndToVerifyPolicy
                         )
 {
     $("#watingServerId").show();
-    var pachetStringify = JSON.stringify(packet);
-
+    var packetStringify = JSON.stringify(packet);
 
     var url = addressServer +  id;
     $.ajax({
@@ -657,16 +655,13 @@ function updateGraphToServerAndToVerifyPolicy
         type: "PUT",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: pachetStringify,
+        data: packetStringify,
         success: function (respond)
         {
             change=0;
             alertSuccess("Success: your graph is updated!!!");
             $("#watingServerId").hide();
             verifiyPolicy(urlVerificationPolicy);
-
-
-
         },
         error: function (respond)
         {
@@ -697,7 +692,7 @@ function updateGraphToServerAndChangeId (packet, id, newNameId)
 {
 
     $("#watingServerId").show();
-    var pachetStringify = JSON.stringify(packet);
+    var packetStringify = JSON.stringify(packet);
 
 
     var url = addressServer +  id;
@@ -707,7 +702,7 @@ function updateGraphToServerAndChangeId (packet, id, newNameId)
         type: "PUT",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: pachetStringify,
+        data: packetStringify,
         success: function (respond)
         {
             useLastId=1;
@@ -725,13 +720,13 @@ function updateGraphToServerAndChangeId (packet, id, newNameId)
         {
             $("#watingServerId").hide();
             alertError("Sorry!!! Your graph is not updated!!! "  +    respond.responseText);
-            
+
             /**
              * To change the graph.
              * singleNFFGfromVerigraphToCytoAndCheck(newNameId);
              * drawWithParametre(NFFGcyto);
              */
-            
+
         }
     });
 

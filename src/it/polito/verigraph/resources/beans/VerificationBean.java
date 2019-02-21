@@ -23,12 +23,16 @@ public class VerificationBean {
     private @QueryParam("destination") String destination;
 
     @ApiModelProperty(example = "reachability",
-            value = "Verification policy ('reachability', 'isolation', 'traversal')")
+            value = "Verification policy ('reachability', 'isolation', 'traversal', 'vOne', 'vOnly', 'vMore', 'vAll', 'vNone', 'vOthers')")
     private @QueryParam("type") String type;
 
     @ApiModelProperty(example = "firewall",
-            value = "Absent if verification type is 'reachability', equal to the name of a middlebox to be avoided if verification type is 'isolation', equal to the name of a middlebox to be traversed if verification type is 'traversal'")
+            value = "Present only if verification type is 'isolation' or 'traversal', equal to the name of a middlebox to be avoided if verification type is 'isolation', equal to the name of a middlebox to be traversed if verification type is 'traversal'")
     private @QueryParam("middlebox") String middlebox;
+    
+    @ApiModelProperty(example = "pEx",
+            value = "Absent if verification type is 'reachability', 'isolation', 'traversal', equal to the name of the policy to verify.")
+    private @QueryParam("policyId") String policyName;
 
     public String getSource() {
         return source;
@@ -62,4 +66,11 @@ public class VerificationBean {
         this.middlebox = middlebox;
     }
 
+    public String getPolicyName() {
+        return policyName;
+    }
+
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
+    }
 }

@@ -12,6 +12,11 @@
  * @type {boolean}
  */
 var flagMiddleBox = false;
+/**
+ * To know if policyToVerifyBox is on DOM or not.
+ * @type {boolean}
+ */
+var flagPolicyIdToVerify = false;
 
 /**
  * @description Used during verifications policy. It's able to disable middle box field when the selector indicates
@@ -38,7 +43,7 @@ $(document).ready(function()
     /**
      * @description To add or remove the middle box field.
      */
-    $('#verificationSelect').change(addOrRemoveMidlebox);
+    $('#verificationSelect').change(addOrRemoveMiddlebox);
 
     //Get value of the verification
     /**
@@ -62,12 +67,10 @@ $(document).ready(function()
 
         var graphIdOnServer = idGraphVerigraph; //idVerification;
 
-
-
         var verificatonSelect = $('#verificationSelect').val();
 
-          var verifySourceNode = $('#verifyIdSourceNode').val();
-          var verifyDestinatonNode = $('#verifyIdDestinationNode').val();
+        var verifySourceNode = $('#verifyIdSourceNode').val();
+        var verifyDestinatonNode = $('#verifyIdDestinationNode').val();
 
         if(verificatonSelect.localeCompare("reachability")==0)
         {
@@ -86,7 +89,7 @@ $(document).ready(function()
             );
 
         }
-        else
+        else if ((verificatonSelect.localeCompare("isolation")==0) || (verificatonSelect.localeCompare("traversal")==0))
         {
             var verifyMiddleBox = $('#verifyMiddleBox').val();
             if(false == checkInputValueVerify(verifySourceNode, verifyDestinatonNode, verifyMiddleBox))
@@ -104,6 +107,24 @@ $(document).ready(function()
                 )
             );
 
+        }
+        else
+        {
+            var verifyPolicyId = $('#idVerifyPolicyInput').val();
+            if(false == checkInputValueVerifyPolicy(verifySourceNode, verifyDestinatonNode, verifyPolicyId))
+                return false;
+
+            verifyPolicyFunctionLaunch
+            (
+                creationUrlForVerificationPolicies
+                (
+                    verificatonSelect,
+                    graphIdOnServer,
+                    verifySourceNode,
+                    verifyDestinatonNode,
+                    verifyPolicyId
+                )
+            );
         }
 
 
@@ -124,15 +145,12 @@ function creationUrlWithoutReachability(verificatonSelect, graphIdOnServer, veri
 {
 
     return graphIdOnServer +
-        "/policy?source=" +
+        "/policyVerifier?source=" +
         verifySourceNode +
         "&destination=" +
         verifyDestinatonNode +
         "&type=" +
         verificatonSelect;
-
-
-
 }
 
 /**
@@ -155,7 +173,7 @@ function creationUrlWithReachability
 {
 
     return graphIdOnServer +
-        "/policy?source=" +
+        "/policyVerifier?source=" +
         verifySourceNode +
         "&destination=" +
         verifyDestinatonNode +
@@ -164,7 +182,36 @@ function creationUrlWithReachability
         "&middlebox=" +
         verifyMiddleBox;
 
+}
 
+/**
+ * @description To build a ulr with the middle box field in order to communicate with the server.
+ * The url is the second part of the ulr.
+ * The first part of the url, where is the address of ther server is in another function. This
+ * function is able to add these two url: address server + parameters ulr (or second part of ulr).
+ * @param {string} verificatonSelect - The selector of the verification.
+ * @param {string} graphIdOnServer - The graph id.
+ * @param {string} verifySourceNode - The source node.
+ * @param {string} verifyDestinatonNode - The destination node.
+ * @param {string} verifyMiddleBox - Middle box field.
+ * @return {string} second part of the url.
+ */
+
+function creationUrlForVerificationPolicies
+(
+    verificatonSelect, graphIdOnServer,  verifySourceNode, verifyDestinatonNode, verifyPolicyId
+)
+{
+
+    return graphIdOnServer +
+        "/policyVerifier?source=" +
+        verifySourceNode +
+        "&destination=" +
+        verifyDestinatonNode +
+        "&type=" +
+        verificatonSelect +
+        "&policyId=" +
+        verifyPolicyId;
 
 }
 
@@ -196,20 +243,21 @@ function  verifyPolicyFunctionLaunch(secondPartUrl)
 
 /**
  * @description It is able to add or remove the middle box watching the selector. If the
- * selector indicates "reachability", it removes the middle box field, otherwise it adds this field.
+ * selector indicates anything different from "isolation" or "traversal", it removes the middle box field, otherwise it adds this field.
  * When the web site starts, the selector points on reachability policy so the field is obviously not present.
  */
-function addOrRemoveMidlebox ()
+function addOrRemoveMiddlebox ()
 {
+	var verificationSelectValue = $('#verificationSelect').val();
 
-
-    if($('#verificationSelect').val().localeCompare("reachability")==0)
+    if(((verificationSelectValue.localeCompare("isolation")!=0)&&(verificationSelectValue.localeCompare("traversal")!=0))==1)
     {
-       // $('#verifyMiddleBox').prop('checked', true).attr('disabled', 'disabled');
-        document.getElementById("divMiddleBox").remove();
-        flagMiddleBox=false;
-
-
+    	if(flagMiddleBox==true)
+        {
+	    	// $('#verifyMiddleBox').prop('checked', true).attr('disabled', 'disabled');
+	        document.getElementById("divMiddleBox").remove();
+	        flagMiddleBox=false;
+        }
     }
     else
     {
@@ -237,12 +285,39 @@ function addOrRemoveMidlebox ()
             flagMiddleBox = true;
         }
 
-
-
-
     }
 
+    if(((verificationSelectValue.localeCompare("reachability")==0)||(verificationSelectValue.localeCompare("isolation")==0)||(verificationSelectValue.localeCompare("traversal")==0))==1)
+    {
+    	if(flagPolicyIdToVerify==true)
+        {
+	        document.getElementById("divPolicyToVerify").remove();
+	        flagPolicyIdToVerify=false;
+        }
+    }
+    else
+    {
+        if(flagPolicyIdToVerify==false)
+        {
+            var policyToVerifyHtml = "<div id=\"divPolicyToVerify\"><li data-toggle=\"tooltip\" title=\"Policy to verify (required)\" " +
+                "data-placement=\"right\">" +
+                "<input id=\"idVerifyPolicyInput\" type=\"text\" class=\"form-control input-sm\"" +
+                "placeholder=\"Policy ID\"> </li> </div>";
 
+            var ni = document.getElementById('policyToVerifyRoot');
+
+            var newdiv = document.createElement('div');
+
+            var divIdName = 'policyToVerify' + 'Div';
+
+            newdiv.setAttribute('id', divIdName);
+
+            newdiv.innerHTML = policyToVerifyHtml;
+            ni.appendChild(newdiv);
+
+            flagPolicyIdToVerify = true;
+        }
+    }
 }
 
 /**
@@ -541,6 +616,233 @@ function checkInputValueVerify(verifySourceNode, verifyDestinationNode, verifyMi
         if(x==0 && y == 0 && z == 1)
         {
             alertError("Error: middle box  doesn't exist!");
+            return false;
+        }
+        if(x==0 && y == 1 && z == 0)
+        {
+            alertError("Error: destination node doesn't exist!!");
+            return false;
+        }
+        if(x==1 && y == 0 && z == 0)
+        {
+            alertError("Error: source node doesn't exist!!");
+            return false;
+        }
+
+
+    }
+
+    return true;
+
+}
+
+/**
+ * @description It is able to checks if the fields (source and destination node and policy) are empty and if they exist.
+ * If one of them or plus of one don't exist or if is/are empty, the function advise the user by alert about
+ * error or errors.
+ * @param {string} verifySourceNode - Source node.
+ * @param {string} verifyDestinationNode - Destination node.
+ * @param {string} verifyPolicy - Policy to verify.
+ * @return {boolean} if the checks is right (true) or failure (false).
+ */
+function checkInputValueVerifyPolicy(verifySourceNode, verifyDestinationNode, verifyPolicy)
+{
+    var x=0, y=0, z=0;
+    var ex=0, ey=0, ez=0;
+
+    // Chech if the node esxist or not
+    //searchNodeElement: 1 if the node does not exist, 0 if the node exists
+    if(verifySourceNode.localeCompare("")==0)
+        ex=1;
+    else
+        if (false == searchNodeElement(verifySourceNode))
+            x=1;
+
+    if(verifyDestinationNode.localeCompare("")==0)
+        ey=1;
+    else
+        if (false == searchNodeElement(verifyDestinationNode))
+            y=1;
+
+
+    if(verifyPolicy.localeCompare("")==0)
+        ez=1;
+    else
+    if (false == searchPolicy(verifyPolicy))
+        z=1;
+
+
+    if(ex==1 && ey == 1 && ez ==1)
+    {
+
+        alertError("Error: the source, destination node and policy are empty");
+        return false;
+    }
+
+
+    if(ex==1 && ey == 1 && ez ==0)
+    {
+
+       if(z==1)
+       {
+           alertError("Error: the source and destination node are empty and the policy doesn't exist!");
+           return false;
+       }
+       else
+       {
+           alertError("Error: the source and destination node are empty!");
+           return false;
+       }
+    }
+
+
+
+    if(ex==1 && ey == 0 && ez ==1)
+    {
+
+        if(y==1)
+        {
+            alertError("Error: the source node and policy are empty and destination node doesn't exist!");
+            return false;
+        }
+        else
+        {
+            alertError("Error: the source node and and policy are empty!");
+            return false;
+
+        }
+    }
+
+
+
+
+    if(ex==0 && ey == 1 && ez ==1)
+    {
+
+        if(x==1)
+        {
+            alertError("Error: the destination node and policy are empty and source node doesn't exist!");
+            return false;
+        }
+        else
+        {
+            alertError("Error: the destination node and and policy are empty!");
+            return false;
+
+        }
+    }
+
+
+
+
+
+    if(ex==0 && ey == 0 && ez ==1)
+    {
+
+        if(x==1 && y == 1)
+        {
+            alertError("Error: policy is empty and source node and destination node don't exist!");
+            return false;
+        }
+        if(x==0 && y == 1)
+        {
+            alertError("Error: policy is empty and destination node doesn't exist!");
+            return false;
+        }
+        if(x==1 && y == 0)
+        {
+            alertError("Error: policy is empty and source node doesn't exist!");
+            return false;
+        }
+        if(x==0 && y == 0)
+        {
+            alertError("Error: policy is empty!");
+            return false;
+        }
+
+    }
+
+
+
+
+    if(ex==0 && ey == 1 && ez ==0)
+    {
+
+        if(x==1 && z == 1)
+        {
+            alertError("Error: destination node is empty and source node and policy don't exist!");
+            return false;
+        }
+        if(x==0 && z == 1)
+        {
+            alertError("Error:destination node is empty and policy doesn't exist!");
+            return false;
+        }
+        if(x==1 && z == 0)
+        {
+            alertError("Error: destination node is empty and source node doesn't exist!");
+            return false;
+        }
+        if(x==0 && z == 0)
+        {
+            alertError("Error: destination node is empty!");
+            return false;
+        }
+
+    }
+
+
+    if(ex==1 && ey == 0 && ez ==0)
+    {
+
+        if(y==1 && z == 1)
+        {
+            alertError("Error: source node is empty and destination node and policy don't exist !");
+            return false;
+        }
+        if(y==0 && z == 1)
+        {
+            alertError("Error: source  node is empty and policy doesn't exist!");
+            return false;
+        }
+        if(y==1 && z == 0)
+        {
+            alertError("Error: source node is empty and destination node doesn't exist !");
+            return false;
+        }
+        if(y==0 && z == 0)
+        {
+            alertError("Error: source node is empty!");
+            return false;
+        }
+    }
+
+    if(ex==0 && ey == 0 && ez ==0)
+    {
+
+        if(x==1 && y == 1 && z == 1)
+        {
+            alertError("Error: source, destination node and policy don't exist!");
+            return false;
+        }
+        if(x==1 && y == 1 && z == 0)
+        {
+            alertError("Error: source and destination node don't exist!");
+            return false;
+        }
+        if(x==1 && y == 0 && z == 1)
+        {
+            alertError("Error: source node and policy don't exist!");
+            return false;
+        }
+        if(x==0 && y == 1 && z == 1)
+        {
+            alertError("Error: destination node and policy don't exist!");
+            return false;
+        }
+        if(x==0 && y == 0 && z == 1)
+        {
+            alertError("Error: policy doesn't exist!");
             return false;
         }
         if(x==0 && y == 1 && z == 0)
