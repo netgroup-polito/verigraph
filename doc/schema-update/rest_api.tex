@@ -1,16 +1,24 @@
 \section {Rest API Description}
 
-Note: The REST API design presented here contains only the resources and operations that have been added to the existing service. For more information regarding the existing service resources and operations please refer to the Verigraph Swagger documentation.
+Note: The documentation is also available as Swagger documentation, which can be accessed through the Verigraph web client.
 
 \subsection{Resource Design}
 
-\begin{table}[htp]
+\begin{table}[!htbp]
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lllp{5cm}@{}}
 \toprule
 \textbf{Resources} & \textbf{URLs}                                                                                        & \textbf{XML Repr} & \textbf{Meaning}                    \\ \midrule
-Policies           & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policies\end{tabular}                              & policies          & Set of all policies                \\ \midrule
+Graphs           & \begin{tabular}[c]{@{}l@{}}/graphs\end{tabular}                                   & graphs          & Set of all graphs                \\ \midrule
+Graph             & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\end{tabular}                 & graph            & Single graph                      \\ \midrule
+Nodes           & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\/nodes\end{tabular}                                    & [node]          & Set of all nodes of a specific graph       \\ \midrule
+Node             & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\/nodes/\{nodeId\}\end{tabular}                  & node            & Single node                      \\ \midrule
+Configuration       & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\/nodes/\{nodeId\}\\/configuration\end{tabular} & configuration       & Configuration applied to a node \\ \midrule
+Neighbours          & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\/nodes/\{nodeId\}\\/neighbours\end{tabular}  & [neighbour]         & Set of neighbours of a specific node       \\ \midrule
+Neighbour             & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\/nodes/\{nodeId\}\\/neighbours/\{neighbourId\}\end{tabular}                  & neighbour            & Single neighbour                      \\ \midrule
+Paths           & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\/paths\end{tabular}  & paths         & Set of nodes traversed to reach a destination from a source       \\ \midrule
+Policies           & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policies\end{tabular}                              & policies          & Set of all policies belonging to a specific graph  \\ \midrule
 Policy             & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policies/\{policyId\}\end{tabular}                 & policy            & Single policy                      \\ \midrule
 Restrictions       & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policies/\{policyId\}\\ /restrictions\end{tabular} & restriction       & Restrictions applied to the policy \\ \midrule
 PolicyVerifier     & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policyVerifier\end{tabular}                        &                   & Verify the selected policy                \\ \bottomrule
@@ -19,24 +27,40 @@ PolicyVerifier     & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policyVer
 \end{table}
 
 The policyVerifier resource is designed to replace the policy resource (/graphs/{graphId}/policy) currently available in the existing service. Further details are listed in the next section. 
-\pagebreak
 
 \subsection{Operation Design}
 
-\begin{table}[htp]
+\begin{table}[!htbp]
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llllllp{5cm}}
 \toprule
 \textbf{Resources}        & \textbf{Method}       & \textbf{Query Param} & \textbf{Req. Body}      & \textbf{Status} & \textbf{Resp. Body} & \textbf{Meaning}                               \\
-\multirow{2}{*}{Policies} & GET   &    &      		 & 200             & Policies            & Return all the policies related to \{graphId\} \\ \cmidrule(l){2-7}
+\multirow{2}{*}{Graphs} & GET   &    &      		 & 200             & Graphs            & Return an array of all the available graphs \\ \cmidrule(l){2-7}
+                                      & POST & \begin{tabular}[c]{@{}l@{}}name:string\\ id:long\\email:string\end{tabular}   & Graph	 	& 201             & Graph               & Graph successfully created                    \\ \midrule
+\multirow{3}{*}{Graph}   & GET    &    &			 & 200             & Graph             & Returns a single graph 			\\ \cmidrule(l){2-7} 
+                          	      & PUT    & 	 & Graph  		 & 200             & Graph             & Graph successfully edited                    \\ \cmidrule(l){2-7}
+                          	     & DELETE &   &  			 & 204             &                       & Graph successfully deleted                         \\ \midrule
+\multirow{2}{*}{Nodes}  & GET   &    &      		 & 200                     & Nodes             & Return an array of the nodes belonging to \{graphId\} \\ \cmidrule(l){2-7}
+                                      & POST &    & Node	 	& 201             & Node               & Node successfully created                    \\ \midrule
+\multirow{3}{*}{Node}   & GET    &    &			 & 200             & Node              & Returns a single node 			\\ \cmidrule(l){2-7} 
+                          	      & PUT    & 	 & Node  		 & 200             & Node              & Node successfully edited                    \\ \cmidrule(l){2-7}
+                          	     & DELETE &   &  			 & 204              &                      & Node successfully deleted                         \\ \midrule
+Configuration		      & PUT    &   & Configuration     & 200           & Configuration     & Configuration successfully added/updated for the requested node \\ \midrule
+\multirow{2}{*}{Neighbours} & GET   &    &      		 & 200             & Neighbours           & Returns an array of neighbours of a given node belonging to graph \{graphId\} \\ \cmidrule(l){2-7}
+                                      & POST &    & Neighbour	 	& 200             & Neighbour               & Adds single neighbour to a given node belonging to a given graph  \\ \midrule
+\multirow{3}{*}{Neighbour}   & GET    &    &			 & 200             & Neighbour             & Returns a single neighbour 			\\ \cmidrule(l){2-7} 
+                          	      & PUT    & 	 & Neighbour  		 & 200             & Neighbour              & Edits a single neighbour of a given node belonging to a given graph \\ \cmidrule(l){2-7}
+                          	     & DELETE &   &  			 & 204              &                       & Neighbour successfully deleted                         \\ \midrule
+Paths 		             & GET & \begin{tabular}[c]{@{}l@{}}source:string\\destination:string\end{tabular} &   
+    										& 200             & [Paths]        &Retrieve all paths between two nodes  \\ \bottomrule
+\multirow{2}{*}{Policies} & GET   &    &      		 & 200             & Policies           & Return all the policies related to \{graphId\} \\ \cmidrule(l){2-7}
                                       & POST &    & Policy	 	& 201             & Policy               & Policy successfully created                    \\ \midrule
 \multirow{3}{*}{Policy}   & GET    &    &			 & 200             & Policy             & Returns a single policy 			\\ \cmidrule(l){2-7} 
                           	      & PUT    & 	 & Policy  		 & 200             & Policy              & Policy successfully edited                    \\ \cmidrule(l){2-7}
                           	     & DELETE &   &  			 & 204              &                       & Policy successfully deleted                         \\ \midrule
-
 Restrictions		      & PUT    &   & Restrictions     & 200             & Restrictions     & Restriction successfully updated for the requested policy \\ \midrule
-PolicyVerifier 			& GET & \begin{tabular}[c]{@{}l@{}}type:string\\ policyId:long\\source:string\\destination:string\end{tabular}&   
+PolicyVerifier 		      & GET & \begin{tabular}[c]{@{}l@{}}type:string\\ policyId:long\\source:string\\destination:string\end{tabular} &   
     										& 200             & VerificationResult        & Policy successfully verified  \\ \bottomrule
 \end{tabular}%
 }
@@ -44,13 +68,13 @@ PolicyVerifier 			& GET & \begin{tabular}[c]{@{}l@{}}type:string\\ policyId:long
 
 Depending on the specific operation that was requested, different errors can occur:\\
 
-\begin{table}[htp]
+\begin{table}[!htbp]
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lp{5cm}lp{5cm}@{}}
 \toprule
 \textbf{Status}   &    \textbf{Operations}     & \textbf{Response Body}  &  \textbf{Meaning}                    \\ \midrule
-400           & POST, PUT                              & ErrorMessage          & Invalid policy / restrictions element supplied \\ \midrule
+400           & POST, PUT                              & ErrorMessage          & Invalid graph / node / policy / restrictions element supplied \\ \midrule
 403             & GET, POST, PUT, DELETE            & ErrorMessage            &  Invalid graph / node / policy id supplied    \\ \midrule
 404       & GET, POST, PUT, DELETE		 & ErrorMessage       & Graph / node / policy not found  \\ \midrule
 500     & GET, POST, PUT, DELETE                      &  ErrorMessage           & Server Error \\ \bottomrule

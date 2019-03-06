@@ -774,6 +774,7 @@ public class VerificationService {
         		vSat.setComment("There isn't any path that '"+ source + "' can use to reach '" + destination 
                 		+ "' and that satisfies the selected policy");
         	} else if (sat > 0) {
+                vSat.setResult("UNSAT");
         		vSat.setComment("There is at least one path that '"+ source + "' can use to reach '" + destination
                         + "' and that satisfies the selected policy. See all the valid paths below");
             }
