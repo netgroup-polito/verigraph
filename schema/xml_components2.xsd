@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Politecnico di Torino and others.
+
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Apache License, Version 2.0
+ which accompanies this distribution, and is available at
+ http://www.apache.org/licenses/LICENSE-2.0
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:simpleType name="protocolTypes">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="HTTP_REQUEST" />
+            <xsd:enumeration value="HTTP_RESPONSE" />
+            <xsd:enumeration value="POP3_REQUEST" />
+            <xsd:enumeration value="POP3_RESPONSE" />
+        </xsd:restriction>
+    </xsd:simpleType>
+	<xsd:complexType name="packetType">
+	    <xsd:attribute name="body" type="xsd:string" />
+	    <xsd:attribute name="sequence" type="xsd:integer" />
+	    <xsd:attribute name="protocol" type="protocolTypes" />
+	    <xsd:attribute name="email_from" type="xsd:string" />
+	    <xsd:attribute name="url" type="xsd:string" />
+	    <xsd:attribute name="options" type="xsd:string" />
+    	<xsd:attribute name="destination" type="xsd:string" />
+    </xsd:complexType>
+    <xsd:complexType name="addressType">
+	    <xsd:attribute name="name" type="xsd:string" />
+   	</xsd:complexType>
+   	
+   	<!-- configExamples is an element added for showing examples of the different possible configurations. 
+   		 It is not to be considered as part of the xsd modifications.	
+   	-->
+   	<xsd:element name="configExamples">
+        <xsd:complexType>
+        	<xsd:sequence maxOccurs="unbounded">
+                <xsd:element ref="endhost" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+   	
+   	<xsd:element name="endhost">
+        <xsd:complexType>
+        	<xsd:sequence>
+                <xsd:choice>
+	            	<xsd:element ref="host" />
+	            	<xsd:element ref="webserver" />
+	            	<xsd:element ref="webclient" />
+				    <xsd:element ref="mailclient" />
+				    <xsd:element ref="mailserver" />
+	            </xsd:choice>
+	            <xsd:element name="packet" type="packetType"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="host">
+        <xsd:complexType />
+    </xsd:element>
+    <xsd:element name="mailclient">
+        <xsd:complexType>
+            <xsd:attribute name="mailserver" type="xsd:string"
+                use="required" />
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="mailserver">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="name" type="xsd:string" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="webclient">
+        <xsd:complexType>
+            <xsd:attribute name="webserver" type="xsd:string"
+                use="required" />
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="webserver">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="name" type="xsd:string" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

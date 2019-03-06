@@ -1,0 +1,14 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Functions'",
+    "description": "Polito restrictions to policy",
+    "type": "array",
+	"items": {
+		"type": "object",
+		"properties": {
+			"funcType" : { "type": "string"},
+			"funcName" : { "type": "string"}
+		}
+	},
+    "minItems": 0
+}
