@@ -79,5 +79,47 @@
                 "user2"
             ]
         }
-    ]
+    ],
+    "policies": [  {
+        "policyName": "p1",
+        "source": "user1",
+        "target": "user2",
+        "trafficFlow": [
+          {
+            "body": "something"
+          }
+        ],
+        "restrictions": {
+          "type": "selection",
+          "functions": [
+            {
+              "funcType": "generic",
+              "funcName": "firewall"
+            }
+          ]
+        }
+      },
+      {
+        "policyName": "p2",
+        "source": "user1",
+        "target": "user2",
+        "trafficFlow": [
+          {
+            "body": "something"
+          }
+        ],
+        "restrictions": {
+          "type": "selection",
+          "functions": [
+            {
+              "funcType": "generic",
+              "funcName": "nat"
+            },
+            {
+              "funcType": "generic",
+              "funcName": "nat"
+            }
+          ]
+        }
+      }]
 }

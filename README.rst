@@ -4,11 +4,11 @@
    :format: latex
 ..
 
-**Verigraph** is a tool for verifying policies within network graphs. It supports graphs descriptions provided in a 
-custom **JSON** format, or in **TOSCA OASIS** **YAML**/**XML**-based descriptions. **Verigraph** provides a **RESTful** 
+**Verigraph** is a tool for verifying policies within network graphs. It supports graphs descriptions provided in a
+custom **JSON** format, or in **TOSCA OASIS** **YAML**/**XML**-based descriptions. **Verigraph** provides a **RESTful**
 and a **gRPC** interface, and can also be deployed on **Docker** containers. For convenience a Command Line Interface is
 provided for interacting with the **Verigraph** service in all of its declinations.
-In the following section some informations are provided on how to deploy **Verigraph** on Apache **Tomcat**, but it's 
+In the following section some informations are provided on how to deploy **Verigraph** on Apache **Tomcat**, but it's
 useful to read some parts of it even if you are only interested in other aspects of the project.
 
 Links to other sections of the documentation:
@@ -267,10 +267,35 @@ Verigraph target:
    neo4jDeploymentFolder field of Neo4jLibrary class in
    it.polito.neo4j.manager;
 
--  The ant task "init" downloads the com.mirosoft.z3 library, if you
-   want to change the version of the library, modify the url in the task
-   with the right version. Note that the versions earlier than 4.5
-   cannot work properly.
+-  The ant task "init" downloads the com.mirosoft.z3 library. For Verigraph to
+   work correctly, the version downloaded must be the right one for the specific
+   operating system used. If you want to change the version of the library,
+   modify the url in the task with the right version (lines 83, 86 and 92 of
+   the build.xml file). Note that the versions earlier than 4.5 cannot work
+   properly.
+
+-  For the application to work properly, you must have the Z3 native library and
+   include it to the Java Library Path. The most convenient way to do this is
+   add the path that the library to the dynamic linking library path.:
+
+   -  In Linux is LD_LIBRARY_PATH
+   -  In MacOS is DYLD_LIBRARY_PATH
+   -  In Windows is PATH
+
+-  In the latest version of Maven there is the possibility that the
+   downloaded files are incompatible with the Java Version of the project
+   (1.8). In this case you have to modify the file
+   ``hk2-parent-2.4.0-b31.pom`` under your local Maven repository (e.g.
+   ‘C::raw-latex:`\Users`:raw-latex:`\Standard`.m2:raw-latex:`\repository`’)
+   and in the path ``\org\glassfish\hk2\hk2-parent\2.4.0-b31`` find the
+   file and modify at line 1098 (in section ``profile``) the ``jdk``
+   version to ``[1.8,)`` .
+
+-  The version that is supported by the downloaded files from
+   Maven Dependencies is incompatible with jdk of the project. So modify
+   the file ``gson-2.3.pom`` in Maven repository, under
+   ``com\google\code\gson\gson\2.3`` directory, in particular line 91, from
+   ``[1.8,`` to ``[1.8,)``.
 
 In order to run the automatic testing script test.py, you need the
 following dependencies installed on your python distribution: -

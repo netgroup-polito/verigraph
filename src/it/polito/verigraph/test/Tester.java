@@ -136,11 +136,11 @@ public class Tester {
             throw new TestExecutionException("Response processing has failed: " + e.getResponse().readEntity(String.class));
         }
         catch(javax.ws.rs.ProcessingException e){
-            throw new TestExecutionException("HTTP request failed");
+            throw new TestExecutionException("HTTP request failed: " + e.getMessage());
         }
         Graph createdGraph = response.readEntity(Graph.class);
         for (String urlParams : tc.getPolicyUrlParameters()){
-            WebTarget target = client.target(this.target + "/graphs/" + createdGraph.getId() + "/policy" + urlParams);
+            WebTarget target = client.target(this.target + "/graphs/" + createdGraph.getId() + "/policyVerifier" + urlParams);
 
             response = target.request().get();
             Verification verification = response.readEntity(Verification.class);

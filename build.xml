@@ -80,7 +80,6 @@
     <mkdir dir="${gen.dir}" />
     <mkdir dir="${lib.dir}" />
     <get dest="${lib.dir}">
-      <!-- z3-4.5.0/z3-4.5.0-x64-win.zip -->
       <url url="https://github.com/Z3Prover/z3/releases/download/z3-4.5.0/z3-4.5.0-x64-win.zip" /> 
       <url url="http://central.maven.org/maven2/org/apache/maven/maven-ant-tasks/2.1.3/maven-ant-tasks-2.1.3.jar" />
     </get>

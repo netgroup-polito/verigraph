@@ -121,6 +121,7 @@
                 "name": "sap3",
                 "functional_type": "endhost"
             }
-        ]
+        ],
+        "policies": []
     }
 }
