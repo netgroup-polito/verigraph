@@ -1,0 +1,798 @@
+\section{Verigraph XML Schema Documentation}
+
+\subsection{Differences with the previous version}
+
+In this work the original XML schema was improved in several ways. Here we list the changes and improvements that were made:
+
+\begin{table}[htp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lp{15cm}}
+\toprule
+\textbf{Improvements} & \textbf{Details}               \\ \midrule                                   
+New constraints             &  The original XML schema did not include most of the reference constraints required to check the existence of a node that was referred by another node. For instance, a NAT or a Firewall could be targetting a node that did not exist, and a vpnaccess element could be referring to a node that was not a vpnexit element. \\ \midrule
+PacketType               &  In the original XML schema there were two elements (Endhost and FieldModifier) that used the same attributes to describe a subset of the fields that composed a packet. In the new version, this redundancy has been removed by introducing a new complex type PacketType that centralizes the description of the subset of the supported fields. Moreover, the same complex type can also be used to characterize a traffic flow. \\ \midrule
+Policies, Policy, Restrictions               &  New elements and types have been introduced to model the different policies that can be applied to a graph.  \\ \midrule
+Firewall                    &  The firewall's ACL has been extended to include also the source/destination ports and the transport protocol.
+ \\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Verigraph XML Schema}
+
+\begin{lstlisting}[language=XML, caption=XML Example]
+<?xml version="1.0" encoding="UTF-8"?>
+<graphs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="xml_components_v2.xsd">
+  <graph id="0">
+    <node functional_type="FIREWALL" id="0" name="fw">
+      <neighbour id="0" name="nodeSrc"/>
+      <neighbour id="1" name="nodeDest"/>
+      <configuration description="Simple Description" id="0" name="conf1">
+        <firewall>
+          <elements>
+            <source>nodeSrc</source>
+            <destination>nodeDest</destination>
+            <srcPort>30</srcPort>
+            <destPort>30</destPort>
+            <protocol>TCP</protocol>
+          </elements>
+        </firewall>
+      </configuration>
+    </node>
+    <node functional_type="ENDPOINT" id="1" name="nodeSrc">
+      <neighbour id="0" name="fw"/>
+      <configuration description="Simple description" id="0" name="conf2">
+        <endhost />
+      </configuration>
+    </node>
+    <node functional_type="ENDPOINT" id="2" name="nodeDest">
+      <neighbour id="0" name="fw"/>
+      <configuration description="Simple description" id="0" name="conf3">
+        <endhost />
+      </configuration>
+    </node>
+
+    <policies>
+      <policy destination="nodeDest" id="0" name="policyExample" source="nodeSrc">
+        <trafficflow protocol="HTTP_REQUEST"/>
+        <restrictions type="SELECTION">
+          <genericFunction type="FIREWALL"/>
+        </restrictions>
+      </policy>
+    </policies>
+  </graph>
+</graphs>
+\end{lstlisting}
+
+\subsubsection*{Graphs}
+Graphs is the root element of the XML schema. It contains a list of \textbf{Graph} elements.
+
+\subsubsection*{Graph}
+A Graph is a set of services that will be deployed in the network. It is contained inside a list of Graphs.
+Graph is characterised by
+\begin{itemize}
+ \item A unique \textbf{ID}
+ \item A list of \textbf{Node} elements
+ \item (Optionally) A \textbf{Policies} element that contains a list of \textbf{Policy}
+\end{itemize}
+
+\begin{warning}
+\textbf{Warning}: You must define a Graph that has at least one Node.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=Graphs Example]
+<graphs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="xml_components_v2.xsd">
+  <graph id="0">
+    <node functional_type="FIREWALL" id="0" name="fw">
+        ...
+    </node>
+    <node functional_type="ENDPOINT" id="1" name="nodeSrc">
+        ...
+    </node>
+    <node functional_type="ENDPOINT" id="2" name="nodeDest">
+        ...
+    </node>
+
+    <policies>
+      <policy destination="nodeDest" id="0" source="nodeSrc">
+        ...
+      </policy>
+    </policies>
+  </graph>
+</graphs>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Graphs schema code snippet]
+<xsd:element name="graphs">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element ref="graph" maxOccurs="unbounded"
+                minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:unique name="uniqueGraph">
+        <xsd:selector xpath="graph" />
+        <xsd:field xpath="@id" />
+    </xsd:unique>
+</xsd:element>
+<xsd:element name="graph">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element ref="node" maxOccurs="unbounded"/>
+            <xsd:element ref="policies" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:long" use="optional" />
+    </xsd:complexType>
+    ...
+</xsd:element>
+\end{lstlisting}
+
+\subsubsection*{Node}
+A Node is a logical network element that correspond to a Network Function. A node is characterised
+by:
+\begin{itemize}
+ \item A unique \textbf{Name}
+ \item A \textbf{Functional Type}
+ \item A list of \textbf{Neighbour Node Names}
+ \item A \textbf{Configuration} for the Functional Type
+\end{itemize}
+
+
+\begin{warning}
+\textbf{Warning}: Pay attention when you define the neighbours of a node. The neighbour node names must exist within the specific graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=Node Example]
+<node functional_type="ENDPOINT" id="1" name="nodeSrc">
+  <neighbour id="0" name="fw"/>
+  <configuration ...>
+    ...
+  </configuration>
+</node>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Node schema code snippet]
+<xsd:element name="graph">
+    ...
+    <xsd:unique name="uniqueNodeId">
+            <xsd:selector xpath="node" />
+            <xsd:field xpath="@id" />
+        </xsd:unique>
+    ...
+</xsd:element>
+<xsd:element name="node">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element ref="neighbour" maxOccurs="unbounded"
+                minOccurs="0" />
+            <xsd:element ref="configuration" maxOccurs="1"
+                minOccurs="1" />
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:long" use="optional" />
+        <xsd:attribute name="name" type="xsd:string"
+            use="required" />
+        <xsd:attribute name="functional_type" type="functionalTypes"
+            use="required" />
+    </xsd:complexType>
+    ...
+</xsd:element>
+\end{lstlisting}
+
+
+\subsubsection*{Functional Type}
+
+A Node can be a:
+\begin{itemize}
+ \item \textbf{FIREWALL}
+ \item \textbf{ENDHOST}
+ \item \textbf{ENDPOINT}
+ \item \textbf{ANTISPAM}
+ \item \textbf{CACHE}
+ \item \textbf{DPI}
+ \item \textbf{MAILCLIENT}
+ \item \textbf{MAILSERVER}
+ \item \textbf{NAT}
+ \item \textbf{VPNACCESS}
+ \item \textbf{VPNEXIT}
+ \item \textbf{WEBCLIENT}
+ \item \textbf{WEBSERVER}
+ \item \textbf{FIELDMODIFIER}
+\end{itemize}
+
+\subsubsection*{Configuration}
+In this section we describe the different type of configurations that can be provided. A configuration is characterized by an \emph{unique} name and by an \emph{optional} description.
+
+\paragraph{Firewall}
+A Firewall Configuration contains a list of ACLs (elements). The ACL defines a tuple of:
+\begin{itemize}
+ \item Source node ID
+ \item Destination node ID
+ \item Source port
+ \item Destination port
+ \item The \textbf{Transport Protocol Type}
+\end{itemize}
+This tuple represents the connection that will be blocked.
+
+The \textbf{Transport Protocol Type} can be:
+\begin{itemize}
+ \item \textbf{TCP}
+ \item \textbf{UDP}
+\end{itemize}
+
+\begin{warning}
+\textbf{Warning}: Source and destination nodes must exist in the same graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=Firewall Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <firewall>
+      <elements>
+        <source>nodeSrc</source>
+        <destination>nodeDest</destination>
+        <srcPort>30</srcPort>
+        <destPort>30</destPort>
+        <protocol>TCP</protocol>
+      </elements>
+    </firewall>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Firewall schema code snippet]
+<xsd:element name="graph">
+    ...
+    <xsd:keyref name="keyRefNodeSrc" refer="keyNode">
+            <xsd:selector xpath="node/neighbour" />
+            <xsd:field xpath="@name" />
+    </xsd:keyref>
+    <!-- Firewall -->
+    <xsd:keyref name="keyRefFirewallSrc" refer="keyNode">
+        <xsd:selector xpath="node/configuration/firewall/elements" />
+        <xsd:field xpath="source" />
+    </xsd:keyref>
+    <xsd:keyref name="keyRefFirewallDest" refer="keyNode">
+        <xsd:selector xpath="node/configuration/firewall/elements" />
+        <xsd:field xpath="destination" />
+    </xsd:keyref>
+    ...
+</xsd:element>
+<xsd:element name="firewall">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element ref="elements" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+<xsd:element name="elements">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element name="source" type="xsd:string" />
+            <xsd:element name="destination" type="xsd:string" />
+            <xsd:element name="srcPort" type="xsd:positiveInteger" />
+            <xsd:element name="destPort" type="xsd:positiveInteger" />
+            <xsd:element name="protocol" type="transportProtocolTypes" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\paragraph{EndHost} 
+
+An EndHost Configuration contains a description of the traffic flow that is generated from/received by this node.
+
+\begin{lstlisting}[language=XML, caption=EndHost Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <endhost body="lorem ipsum"/>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=EndHost schema code snippet]
+<xsd:element name="endhost" type="packetType" />
+\end{lstlisting}
+
+\paragraph{FieldModifier}
+
+A Field Modifier Configuration contains the fields of the traffic flow that are modified by this node.
+
+\begin{lstlisting}[language=XML, caption=FieldModifier Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <fieldmodifier body="This will be changed"/>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Fieldmodifier schema code snippet]
+<xsd:element name="fieldmodifier" type="packetType"/>
+\end{lstlisting}
+
+\paragraph{Packet Type}
+
+Each packet and traffic flow can be characterized by the following attributes (all of them are optional):
+\begin{itemize}
+ \item Body
+ \item Sequence
+ \item Protocol
+ \item Email From
+ \item URL
+ \item Options
+ \item Destination
+\end{itemize}
+\begin{lstlisting}[language=XML, caption=PacketType schema code snippet]
+<xsd:complexType name="packetType">
+    <xsd:attribute name="body" type="xsd:string" />
+    <xsd:attribute name="sequence" type="xsd:integer" />
+    <xsd:attribute name="protocol" type="protocolTypes" />
+    <xsd:attribute name="email_from" type="xsd:string" />
+    <xsd:attribute name="url" type="xsd:string" />
+    <xsd:attribute name="options" type="xsd:string" />
+	<xsd:attribute name="destination" type="xsd:string" />
+</xsd:complexType>
+\end{lstlisting}
+
+\paragraph{AntiSpam}
+
+An Antispam Configuration contains a list of source nodes that represent the blacklisted mail clients and servers.
+
+\begin{warning}
+\textbf{Warning}: The nodes to which the Antispam refers must exist in the same graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=Antispam Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <antispam>
+    	<source name="node1" />
+    </antispam>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Antispam schema code snippet]
+<xsd:element name="graph">
+    ...
+    <xsd:keyref name="keyRefNodeSrc" refer="keyNode">
+            <xsd:selector xpath="node/neighbour" />
+            <xsd:field xpath="@name" />
+    </xsd:keyref>
+    ...
+    <!-- Antispam  -->
+    <xsd:keyref name="keyRefAntispam" refer="keyNode">
+        <xsd:selector xpath="node/configuration/antispam/source" />
+        <xsd:field xpath="@name" />
+    </xsd:keyref>
+    ...
+</xsd:element>
+<xsd:element name="antispam">
+    <xsd:complexType>
+        <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="source" type="addressType" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\paragraph{Cache}
+
+A Cache Configuration contains a list of resources. A resource is a node internal to the cache, and it is characterized by the name of the node it refers to.
+
+\begin{warning}
+\textbf{Warning}: The nodes to which the cache refers must exist in the same graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=Cache Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <cache>
+    	<resource name="node1"/>
+    	<resource name="node2"/>
+    </cache>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Cache schema code snippet]
+<xsd:element name="graph">
+    ...
+    <xsd:keyref name="keyRefNodeSrc" refer="keyNode">
+            <xsd:selector xpath="node/neighbour" />
+            <xsd:field xpath="@name" />
+    </xsd:keyref>
+    ...
+    <!-- Cache -->
+    <xsd:keyref name="keyRefCache" refer="keyNode">
+        <xsd:selector xpath="node/configuration/cache/resource" />
+        <xsd:field xpath="@name" />
+    </xsd:keyref>
+    ...
+</xsd:element>
+<xsd:element name="cache">
+    <xsd:complexType>
+        <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="resource" type="addressType" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\paragraph{DPI}
+
+A DPI Configuration contains a list of notAllowed elements, that defines the strings that can’t be present inside a packet otherwise it will be dropped.
+
+\begin{lstlisting}[language=XML, caption=DPI Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <dpi>
+        <notAllowed>Some String</notAllowed>
+    </dpi>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=DPI schema code snippet]
+<xsd:element name="dpi">
+    <xsd:complexType>
+        <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="notAllowed" type="xsd:string" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\paragraph{MailClient}
+
+A Mail Client Configuration contains the Mail Server name.
+
+\begin{warning}
+\textbf{Warning}: The Mail Server to which this node refers must exist within the specific graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=MailClient Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <mailclient mailserver="ServerName"/>
+</configuration>
+\end{lstlisting}
+
+\paragraph{MailServer}
+
+A Mail Server Configuration contains the Mail Server name.
+
+\begin{lstlisting}[language=XML, caption=MailServer Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <mailserver>
+    	<name>ServerName</name>
+    </mailserver>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=MailClient and MailServer schema code snippet]
+<xsd:element name="graph">
+    ...
+    <!-- WebClient / WebServer -->
+    <xsd:key name="keyWebServer">
+        <xsd:selector xpath="node/configuration/webserver" />
+        <xsd:field xpath="name" />
+    </xsd:key>
+    <xsd:keyref name="keyRefWebClient" refer="keyWebServer">
+        <xsd:selector xpath="node/configuration/webclient" />
+        <xsd:field xpath="@nameWebServer" />
+    </xsd:keyref>
+    <!-- WebClient / WebServer -->
+    <xsd:key name="keyMailServer">
+        <xsd:selector xpath="node/configuration/mailserver" />
+        <xsd:field xpath="name" />
+    </xsd:key>
+    <xsd:keyref name="keyRefMailClient" refer="keyMailServer">
+        <xsd:selector xpath="node/configuration/mailclient" />
+        <xsd:field xpath="@mailserver" />
+    </xsd:keyref>
+    ...
+</xsd:element>
+<xsd:element name="mailclient">
+    <xsd:complexType>
+        <xsd:attribute name="mailserver" type="xsd:string"
+            use="required" />
+    </xsd:complexType>
+</xsd:element>
+<xsd:element name="mailserver">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\paragraph{NAT}
+A NAT Configuration contains a list of internal nodes. The \textbf{source} element define a node in the graph.
+
+\begin{warning}
+\textbf{Warning}: The nodes to which the NAT refers must exist in the same graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=NAT Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <nat>
+    	<source name="node1"/>
+    	<source name="node2"/>
+    </nat>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=NAT schema code snippet]
+<xsd:element name="graph">
+    ...
+    <xsd:keyref name="keyRefNodeSrc" refer="keyNode">
+            <xsd:selector xpath="node/neighbour" />
+            <xsd:field xpath="@name" />
+    </xsd:keyref>
+    ...
+    <!-- NAT -->
+    <xsd:keyref name="keyRefNAT" refer="keyNode">
+        <xsd:selector xpath="node/configuration/nat/source" />
+        <xsd:field xpath="@name" />
+    </xsd:keyref>
+    ...
+</xsd:element>
+<xsd:element name="nat">
+    <xsd:complexType>
+        <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="source" type="addressType" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\paragraph{VPNAccess}
+
+A VpnAccess Configuration contains the VpnExit name.
+
+\begin{warning}
+\textbf{Warning}: The VPNExit name must exist within the same graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=VPNAccess Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <vpnaccess vpnexit="vpe1">
+        <name>vpa1</name>
+    </vpnaccess>
+</configuration>
+\end{lstlisting}
+
+\paragraph{VPNExit}
+
+A VpnExit Configuration contains the VpnAccess name.
+
+\begin{warning}
+\textbf{Warning}: The VPNAccess name must exist within the same graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=VPNExit Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <vpnexit vpnaccess="vpa1">
+    	<name>vpe1</name>
+    </vpnexit>
+</configuration>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=VPNAccess and VPNExit schema code snippet]
+<xsd:element name="graph">
+    ...
+    <!-- VPN -->
+    <xsd:key name="keyVPNAccess">
+        <xsd:selector xpath="node/configuration/vpnaccess" />
+        <xsd:field xpath="name" />
+    </xsd:key>
+    <xsd:keyref name="keyRefVPNAccess" refer="keyVPNAccess">
+        <xsd:selector xpath="node/configuration/vpnexit" />
+        <xsd:field xpath="@vpnaccess" />
+    </xsd:keyref>
+    <xsd:key name="keyVPNExit">
+        <xsd:selector xpath="node/configuration/vpnexit" />
+        <xsd:field xpath="name" />
+    </xsd:key>
+    <xsd:keyref name="keyRefVPNExit" refer="keyVPNExit">
+        <xsd:selector xpath="node/configuration/vpnaccess" />
+        <xsd:field xpath="@vpnexit" />
+    </xsd:keyref>
+    ...
+</xsd:element>
+<xsd:element name="vpnaccess">
+    <xsd:complexType>
+    	<xsd:sequence>
+            <xsd:element name="name" type="xsd:string" />
+        </xsd:sequence>
+        <xsd:attribute name="vpnexit" type="xsd:string"
+            use="required" />
+    </xsd:complexType>
+</xsd:element>
+<xsd:element name="vpnexit">
+    <xsd:complexType>
+    	<xsd:sequence>
+            <xsd:element name="name" type="xsd:string" />
+        </xsd:sequence>
+        <xsd:attribute name="vpnaccess" type="xsd:string"
+            use="required" />
+    </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\paragraph{WebClient}
+
+A Web Client Configuration contains the Web Server name.
+
+\begin{warning}
+\textbf{Warning}: The Web Server to which this node refers must exist within the specific graph.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=WebClient Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <webclient nameWebServer="ServerName"/>
+</configuration>
+\end{lstlisting}
+
+\paragraph{WebServer}
+
+A Web Server Configuration contains the Web Server name.
+
+\begin{lstlisting}[language=XML, caption=WebServer Configuration Example]
+<configuration description="Simple Description" id="0" name="conf1">
+    <webserver>
+    	<name>ServerName</name>
+    </webserver>
+</configuration>
+\end{lstlisting}
+\begin{lstlisting}[language=XML, caption=WebClient and WebServer schema code snippet]
+<xsd:element name="graph">
+    ...
+    <!-- WebClient / WebServer -->
+    <xsd:key name="keyWebServer">
+        <xsd:selector xpath="node/configuration/webserver" />
+        <xsd:field xpath="name" />
+    </xsd:key>
+    <xsd:keyref name="keyRefWebClient" refer="keyWebServer">
+        <xsd:selector xpath="node/configuration/webclient" />
+        <xsd:field xpath="@nameWebServer" />
+    </xsd:keyref>
+    <xsd:key name="keyMailServer">
+        <xsd:selector xpath="node/configuration/mailserver" />
+        <xsd:field xpath="name" />
+    </xsd:key>
+    <xsd:keyref name="keyRefMailClient" refer="keyMailServer">
+        <xsd:selector xpath="node/configuration/mailclient" />
+        <xsd:field xpath="@mailserver" />
+    </xsd:keyref>
+    ...
+</xsd:element>
+<xsd:element name="webclient">
+    <xsd:complexType>
+        <xsd:attribute name="nameWebServer" type="xsd:string"
+            use="required" />
+    </xsd:complexType>
+</xsd:element>
+<xsd:element name="webserver">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\subsubsection*{Policy}
+A Policy contains a reachability policy that we want to verify in a network graph. It is contained inside a list of Policies.
+
+A Policy is characterised by
+\begin{itemize}
+ \item A unique \textbf{ID}
+ \item The \textbf{Source Node} name
+ \item The \textbf{Destination Node} name
+ \item The \textbf{Traffic Flow} to which this policy refers.
+ \item A \textbf{Restrictions} element containing the restrictions to be checked.
+\end{itemize}
+
+\begin{warning}
+\textbf{Warning}: The source and destination names must exist within the same graph of the policy.
+\end{warning}
+
+\begin{lstlisting}[language=XML, caption=Policies Example]
+<policies>
+	<policy destination="node2" source="node1" id="1"  name="example">
+		<trafficflow body="Lorem Ipsum"/>
+		<restrictions ...>
+	      ...
+	    </restrictions>
+	</policy>
+</policies>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Policy schema code snippet]
+<xsd:element name="graph">
+    ...
+    <!-- Integrity constraints on the policies that must refer to existing nodes -->
+    <xsd:keyref name="keyRefPolicySrc" refer="keyNode">
+        <xsd:selector xpath="policies/policy" />
+        <xsd:field xpath="@source" />
+    </xsd:keyref>
+    <xsd:keyref name="keyRefPolicyDest" refer="keyNode">
+        <xsd:selector xpath="policies/policy" />
+        <xsd:field xpath="@destination" />
+    </xsd:keyref>
+    <xsd:keyref name="keyRefPolicyFunction" refer="keyNode">
+        <xsd:selector xpath="policies/policy/restrictions/exactFunction" />
+        <xsd:field xpath="name" />
+    </xsd:keyref>
+    ...
+</xsd:element>
+<xsd:element name="policies">
+     	<xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="policy" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+        <xsd:unique name="uniquePolicy">
+            <xsd:selector xpath="policy" />
+            <xsd:field xpath="@id" />
+        </xsd:unique>
+    </xsd:element>
+    <xsd:element name="policy">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="trafficflow" type="packetType"/>
+                <xsd:element ref="restrictions"/>
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:long"
+                use="required" />
+            <xsd:attribute name="name" type="xsd:string"
+                use="required" />
+            <xsd:attribute name="source" type="xsd:string"
+                use="required" />
+            <xsd:attribute name="destination" type="xsd:string"
+                use="required" />
+        </xsd:complexType>
+</xsd:element>
+\end{lstlisting}
+
+\subsubsection*{Restrictions}
+A Restrictions element is composed of a type and a set of service functions which the specified traffic must pass through.
+
+The possible types of a Restrictions element can be:
+\begin{itemize}
+ \item \textbf{SELECTION}
+ \item \textbf{SET}
+ \item \textbf{SEQUENCE}
+ \item \textbf{LIST}
+\end{itemize}
+
+The service functions can be of two types:
+\begin{itemize}
+ \item \textbf{genericFunction}: It describes a generic service function, without specifying the name of the exact node to which it refers.
+ \item \textbf{exactFunction}: It describes a specific service function that \textbf{must exist} within the same graph of the policy.
+\end{itemize}
+
+\begin{lstlisting}[language=XML, caption=Restrictions Example]
+<restrictions type="SELECTION">
+    <genericFunction type="FIREWALL" />
+    <exactFunction>
+  	 <name>node1</name>
+    </exactFunction>
+    <genericFunction type="NAT" />
+</restrictions>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Restrictions schema code snippet]
+<xsd:element name="restrictions">
+    <xsd:complexType>
+    	<xsd:choice maxOccurs="unbounded">
+    		<xsd:element ref="genericFunction"/>
+    		<xsd:element ref="exactFunction" />
+    	</xsd:choice>
+        <xsd:attribute name="type" type="restrictionTypes"
+            use="required" />
+    </xsd:complexType>
+</xsd:element>
+<xsd:element name="genericFunction">
+	<xsd:complexType>
+       <xsd:attribute name="type" type="functionalTypes" use="required"/>
+   	</xsd:complexType>
+</xsd:element>
+<xsd:element name="exactFunction">
+	<xsd:complexType>
+       <xsd:sequence>
+           <xsd:element name="name" type="xsd:string" />
+       </xsd:sequence>
+   	</xsd:complexType>
+</xsd:element>
+\end{lstlisting}

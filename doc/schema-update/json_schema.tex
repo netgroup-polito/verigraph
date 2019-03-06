@@ -1,0 +1,237 @@
+\section{Verigraph JSON Schemas Documentation}
+
+The interaction between the server and the web client is based on data in json format. Because of this, different json schemas and representations are used for the following reasons:
+\begin{itemize}
+ \item Describe a graph within the web interface and allow the exchange of data about the graph between client and server. 
+ \item Server validation of the data received by the web client.
+ \item Provisioning of the results of a verification request to the client.
+\end{itemize}
+
+In this chapter we summarize how the json schemas has been changed to support both policies and the improved version of existing elements. For a more detailed description of the elements involved, please refer to the chapter on the XML schema documentation.
+
+\subsection{Graph JSON Schema}
+
+\begin{lstlisting}[language=JSON, caption=JSON Example]
+{
+  "id": 0,
+  "nodes": [
+    {
+      "name": "source",
+      "functional_type": "endpoint",
+      "neighbours": [],
+      "configuration": []
+    },
+    {
+      "name": "dest",
+      "functional_type": "endpoint",
+      "neighbours": [],
+      "configuration": []
+    }
+  ],
+  "policies": [
+    {
+      "policyName": "example",
+      "source": "source",
+      "target": "dest",
+      "trafficFlow": [],
+      "restrictions": {
+        "type": "selection",
+        "functions": []
+      }
+    }
+  ]
+}
+\end{lstlisting}
+
+\subsubsection*{Graph}
+The JSON representation of a graph has been extended to include the list of policies that were defined for that graph.
+
+\subsubsection*{Policy}
+A Policy is an object characterized by the following properties:
+\begin{itemize}
+ \item \textbf{policyName}: The unique name of the policy
+ \item \textbf{source}: The ID of the source node
+ \item \textbf{target}: The ID of the destination node  
+\item \textbf{trafficFlow}: The traffic flow to which this policy refers.
+ \item \textbf{restrictions}: The element containing the restrictions to be checked.
+\end{itemize}
+
+\subsubsection*{Restrictions}
+A Restrictions element is composed of a type (selection, set, sequence or list) and a set of service functions which the specified traffic must pass through. Each service function is characterized by two parameters:
+\begin{itemize}
+ \item \textbf{funcType}: The type of service function (generic, exact)
+ \item \textbf{funcName}: The name of the referred function
+\end{itemize}
+
+\begin{lstlisting}[language=JSON, caption=Restrictions Example]
+"restrictions": {
+        "type": "selection",
+        "functions": [
+            {
+            	"funcType": "generic",
+            	"funcName": "firewall"
+            }
+        ]
+}
+\end{lstlisting}
+
+A schema was defined to correctly validate the array of functions of a restrictions element.
+
+\begin{lstlisting}[language=JSON, caption=Restrictions' functions schema]
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+    	"title": "Functions'",
+    	"description": "Polito restrictions to policy",
+    	"type": "array",
+		"items": {
+			"type": "object",
+			"properties": {
+				"funcType" : { "type": "string"},
+				"funcName" : { "type": "string"}
+			}
+		},
+    	"minItems": 0
+}
+\end{lstlisting}
+
+\subsubsection*{PacketType}
+The endhost configuration schema used for validating endhost nodes has been extended to be used for validating fieldmodifier nodes and the traffic flow of a policy.
+
+\begin{lstlisting}[language=JSON, caption=PacketType Example]
+"trafficFlow": [
+        {
+          	"body": "lorem ipsum",
+		"destination": "dest"
+        }
+]
+\end{lstlisting}
+
+\begin{lstlisting}[language=JSON, caption=PacketType schema]
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "PacketType",
+    "description": "General description of a subset of the fields that characterize a packet or a traffic flow.",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "body": {
+                "description": "HTTP body",
+                "type": "string"
+            },
+            "sequence": {
+                "description": "Sequence number",
+                "type": "integer"
+            },
+            "protocol": {
+                "description": "Protocol",
+                "type": "string",
+                "enum": ["HTTP_REQUEST", "HTTP_RESPONSE", "POP3_REQUEST", "POP3_RESPONSE"]
+            },
+            "email_from": {
+                "description": "E-mail sender",
+                "type": "string"
+            },
+            "url": {
+                "description": "URL",
+                "type": "string"
+            },
+            "options": {
+                "description": "Options",
+                "type": "string"
+            },
+            "destination": {
+                "description": "Destination node",
+                "type": "string"
+            }
+        },
+        "additionalProperties": false
+    },
+    "maxItems": 1
+}
+\end{lstlisting}
+
+\subsubsection*{Firewall}
+The schema used for validating the configuration of firewall nodes has been extended with the properties describing the source and destination ports, as well as with the property that describes the protocol type.
+
+\begin{lstlisting}[language=JSON, caption=Firewall example]
+{
+      "name": "firewall",
+      "functional_type": "firewall",
+      "neighbours": [
+        ...
+      ],
+      "configuration": [
+        {
+          "source_id": "nat",
+          "destination_id": "dpi",
+          "source_port": 10,
+          "destination_port": 30,
+          "protocol": "TCP"
+        }
+      ]
+    }
+\end{lstlisting}
+
+\begin{lstlisting}[language=JSON, caption=Firewall schema]
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Firewall",
+    "description": "Polito Firewall",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "source_id": { "type": "string"},
+            "destination_id": { "type": "string"},
+			"source_port" : { "type": "integer"},
+			"destination_port" : { "type": "integer"},
+			"protocol" : { "type": "string"}
+		}
+    },
+    "minItems": 0,
+    "uniqueItems": true
+}
+\end{lstlisting}
+
+\subsection{Verification Results JSON Representation}
+
+This is the output of the Verigraph's PolicyVerifier resource. It contains the following information:
+\begin{itemize}
+ \item \textbf{result}: It summarizes the outcome of the policy's verification request. The possible outcomes are: \textbf{SAT} (the policy is satisfied), \textbf{UNSAT} (the policy is unsatisfied), \textbf{UNKNOWN}.
+ \item \textbf{comment}: It gives additional information about the outcome of the policy's verification request.
+ \item \textbf{tests}: The list of the chains that were evaluated while verifying the policy. The content of the list depends on the specific verification request that was made by the user (see chapter about the rest API).
+\end{itemize}
+
+Furthermore, each chain is characterized by the following information:
+\begin{itemize}
+ \item \textbf{result}: It summarizes the outcome of the policy's verification request for this specific chain. The possible outcomes are: \textbf{SAT} (the chain satisfies the policy), \textbf{UNSAT} (the chain doesn't satisfy the policy), \textbf{UNKNOWN}.
+ \item \textbf{comment}: It gives additional information about the outcome of the policy's verification request. If the outcome is UNSAT because a function in the chain is blocking the traffic specified in the policy, then this property will report such function to the user. 
+ \item \textbf{path}: The list of the functions in the chain.
+\end{itemize}
+
+\begin{lstlisting}[language=JSON, caption=VerificationResults example]
+{
+    "result": "SAT",
+    "comment": "There is at least one path 'source' can use to reach 'dest'. See all the available paths below",
+    "tests": [
+        {
+            "result": "SAT",
+            "comment": "'source' is able to reach 'dest'",
+            "path": [
+                ...
+            ]
+        },
+        {
+            "result": "UNSAT",
+            "comment": "'source' is unable to reach 'dest' because of node 'firewall'",
+            "path": [
+               ...
+            ]
+        }
+    ]
+}
+\end{lstlisting}
+
+
+

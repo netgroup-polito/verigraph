@@ -1,0 +1,85 @@
+\section {Conclusions}
+
+In this project, the techniques seen in the Distributed Programming II course have been employed to enhance and extend the design and functionality of the Verigraph service, both from the point of view of the data format representations and of the resources available through the REST API.
+
+As a final note, we list here some improvements that could be made in future works.
+
+\subsubsection* {Generalization of endhost functions}
+
+In the chapter about the Verigraph XML schema we distinguished between several types of configuration, all with similar functionalities (endhost, webclient, webserver, mailclient, mailserver).  These configuration types could be generalized in a single endhost configuration that could be used to centralize the representation of the packets sent through the network. Even though a possible representation has been provided, this has not been implemented because it would have required several changes in both the Verigraph client and server. Moreover, this generalization would have required changes in the interaction with the Z3 prover.
+
+\begin{lstlisting}[language=XML, caption=Examples of generalized endhost configurations]
+  <endhost>
+  	<host />
+  	<packet body="" destination="" email_from="" options="" protocol="HTTP_REQUEST" sequence="0" url=""/>
+  </endhost>
+  
+  <endhost>
+  	<webserver> 
+  		<name>Webserver</name>
+  	</webserver>
+  	<packet body="" destination="" email_from="" options="" protocol="HTTP_REQUEST" sequence="0" url=""/>
+  </endhost>
+  
+  <endhost>
+  	<webclient webserver="Webserver"/>
+  	<packet body="" destination="" email_from="" options="" protocol="HTTP_REQUEST" sequence="0" url=""/>
+  </endhost>
+  
+  <endhost>
+  	<webserver> 
+  		<name>Mailserver</name>
+  	</webserver>
+  	<packet body="" destination="" email_from="" options="" protocol="HTTP_REQUEST" sequence="0" url=""/>
+  </endhost>
+  <endhost>
+  	<mailclient mailserver="Mailserver"/>
+  	<packet body="" destination="" email_from="" options="" protocol="HTTP_REQUEST" sequence="0" url=""/>
+  </endhost>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, caption=Proposal for a generalized endhost data representation]
+<xsd:element name="endhost">
+        <xsd:complexType>
+        	<xsd:sequence>
+                <xsd:choice>
+	            	<xsd:element ref="host" />
+	            	<xsd:element ref="webserver" />
+	            	<xsd:element ref="webclient" />
+			<xsd:element ref="mailclient" />
+			<xsd:element ref="mailserver" />
+	            </xsd:choice>
+	            <xsd:element name="packet" type="packetType"/>
+            </xsd:sequence>
+        </xsd:complexType>
+ </xsd:element>
+ <xsd:element name="host">
+        <xsd:complexType />
+ </xsd:element>
+ <xsd:element name="mailclient">
+        <xsd:complexType>
+            <xsd:attribute name="mailserver" type="xsd:string"
+                use="required" />
+        </xsd:complexType>
+ </xsd:element>
+ <xsd:element name="mailserver">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="name" type="xsd:string" />
+            </xsd:sequence>
+        </xsd:complexType>
+ </xsd:element>
+ <xsd:element name="webclient">
+        <xsd:complexType>
+            <xsd:attribute name="webserver" type="xsd:string"
+                use="required" />
+        </xsd:complexType>
+ </xsd:element>
+ <xsd:element name="webserver">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="name" type="xsd:string" />
+            </xsd:sequence>
+        </xsd:complexType>
+ </xsd:element>
+\end{lstlisting}

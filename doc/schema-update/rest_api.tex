@@ -1,0 +1,72 @@
+\section {Rest API Description}
+
+Note: The REST API design presented here contains only the resources and operations that have been added to the existing service. For more information regarding the existing service resources and operations please refer to the Verigraph Swagger documentation.
+
+\subsection{Resource Design}
+
+\begin{table}[htp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lllp{5cm}@{}}
+\toprule
+\textbf{Resources} & \textbf{URLs}                                                                                        & \textbf{XML Repr} & \textbf{Meaning}                    \\ \midrule
+Policies           & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policies\end{tabular}                              & policies          & Set of all policies                \\ \midrule
+Policy             & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policies/\{policyId\}\end{tabular}                 & policy            & Single policy                      \\ \midrule
+Restrictions       & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policies/\{policyId\}\\ /restrictions\end{tabular} & restriction       & Restrictions applied to the policy \\ \midrule
+PolicyVerifier     & \begin{tabular}[c]{@{}l@{}}/graphs/\{graphId\}\\ /policyVerifier\end{tabular}                        &                   & Verify the selected policy                \\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The policyVerifier resource is designed to replace the policy resource (/graphs/{graphId}/policy) currently available in the existing service. Further details are listed in the next section. 
+\pagebreak
+
+\subsection{Operation Design}
+
+\begin{table}[htp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllllp{5cm}}
+\toprule
+\textbf{Resources}        & \textbf{Method}       & \textbf{Query Param} & \textbf{Req. Body}      & \textbf{Status} & \textbf{Resp. Body} & \textbf{Meaning}                               \\
+\multirow{2}{*}{Policies} & GET   &    &      		 & 200             & Policies            & Return all the policies related to \{graphId\} \\ \cmidrule(l){2-7}
+                                      & POST &    & Policy	 	& 201             & Policy               & Policy successfully created                    \\ \midrule
+\multirow{3}{*}{Policy}   & GET    &    &			 & 200             & Policy             & Returns a single policy 			\\ \cmidrule(l){2-7} 
+                          	      & PUT    & 	 & Policy  		 & 200             & Policy              & Policy successfully edited                    \\ \cmidrule(l){2-7}
+                          	     & DELETE &   &  			 & 204              &                       & Policy successfully deleted                         \\ \midrule
+
+Restrictions		      & PUT    &   & Restrictions     & 200             & Restrictions     & Restriction successfully updated for the requested policy \\ \midrule
+PolicyVerifier 			& GET & \begin{tabular}[c]{@{}l@{}}type:string\\ policyId:long\\source:string\\destination:string\end{tabular}&   
+    										& 200             & VerificationResult        & Policy successfully verified  \\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Depending on the specific operation that was requested, different errors can occur:\\
+
+\begin{table}[htp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lp{5cm}lp{5cm}@{}}
+\toprule
+\textbf{Status}   &    \textbf{Operations}     & \textbf{Response Body}  &  \textbf{Meaning}                    \\ \midrule
+400           & POST, PUT                              & ErrorMessage          & Invalid policy / restrictions element supplied \\ \midrule
+403             & GET, POST, PUT, DELETE            & ErrorMessage            &  Invalid graph / node / policy id supplied    \\ \midrule
+404       & GET, POST, PUT, DELETE		 & ErrorMessage       & Graph / node / policy not found  \\ \midrule
+500     & GET, POST, PUT, DELETE                      &  ErrorMessage           & Server Error \\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The policyVerifier resource improves and extends the behavior of the existing policy resource. Here is the full list of requests that can be made to the policyVerifier resource:
+\begin{itemize}
+ \item \textbf{Reachability}: It checks if there is at least one chain such that the traffic flow sent from the source node reaches the destination node. It returns the result of the verification, along with the list of the chains that were evaluated and, for each list, if the path satisfies the request.
+ \item \textbf{Isolation}: It checks if there is at least one chain such that the traffic flow sent from the source node reaches the destination node without traversing the middlebox node. It returns the result of the verification, along with the list of the chains that were evaluated and, for each list, if the path satisfies the request.
+ \item \textbf{Traversal}: It checks if there is at least one chain such that the traffic flow sent from the source node reaches the destination node by traversing the middlebox node. It returns the result of the verification, along with the list of the chains that were evaluated and, for each list, if the path satisfies the request.
+ \item \textbf{VOne}:It verifies if at least one chain exists that enforces the requirements in the selected policy. It returns the result of the verification, along whith the list of the chains that satisfy this constraint (if the verification is successful) or the list of the chains that don't satisfy this constraint (otherwise).
+ \item \textbf{VOnly}:It verifies if only one chain exists that enforces the requirements in the selected policy. It returns the result of the verification, along whith the list of the chains that satisfy this constraint (if the verification is successful or if the chains that enforce the requirements are more then one) or the list of the chains that don't satisfy this constraint (otherwise).
+ \item \textbf{VMore}:It verifies if more than one chain exists that enforces the requirements in the selected policy. It returns the result of the verification, along whith the list of the chains that satisfy this constraint (if the verification is successful) or the list of the chains that don't satisfy this constraint (otherwise).
+ \item \textbf{VAll}:It verifies if all chains enforce the requirements in the selected policy. It returns the result of the verification, along whith the list of the chains that satisfy this constraint (if the verification is successful) or the list of the chains that don't satisfy this constraint (otherwise).
+ \item \textbf{VNone}:It verifies if there isn't any chain that enforces the requirements in the selected policy. It returns the result of the verification, along whith the list of the chains that satisfy this constraint (empty if the verification is successful).
+ \item \textbf{VOthers}:It returns the result of the verification, along whith the list of the chains that don't satisfy this constraint (if the verification is successful) or the list of the chains that satisfy this constraint (otherwise).
+\end{itemize}
