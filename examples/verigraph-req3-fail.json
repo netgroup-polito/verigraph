@@ -9,11 +9,15 @@
                "name":"nat"
             }
          ],
-         "configuration":[
-            {
-               "webserver1":"nat"
-            }
-         ],
+         "configuration": [
+	        {
+	          "source_id": "webserver1",
+	          "destination_id": "nat",
+	          "source_port": 1,
+	          "destination_port": 2,
+	          "protocol": "TCP"
+	        }
+	      ],
          "name":"fw",
          "functional_type":"firewall"
       },
