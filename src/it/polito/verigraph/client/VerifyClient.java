@@ -59,9 +59,9 @@ public class VerifyClient {
         this.nodeTarget = nodesTarget.path("//{nodeId}");
         this.neighboursTarget = nodeTarget.path("/neighbours");
         this.neighbourTarget = neighboursTarget.path("/{neighbourId}");
-        this.reachabilityTarget = graphTarget.path("/policy");
-        this.isolationTarget = graphTarget.path("/policy");
-        this.traversalTarget = graphTarget.path("/policy");
+        this.reachabilityTarget = graphTarget.path("/policyVerifier");
+        this.isolationTarget = graphTarget.path("/policyVerifier");
+        this.traversalTarget = graphTarget.path("/policyVerifier");
     }
 
     public void checkResponse(Response response) throws VerifyClientException {
@@ -420,7 +420,7 @@ public class VerifyClient {
 
         Graph graph = graphs.get("budapest_sat.json");
         System.out.println("graphId set to " + graph.getId());
-        System.out.println("Getting reachability from 'user1' to 'websever' in 'budapest' graph (expecting SAT)...");
+        System.out.println("Getting reachability from 'user1' to 'webserver' in 'budapest' graph (expecting SAT)...");
         Verification verification = verifyClient.getReachability(graph.getId(), "user1", "webserver");
         System.out.println(verification.getResult());
 

@@ -40,10 +40,14 @@
                 }
             ],
             "configuration": [
-                {
-                    "webserver": "nat"
-                }
-            ]
+		        {
+		          "source_id": "webserver",
+		          "destination_id": "nat",
+		          "source_port": 10,
+		          "destination_port": 30,
+		          "protocol": "TCP"
+		        }
+	        ]
         },
         {
             "name": "webserver",

@@ -22,10 +22,14 @@
                     }
                 ],
                 "configuration": [
-                    {
-                        "sap1": "webserver1"
-                    }
-                ],
+			        {
+			          "source_id": "sap1",
+			          "destination_id": "webserver1",
+			          "source_port": 1,
+			          "destination_port": 2,
+			          "protocol": "TCP"
+			        }
+		        ],
                 "name": "fw",
                 "functional_type": "firewall"
             },
