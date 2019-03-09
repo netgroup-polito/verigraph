@@ -2024,11 +2024,13 @@ public class Neo4jLibrary implements Neo4jDBInteraction
     private void setRestrictions(Node newConf, it.polito.neo4j.jaxb.Restrictions r) throws MyInvalidIdException {
     	List<Object> list= r.getGenericFunctionOrExactFunction();     
         if(!list.isEmpty()){
+        	int i = 0;
             for(Object e : list){
             	if(e instanceof it.polito.neo4j.jaxb.GenericFunction){ 
             		it.polito.neo4j.jaxb.GenericFunction gf = (it.polito.neo4j.jaxb.GenericFunction) e;
             		Node newElem=graphDB.createNode(NodeType.GenericFunction);
                     newElem.setProperty("type", gf.getType().value());
+                    newElem.setProperty("order", i);
                     
                     Relationship genericFunc=newElem.createRelationshipTo(newConf, RelationType.FunctionRelationship);
                     genericFunc.setProperty("id", newConf.getId());
@@ -2036,12 +2038,14 @@ public class Neo4jLibrary implements Neo4jDBInteraction
             		it.polito.neo4j.jaxb.ExactFunction ef = (it.polito.neo4j.jaxb.ExactFunction) e;
             		Node newElem=graphDB.createNode(NodeType.ExactFunction);
                     newElem.setProperty("name", ef.getName());
+                    newElem.setProperty("order", i);
 
                     Relationship exactFunc=newElem.createRelationshipTo(newConf, RelationType.FunctionRelationship);
                     exactFunc.setProperty("id", newConf.getId());
             	}else {
             		throw new MyInvalidIdException("Function node not valid");
             	}
+            	i++;
             }
         } else {
             vlogger.logger.info("Restrictions element empty");
@@ -2094,19 +2098,30 @@ public class Neo4jLibrary implements Neo4jDBInteraction
                     // Set the list of functions
                     Iterable<Relationship> restrs= restr.getRelationships(RelationType.FunctionRelationship);
                     Iterator<Relationship> restrsIt = restrs.iterator();
-                    
+
                     List<Object> funcList=new ArrayList<Object>();
+                    
+                    // Initialize the list of functions for the restriction
+                    while(restrsIt.hasNext()){
+                    	funcList.add(0);
+                        restrsIt.next();
+                    }
+                    
+                    restrsIt = restrs.iterator();
+                    
                     while(restrsIt.hasNext()){
                         Relationship relConf = restrsIt.next();
                         Node func = relConf.getStartNode();
                         if(func.hasLabel(NodeType.GenericFunction)){
                             GenericFunction gf = new GenericFunction();
                             gf.setType(it.polito.neo4j.jaxb.FunctionalTypes.fromValue(func.getProperty("type").toString().toUpperCase()));
-                            funcList.add(gf);
+                           
+                            funcList.add((int) func.getProperty("order"), gf);
                         } else if(func.hasLabel(NodeType.ExactFunction)) {
                         	ExactFunction ef = new ExactFunction();
                             ef.setName(func.getProperty("name").toString());
-                            funcList.add(ef);
+                            
+                            funcList.add((int) func.getProperty("order"), ef);
                         }
                     }
                     r.getGenericFunctionOrExactFunction().addAll(funcList);

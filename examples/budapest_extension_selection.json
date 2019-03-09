@@ -135,27 +135,6 @@
           }
         ]
       }
-    },
-    {
-      "policyName": "p3",
-      "source": "user1",
-      "target": "user2",
-      "trafficFlow": [
-        {}
-      ],
-      "restrictions": {
-        "type": "selection",
-        "functions": [
-          {
-            "funcType": "generic",
-            "funcName": "firewall"
-          },
-          {
-            "funcType": "exact",
-            "funcName": "firewall"
-          }
-        ]
-      }
     }
   ]
 }

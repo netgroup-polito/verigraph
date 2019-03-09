@@ -1,0 +1,112 @@
+{
+  "nodes": [
+    {
+      "name": "webserver",
+      "functional_type": "endpoint",
+      "neighbours": [
+        {
+          "name": "firewall"
+        }
+      ],
+      "configuration": []
+    },
+    {
+      "name": "firewall",
+      "functional_type": "firewall",
+      "neighbours": [
+        {
+          "name": "webserver"
+        },
+        {
+          "name": "dpi"
+        },
+        {
+          "name": "nat"
+        }
+      ]
+    },
+    {
+      "name": "dpi",
+      "functional_type": "nat",
+      "neighbours": [
+        {
+          "name": "firewall"
+        },
+        {
+          "name": "user2"
+        },
+        {
+          "name": "nat"
+        }
+      ],
+      "configuration": [
+        "user1",
+        "user2"
+      ]
+    },
+    {
+      "name": "user2",
+      "functional_type": "endpoint",
+      "neighbours": [
+        {
+          "name": "dpi"
+        }
+      ],
+      "configuration": []
+    },
+    {
+      "name": "nat",
+      "functional_type": "nat",
+      "neighbours": [
+        {
+          "name": "firewall"
+        },
+        {
+          "name": "dpi"
+        },
+        {
+          "name": "user1"
+        }
+      ],
+      "configuration": [
+        "user2",
+        "user1"
+      ]
+    },
+    {
+      "name": "user1",
+      "functional_type": "endpoint",
+      "neighbours": [
+        {
+          "name": "nat"
+        }
+      ],
+      "configuration": []
+    }
+  ],
+  "policies": [
+    {
+      "policyName": "p1",
+      "source": "user1",
+      "target": "user2",
+      "trafficFlow": [
+        {
+          "body": "something"
+        }
+      ],
+      "restrictions": {
+        "type": "selection",
+        "functions": [
+          {
+            "funcType": "generic",
+            "funcName": "nat"
+          },
+          {
+            "funcType": "generic",
+            "funcName": "nat"
+          }
+        ]
+      }
+    }
+  ]
+}

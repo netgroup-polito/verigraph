@@ -1,0 +1,133 @@
+{
+    "id": 20,
+    "name": "budapest_extension_schema_update_more_test_case",
+    "description": "This test case verifies an extension of the budapest scenario with the introduction of custom policies. p1 is satisfied by any path (more than one).",
+    "policy_url_parameters": [
+        "?type=vOne&source=user1&destination=user2&policyId=p1",
+        "?type=vOnly&source=user1&destination=user2&policyId=p1",
+        "?type=vMore&source=user1&destination=user2&policyId=p1",
+        "?type=vAll&source=user1&destination=user2&policyId=p1",
+        "?type=vNone&source=user1&destination=user2&policyId=p1",
+        "?type=vOthers&source=user1&destination=user2&policyId=p1"
+    ],
+    "results": [
+        "SAT",
+        "UNSAT",
+        "SAT",
+        "SAT",
+        "UNSAT",
+        "UNSAT"
+    ],
+    "graph": {
+	  "nodes": [
+	    {
+	      "name": "webserver",
+	      "functional_type": "endpoint",
+	      "neighbours": [
+	        {
+	          "name": "firewall"
+	        }
+	      ],
+	      "configuration": []
+	    },
+	    {
+	      "name": "firewall",
+	      "functional_type": "firewall",
+	      "neighbours": [
+	        {
+	          "name": "webserver"
+	        },
+	        {
+	          "name": "dpi"
+	        },
+	        {
+	          "name": "nat"
+	        }
+	      ]
+	    },
+	    {
+	      "name": "dpi",
+	      "functional_type": "nat",
+	      "neighbours": [
+	        {
+	          "name": "firewall"
+	        },
+	        {
+	          "name": "user2"
+	        },
+	        {
+	          "name": "nat"
+	        }
+	      ],
+	      "configuration": [
+	        "user1",
+	        "user2"
+	      ]
+	    },
+	    {
+	      "name": "user2",
+	      "functional_type": "endpoint",
+	      "neighbours": [
+	        {
+	          "name": "dpi"
+	        }
+	      ],
+	      "configuration": []
+	    },
+	    {
+	      "name": "nat",
+	      "functional_type": "nat",
+	      "neighbours": [
+	        {
+	          "name": "firewall"
+	        },
+	        {
+	          "name": "dpi"
+	        },
+	        {
+	          "name": "user1"
+	        }
+	      ],
+	      "configuration": [
+	        "user2",
+	        "user1"
+	      ]
+	    },
+	    {
+	      "name": "user1",
+	      "functional_type": "endpoint",
+	      "neighbours": [
+	        {
+	          "name": "nat"
+	        }
+	      ],
+	      "configuration": []
+	    }
+	  ],
+	  "policies": [
+	    {
+	      "policyName": "p1",
+	      "source": "user1",
+	      "target": "user2",
+	      "trafficFlow": [
+	        {
+	          "body": "something"
+	        }
+	      ],
+	      "restrictions": {
+	        "type": "selection",
+	        "functions": [
+	          {
+	            "funcType": "generic",
+	            "funcName": "nat"
+	          },
+	          {
+	            "funcType": "generic",
+	            "funcName": "nat"
+	          }
+	        ]
+	      }
+	    }
+	  ]
+	}
+}

@@ -141,7 +141,6 @@ public class Tester {
         Graph createdGraph = response.readEntity(Graph.class);
         for (String urlParams : tc.getPolicyUrlParameters()){
             WebTarget target = client.target(this.target + "/graphs/" + createdGraph.getId() + "/policyVerifier" + urlParams);
-
             response = target.request().get();
             Verification verification = response.readEntity(Verification.class);
             results.add(verification.getResult());

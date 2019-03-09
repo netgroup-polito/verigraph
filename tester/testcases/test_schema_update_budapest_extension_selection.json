@@ -1,0 +1,179 @@
+{
+    "id": 20,
+    "name": "budapest_extension_schema_update_selection_test_case",
+    "description": "This test case verifies an extension of the budapest scenario with the introduction of custom policies of type selection. The p1 is not satisfied by any path, policy p2 is satisfied by only one path.",
+    "policy_url_parameters": [
+        "?type=vOne&source=user1&destination=user2&policyId=p1",
+        "?type=vOnly&source=user1&destination=user2&policyId=p1",
+        "?type=vMore&source=user1&destination=user2&policyId=p1",
+        "?type=vAll&source=user1&destination=user2&policyId=p1",
+        "?type=vNone&source=user1&destination=user2&policyId=p1",
+        "?type=vOthers&source=user1&destination=user2&policyId=p1",
+        "?type=vOne&source=user1&destination=user2&policyId=p2", 
+        "?type=vOnly&source=user1&destination=user2&policyId=p2",
+        "?type=vMore&source=user1&destination=user2&policyId=p2",
+        "?type=vAll&source=user1&destination=user2&policyId=p2",
+        "?type=vNone&source=user1&destination=user2&policyId=p2",
+        "?type=vOthers&source=user1&destination=user2&policyId=p2"
+    ],
+    "results": [
+        "UNSAT",
+        "UNSAT",
+        "UNSAT",
+        "UNSAT",
+        "SAT",
+        "SAT",
+        "SAT",
+        "SAT",
+        "UNSAT",
+        "UNSAT",
+        "UNSAT",
+        "SAT",
+        "UNSAT",
+        "UNSAT",
+        "UNSAT",
+        "SAT",
+        "SAT",
+        "SAT"
+    ],
+    "graph": {
+	  "nodes": [
+	    {
+	      "name": "webserver",
+	      "functional_type": "endpoint",
+	      "neighbours": [
+	        {
+	          "name": "firewall"
+	        }
+	      ],
+	      "configuration": []
+	    },
+	    {
+	      "name": "firewall",
+	      "functional_type": "firewall",
+	      "neighbours": [
+	        {
+	          "name": "webserver"
+	        },
+	        {
+	          "name": "dpi"
+	        },
+	        {
+	          "name": "nat"
+	        }
+	      ],
+	      "configuration": [
+	        {
+	          "source_id": "nat",
+	          "destination_id": "dpi",
+	          "source_port": 10,
+	          "destination_port": 30,
+	          "protocol": "TCP"
+	        }
+	      ]
+	    },
+	    {
+	      "name": "dpi",
+	      "functional_type": "nat",
+	      "neighbours": [
+	        {
+	          "name": "firewall"
+	        },
+	        {
+	          "name": "user2"
+	        },
+	        {
+	          "name": "nat"
+	        }
+	      ],
+	      "configuration": [
+	        "user1",
+	        "user2"
+	      ]
+	    },
+	    {
+	      "name": "user2",
+	      "functional_type": "endpoint",
+	      "neighbours": [
+	        {
+	          "name": "dpi"
+	        }
+	      ],
+	      "configuration": []
+	    },
+	    {
+	      "name": "nat",
+	      "functional_type": "nat",
+	      "neighbours": [
+	        {
+	          "name": "firewall"
+	        },
+	        {
+	          "name": "dpi"
+	        },
+	        {
+	          "name": "user1"
+	        }
+	      ],
+	      "configuration": [
+	        "user2",
+	        "user1"
+	      ]
+	    },
+	    {
+	      "name": "user1",
+	      "functional_type": "endpoint",
+	      "neighbours": [
+	        {
+	          "name": "nat"
+	        }
+	      ],
+	      "configuration": []
+	    }
+	  ],
+	  "policies": [
+	    {
+	      "policyName": "p1",
+	      "source": "user1",
+	      "target": "user2",
+	      "trafficFlow": [
+	        {
+	          "body": "something"
+	        }
+	      ],
+	      "restrictions": {
+	        "type": "selection",
+	        "functions": [
+	          {
+	            "funcType": "generic",
+	            "funcName": "firewall"
+	          }
+	        ]
+	      }
+	    },
+	    {
+	      "policyName": "p2",
+	      "source": "user1",
+	      "target": "user2",
+	      "trafficFlow": [
+	        {
+	          "body": "something"
+	        }
+	      ],
+	      "restrictions": {
+	        "type": "selection",
+	        "functions": [
+	          {
+	            "funcType": "generic",
+	            "funcName": "nat"
+	          },
+	          {
+	            "funcType": "generic",
+	            "funcName": "nat"
+	          }
+	        ]
+	      }
+	    }
+	  ]
+	}
+}

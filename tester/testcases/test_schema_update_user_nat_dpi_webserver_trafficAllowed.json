@@ -1,0 +1,88 @@
+{
+    "id": 21,
+    "name": "simple_test_case",
+    "description": "This test case contains a graph with client, firewall and server. Policy p1 satisfies only one path (that is, all the available paths)",
+    "policy_url_parameters": [
+        "?type=vOne&source=user1&destination=webserver&policyId=p1",
+        "?type=vOnly&source=user1&destination=webserver&policyId=p1",
+        "?type=vMore&source=user1&destination=webserver&policyId=p1",
+        "?type=vAll&source=user1&destination=webserver&policyId=p1",
+        "?type=vNone&source=user1&destination=webserver&policyId=p1",
+        "?type=vOthers&source=user1&destination=webserver&policyId=p1"
+    ],
+    "results": [
+        "SAT",
+        "SAT",
+        "UNSAT",
+        "SAT",
+        "UNSAT",
+        "UNSAT"
+    ],
+    "graph": {
+        "nodes": [
+            {
+                "name": "user1",
+                "functional_type": "endhost",
+                "neighbours": [
+                    {
+                        "name": "nat"
+                    }
+                ],
+                "configuration": [
+                    {
+                        "body": "cartoon",
+                        "protocol": "HTTP_REQUEST",
+                        "destination": "webserver"
+                    }
+                ]
+            },
+            {
+                "name": "nat",
+                "functional_type": "nat",
+                "neighbours": [
+                    {
+                        "name": "dpi"
+                    }
+                ],
+                "configuration": [
+                    "user1"
+                ]
+            },
+            {
+                "name": "dpi",
+                "functional_type": "dpi",
+                "neighbours": [
+                    {
+                        "name": "webserver"
+                    }
+                ],
+                "configuration": [
+                    "sex",
+                    "droga"
+                ]
+            },
+            {
+                "name": "webserver",
+                "functional_type": "webserver",
+                "neighbours": []
+            }
+        ],
+        "policies": [
+        {
+	      "policyName": "p1",
+	      "source": "user1",
+	      "target": "webserver",
+	      "trafficFlow": [],
+	      "restrictions": {
+	        "type": "selection",
+	        "functions": [
+	          {
+	            "funcType": "exact",
+	            "funcName": "dpi"
+	          }
+	        ]
+	      }
+	    }
+	    ]
+    }
+}

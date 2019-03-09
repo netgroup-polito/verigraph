@@ -1,0 +1,151 @@
+{
+  "nodes": [
+    {
+      "name": "webserver",
+      "functional_type": "endpoint",
+      "neighbours": [
+        {
+          "name": "firewall"
+        }
+      ],
+      "configuration": []
+    },
+    {
+      "name": "firewall",
+      "functional_type": "firewall",
+      "neighbours": [
+        {
+          "name": "webserver"
+        },
+        {
+          "name": "dpi"
+        },
+        {
+          "name": "nat"
+        }
+      ],
+      "configuration": [
+        {
+          "source_id": "nat",
+          "destination_id": "dpi",
+          "source_port": 10,
+          "destination_port": 30,
+          "protocol": "TCP"
+        }
+      ]
+    },
+    {
+      "name": "dpi",
+      "functional_type": "nat",
+      "neighbours": [
+        {
+          "name": "firewall"
+        },
+        {
+          "name": "user2"
+        },
+        {
+          "name": "nat"
+        }
+      ],
+      "configuration": [
+        "user1",
+        "user2"
+      ]
+    },
+    {
+      "name": "user2",
+      "functional_type": "endpoint",
+      "neighbours": [
+        {
+          "name": "dpi"
+        }
+      ],
+      "configuration": []
+    },
+    {
+      "name": "nat",
+      "functional_type": "nat",
+      "neighbours": [
+        {
+          "name": "firewall"
+        },
+        {
+          "name": "dpi"
+        },
+        {
+          "name": "user1"
+        }
+      ],
+      "configuration": [
+        "user2",
+        "user1"
+      ]
+    },
+    {
+      "name": "user1",
+      "functional_type": "endpoint",
+      "neighbours": [
+        {
+          "name": "nat"
+        }
+      ],
+      "configuration": []
+    }
+  ],
+  "policies": [
+    {
+      "policyName": "p1",
+      "source": "user1",
+      "target": "user2",
+      "trafficFlow": [],
+      "restrictions": {
+        "type": "list",
+        "functions": [
+          {
+            "funcType": "generic",
+            "funcName": "nat"
+          }
+        ]
+      }
+    },
+    {
+      "policyName": "p2",
+      "source": "user1",
+      "target": "user2",
+      "trafficFlow": [],
+      "restrictions": {
+        "type": "list",
+        "functions": [
+          {
+            "funcType": "exact",
+            "funcName": "nat"
+          },
+          {
+            "funcType": "exact",
+            "funcName": "dpi"
+          }
+        ]
+      }
+    },
+    {
+      "policyName": "p3",
+      "source": "user1",
+      "target": "user2",
+      "trafficFlow": [],
+      "restrictions": {
+        "type": "list",
+        "functions": [
+          {
+            "funcType": "exact",
+            "funcName": "dpi"
+          },
+          {
+            "funcType": "exact",
+            "funcName": "nat"
+          }
+        ]
+      }
+    }
+  ]
+}
