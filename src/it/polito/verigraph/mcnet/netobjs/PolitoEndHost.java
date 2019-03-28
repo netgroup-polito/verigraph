@@ -57,7 +57,7 @@ public class PolitoEndHost extends NetworkObject {
     }
 
 
-    public  void installAsWebServer(PacketModel packet){
+    public void installAsWebServer(PacketModel packet){
         installEndHost(packet);
         Expr p_1 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_1", nctx.packet);
 
@@ -76,7 +76,7 @@ public class PolitoEndHost extends NetworkObject {
                                 1,null,null,null,null)),1,null,null,null,null));
     }
 
-    public  void installAsWebClient(DatatypeExpr ipServer,PacketModel packet){
+    public void installAsWebClient(DatatypeExpr ipServer,PacketModel packet){
         installEndHost(packet);
         Expr p_1 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_1", nctx.packet);
         constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
@@ -90,8 +90,7 @@ public class PolitoEndHost extends NetworkObject {
 
     }
 
-
-    public  void installAsPOP3MailServer(PacketModel packet){
+    public void installAsPOP3MailServer(PacketModel packet){
         installEndHost(packet);
         Expr p_1 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_1", nctx.packet);
 
@@ -116,11 +115,45 @@ public class PolitoEndHost extends NetworkObject {
                                         ctx.mkEq(nctx.pf.get("dest").apply(p_0), nctx.pf.get("src").apply(p_1))),1,null,null,null,null)),1,null,null,null,null));
 
     }
-    public  void installAsPOP3MailClient(DatatypeExpr ipServer,PacketModel packet){
+    public void installAsPOP3MailClient(DatatypeExpr ipServer,PacketModel packet){
         installEndHost(packet);
         constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
                 ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
                         ctx.mkAnd( ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.POP3_RESPONSE)),
+                                ctx.mkEq(nctx.pf.get("src").apply(p_0), ipServer))
+                        ),1,null,null,null,null));
+    }
+    
+    public void installAsModbusServer(PacketModel packet){
+        installEndHost(packet);
+        Expr p_1 = ctx.mkConst("PolitoEndHost_"+politoEndHost+"_p_1", nctx.packet);
+
+        //constraint4 recv(n_0, PolitoModbusServer, p) -> nodehasaddr(PolitoModbusServer,p.dest)
+        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
+                        ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.MODBUS_REQUEST))
+                        ),1,null,null,null,null));
+
+        //Constraint5 send(politoMailServer, n_0, p) -> p.proto == MODBUS_RESP
+        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                ctx.mkImplies((BoolExpr)nctx.send.apply(politoEndHost, n_0, p_0),
+                        ctx.mkAnd(ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.MODBUS_RESPONSE))
+                                )),1,null,null,null,null));
+
+        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                ctx.mkImplies((BoolExpr)nctx.send.apply(politoEndHost, n_0, p_0),
+                        ctx.mkExists(new Expr[]{p_1},
+                                ctx.mkAnd(
+                                        (BoolExpr)nctx.recv.apply(n_0, politoEndHost, p_1),
+                                        ctx.mkEq(nctx.pf.get("proto").apply(p_1), ctx.mkInt(nctx.MODBUS_REQUEST)),
+                                        ctx.mkEq(nctx.pf.get("dest").apply(p_0), nctx.pf.get("src").apply(p_1))),1,null,null,null,null)),1,null,null,null,null));
+
+    }
+    public void installAsModbusClient(DatatypeExpr ipServer,PacketModel packet){
+        installEndHost(packet);
+        constraints.add( ctx.mkForall(new Expr[]{n_0, p_0},
+                ctx.mkImplies((BoolExpr)nctx.recv.apply(n_0,politoEndHost, p_0),
+                        ctx.mkAnd( ctx.mkEq(nctx.pf.get("proto").apply(p_0), ctx.mkInt(nctx.MODBUS_RESPONSE)),
                                 ctx.mkEq(nctx.pf.get("src").apply(p_0), ipServer))
                         ),1,null,null,null,null));
     }
@@ -151,6 +184,8 @@ public class PolitoEndHost extends NetworkObject {
             predicatesOnPktFields = ctx.mkAnd(predicatesOnPktFields, ctx.mkEq(nctx.pf.get("seq").apply(p_0), ctx.mkInt(packet.getSeq())));
         if(packet.getUrl() != null)
             predicatesOnPktFields = ctx.mkAnd(predicatesOnPktFields, ctx.mkEq(nctx.pf.get("url").apply(p_0), ctx.mkInt(packet.getUrl())));
+        if(packet.getFunctionCode() != null)
+            predicatesOnPktFields = ctx.mkAnd(predicatesOnPktFields, ctx.mkEq(nctx.pf.get("functionCode").apply(p_0), ctx.mkInt(packet.getFunctionCode())));
 
         //Constraint1 send(politoEndHost, n_0, p) ->
         //p.origin == politoEndHost && p.orig_body == p.body && nodeHasAddr(politoEndHost,p.src)
