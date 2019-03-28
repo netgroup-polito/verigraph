@@ -50,6 +50,12 @@ public class NetContext extends Core{
     public final int HTTP_RESPONSE   = 2;
     public final int POP3_REQUEST    = 3;
     public final int POP3_RESPONSE   = 4;
+    
+    /*
+     * MODBUS protocol support
+     */
+    public final int MODBUS_REQUEST  = 5;
+    public final int MODBUS_RESPONSE = 6;
 
     /**
      * Context for all of the rest that follows. Every network needs one of these
@@ -128,12 +134,14 @@ public class NetContext extends Core{
         // -   body: Packet contents. (Integer)
         // -   seq: Sequence number for packets. (Integer)
         // -   options: A representation for IP options. (Integer)
+        // -   functionCode: A representation for MODBUS function code. (Integer)
 
         String[] fieldNames = new String[]{
-                "src","dest","inner_src","inner_dest","origin","orig_body","body","seq","proto","emailFrom","url","options","encrypted"};
+                "src","dest","inner_src","inner_dest","origin","orig_body","body","seq","proto","emailFrom","url","options","encrypted","functionCode"};
         Sort[] srt = new Sort[]{
                 address,address,address,address,node,ctx.mkIntSort(),ctx.mkIntSort(),ctx.mkIntSort(),
-                ctx.mkIntSort(),ctx.mkIntSort(),ctx.mkIntSort(),ctx.mkIntSort(),ctx.mkBoolSort()};
+                ctx.mkIntSort(),ctx.mkIntSort(),ctx.mkIntSort(),ctx.mkIntSort(),ctx.mkBoolSort(),ctx.mkIntSort()};
+        
         Constructor packetcon = ctx.mkConstructor("packet", "is_packet", fieldNames, srt, null);
         packet = ctx.mkDatatypeSort("packet",  new Constructor[] {packetcon});
 
@@ -313,7 +321,9 @@ public class NetContext extends Core{
                                         ctx.mkEq(this.pf.get("proto").apply(p_1), this.pf.get("proto").apply(p_0)),
                                         ctx.mkEq(this.pf.get("emailFrom").apply(p_1), this.pf.get("emailFrom").apply(p_0)),
                                         ctx.mkEq(this.pf.get("url").apply(p_1), this.pf.get("url").apply(p_0)),
-                                        ctx.mkEq(this.pf.get("options").apply(p_1), this.pf.get("options").apply(p_0)))),1,null,null,null,null)
+                                        ctx.mkEq(this.pf.get("options").apply(p_1), this.pf.get("options").apply(p_0)),
+                                        ctx.mkEq(this.pf.get("functionCode").apply(p_1), this.pf.get("functionCode").apply(p_0))
+                                        )),1,null,null,null,null)
                 );
 
 
@@ -333,7 +343,9 @@ public class NetContext extends Core{
                 ctx.mkEq(pf.get("seq").apply(p1), pf.get("seq").apply(p2)),
                 ctx.mkEq(src_port.apply(p1),src_port.apply(p2)),
                 ctx.mkEq(dest_port.apply(p1), dest_port.apply(p2)),
-                ctx.mkEq(pf.get("options").apply(p1),pf.get("options").apply(p2))});
+                ctx.mkEq(pf.get("options").apply(p1),pf.get("options").apply(p2)),
+                ctx.mkEq(pf.get("functionCode").apply(p1),pf.get("functionCode").apply(p2)),
+                });
     }
 
     /**
@@ -349,11 +361,11 @@ public class NetContext extends Core{
 
     /* seems to be useless
      *
-public Function failurePredicate (NetContext context)
-{
-    return (NetworkObject node) -> ctx.mkNot(context.failed (node.z3Node));
-
-}*/
+	public Function failurePredicate (NetContext context)
+	{
+	    return (NetworkObject node) -> ctx.mkNot(context.failed (node.z3Node));
+	
+	}*/
 
     public BoolExpr destAddrPredicate (Expr p, DatatypeExpr address){
         return  ctx.mkEq(pf.get("dest").apply(p),address);

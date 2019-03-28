@@ -11,7 +11,7 @@ package it.polito.verigraph.mcnet.netobjs;
 import com.microsoft.z3.DatatypeExpr;
 
 /*
- * Fields that can be configured -> "dest","body","seq","proto","emailFrom","url","options"
+ * Fields that can be configured -> "dest","body","seq","proto","emailFrom","url","options","functionCode"
  */
 public class PacketModel {
 
@@ -22,6 +22,7 @@ public class PacketModel {
     private Integer emailFrom;
     private Integer url;
     private Integer options;
+    private Integer functionCode; 
 
     public DatatypeExpr getIp_dest() {
         return ip_dest;
@@ -50,7 +51,7 @@ public class PacketModel {
     public Integer getEmailFrom() {
         return emailFrom;
     }
-    public void setEmailFrom(Integer emailFrom) {
+	public void setEmailFrom(Integer emailFrom) {
         this.emailFrom = emailFrom;
     }
     public Integer getUrl() {
@@ -65,5 +66,10 @@ public class PacketModel {
     public void setOptions(Integer options) {
         this.options = options;
     }
-
+    public Integer getFunctionCode() {
+		return functionCode;
+	}
+	public void setFunctionCode(Integer functionCode) {
+		this.functionCode = functionCode;
+	}
 }
