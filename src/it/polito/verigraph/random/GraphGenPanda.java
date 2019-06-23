@@ -1,5 +1,7 @@
 package it.polito.verigraph.random;
 
+import static org.junit.Assert.assertArrayEquals;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
@@ -16,7 +18,7 @@ import it.polito.verigraph.model.Neighbour;
 import it.polito.verigraph.model.Node;
 import it.polito.verigraph.random.PolicyGen.PolicyType;
 
-public class GraphGen extends Graph {
+public class GraphGenPanda extends Graph {
 
     private HashMap<String,PolicyGen> policies;
 
@@ -26,7 +28,7 @@ public class GraphGen extends Graph {
 
     private FunctionalTypes clientTypes[]={FunctionalTypes.ENDHOST};
     private FunctionalTypes serverTypes[]={FunctionalTypes.MAILSERVER,FunctionalTypes.WEBSERVER};
-    private FunctionalTypes middleTypes[]={FunctionalTypes.ANTISPAM,FunctionalTypes.CACHE,FunctionalTypes.DPI, FunctionalTypes.FIELDMODIFIER, FunctionalTypes.FIREWALL,FunctionalTypes.NAT};
+    private FunctionalTypes middleTypes[]={FunctionalTypes.FIELDMODIFIER,FunctionalTypes.FIREWALL,FunctionalTypes.DPI, FunctionalTypes.DPI, FunctionalTypes.FIREWALL,FunctionalTypes.FIELDMODIFIER};
 
     private PolicyGen.PolicyType types[]={PolicyType.REACHABILITY, PolicyType.ISOLATION,PolicyType.TRAVERSAL};
 
@@ -38,7 +40,7 @@ public class GraphGen extends Graph {
         count=0;
     }
 
-    public GraphGen(Random random, long seed) {
+    public GraphGenPanda(Random random, long seed) {
         super(count);
         count++;
         // create policies hash map
@@ -49,11 +51,9 @@ public class GraphGen extends Graph {
         middleNodes = createNodeSubset(middleTypes, random, 20);
         // create links
         createLinks(random);
-        // create policies for this nffg
-        createPolicies(random);
     }
     
-    public GraphGen(Random random, int maxClient, int maxServer, int maxMiddlebox, FunctionalTypes type, boolean isChain) {
+    public GraphGenPanda(Random random, int maxClient, int maxServer, int maxMiddlebox, FunctionalTypes type, boolean isChain) {
         super(count);
         count++;
         // create policies hash map
@@ -70,11 +70,9 @@ public class GraphGen extends Graph {
         // create nodes
         clientNodes = createNodeSubset(clientTypes, random, maxClient);
         serverNodes = createNodeSubset(serverTypes, random, maxServer);
-        middleNodes = createNodeSubset(middleTypes, random, maxMiddlebox);
+        middleNodes = createNodeSubset(middleTypes, random, 6);
         // create links
         createLinks(random);
-        // create policies for this nffg
-        createPolicies(random);
     }
 
     /**
@@ -88,13 +86,9 @@ public class GraphGen extends Graph {
      */
     private Node[] createNodeSubset(FunctionalTypes types[], Random random, int maxNum) {
 
-        if (types == null || types.length == 0)
-            return new Node[0];
 
-        int numNodes = random.nextInt(maxNum); // at least 1 node
-        if(numNodes==0) numNodes +=1;
-        else if((numNodes%2)==0)
-            numNodes +=2;
+        int numNodes = maxNum; // at least 1 node
+      
         //if in chain mode, use max number of nodes
         if(isChain)numNodes=maxNum;
         int existingnode = nodes.size();
@@ -102,41 +96,26 @@ public class GraphGen extends Graph {
 
         for (int i=0; i<numNodes; i++) {
             // create and store single node
-            FunctionalTypes type;
-            if(types.length==1 || numNodes == 1)
+            FunctionalTypes type = null;
+            
+            if(types.length==6)
+            	type = middleTypes[i];
+            else if(types.length==1 || numNodes == 1)
                 type= types[0];
-            else type = chooseType(types,random);
+            
             String name =(type.toString().replace("_", ""))+i;
 
             Configuration conf = createConfiguration(name,type.toString(), random.nextBoolean()); //TODO
             nodeSubset.add(i, new Node(existingnode+i,name,type.toString().toLowerCase(), conf)); //No configuration yet
             nodes.put(nodeSubset.get(i).getId(), nodeSubset.get(i));
 
-            if(type == FunctionalTypes.VPNACCESS){
-                i++;
-                name = (FunctionalTypes.VPNEXIT.toString().replace("_", ""))+i;
-                conf= createConfiguration(name, FunctionalTypes.VPNEXIT.toString(), true);
-                nodeSubset.add(i, new Node(i,name,FunctionalTypes.VPNEXIT.toString().toLowerCase(), conf));
-                nodes.put(nodeSubset.get(i).getId(), nodeSubset.get(i));
-                //numNodes -=1;
-            } else if (type == FunctionalTypes.VPNEXIT) {
-                i++;
-                name = (FunctionalTypes.VPNACCESS.toString().replace("_", ""))+i;
-                conf= createConfiguration(name, FunctionalTypes.VPNACCESS.toString(), true);
-                nodeSubset.add(i,new Node(i,name,FunctionalTypes.VPNACCESS.toString().toLowerCase(), conf));
-                nodes.put(nodeSubset.get(i).getId(), nodeSubset.get(i));
-                numNodes-=1;
-            }
+           
 
         }
         Node[] nodes = new Node[nodeSubset.size()];
         return nodeSubset.toArray(nodes);
     }
 
-    private FunctionalTypes chooseType(FunctionalTypes[] array, Random random) {
-        // choose node type randomly
-        return array[random.nextInt(array.length)];
-    }
 
     private Configuration createConfiguration (String nodename, String functype, boolean nextBoolean) { //TODO complete configurations
 
@@ -182,20 +161,13 @@ public class GraphGen extends Graph {
             conf = new Configuration(nodename, "DPI configuration", conf_array);
             break;
         case "FIELDMODIFIER":
-            if(!nextBoolean){
-                //conf_node.put("url", "www.facebook.com");
-                conf_node.put("body", "weapon");
-                conf_node.put("email_from", "spam@polito.it");
-                conf_array.add(conf_node);
-            }
             conf = new Configuration(nodename, "FieldModifier configuration", conf_array);
             break;
         case "FIREWALL":
             if(!nextBoolean){
                 //DROPS ANY PACKET
                 for(Node client : clientNodes){
-                    for(Node server : serverNodes)
-                        conf_node.put(client.getName(), server.getName());
+                    //for(Node server : serverNodes)                      conf_node.put(client.getName(), server.getName());
                 }
                 conf_array.add(conf_node);
             }
@@ -331,30 +303,7 @@ public class GraphGen extends Graph {
         return ;
     }
 
-    private void createPolicies(Random random) {
-        PolicyGen policy;
-
-        // create policies with client as source
-        for (int i=0; i<clientNodes.length; i++) {
-            // create vector of possible destinations
-            Vector<Node> possibleDestinations = new Vector<Node>(Arrays.asList(serverNodes));
-            // choose number of destinations
-            int m = random.nextInt(serverNodes.length)+1;
-            // for each destination to be used
-            for (int j=0; j<m; j++) {
-                // choose index of destination to be selected
-                int serverIndex = random.nextInt(possibleDestinations.size());
-                // TODO choose type of policy
-                // create reachability policy
-                PolicyType type = types[random.nextInt(types.length)];
-                policy = new PolicyGen(this, random, clientNodes[i], serverNodes[serverIndex],type);
-                // add created policy to Hashmap
-                policies.put(policy.getName(), policy);
-                // remove selected destination from Vector
-                possibleDestinations.remove(serverIndex);
-            } // for each destination
-        } // for each client
-    }
+  
 
     public HashMap<String, PolicyGen> getPolicies() {
         return policies;

@@ -98,6 +98,59 @@ public class Scenario {
         }
     }
 
+    
+    @SuppressWarnings("unchecked")
+    public void createScenarioPanda() {
+        List<Node> nodes=new ArrayList<Node>();
+
+        //nodes list creation
+        for(String s : path){
+            Node n=graph.searchNodeByName(s);
+            if(n==null){
+                vlogger.logger.info("The node "+n.getName()+" is not present in the graph");
+                //System.out.println("The node "+n.getName()+" is not present in the graph");
+            }
+            else{
+                nodes.add(n);
+            }
+        }
+
+        //for each node a map is created in order to insert the map in chn
+        for(int i=0; i<nodes.size(); i++){
+            String name=nodes.get(i).getName();
+            //vlogger.logger.info("Nodes in the network: " + name);  //TO BE REMOVED
+            nodes_names.add(name);
+            String type=nodes.get(i).getFunctional_type().toLowerCase();
+            nodes_types.add(type);
+            nodes_addresses.add("ip_"+name);
+            JsonNode configuration=nodes.get(i).getConfiguration().getConfiguration();
+            //fill chn
+            Map<String, String> nodo=new HashMap<String, String>();
+            nodo.put("address", "ip_" + name);
+            nodo.put("functional_type", type);
+            chn.put(name, nodo);
+            //fill routing
+            Map<String, String> route=new HashMap<String, String>();
+            for(int k=i-1; ; k--){
+                if(k==-1)
+                    break;
+                else{
+                    String ip_dest="ip_"+nodes.get(k).getName();
+                    String next_hop=nodes.get(i-1).getName();
+                    route.put(ip_dest, next_hop);
+                }
+            }
+            for(int j=i+1; j<nodes.size(); j++){
+                String ip_dest="ip_"+nodes.get(j).getName();
+                String next_hop=nodes.get(i+1).getName();
+                route.put(ip_dest, next_hop);
+            }
+            routing.put(name, route);
+            //fill configuration
+            setConfiguration(name, type, configuration, config_obj, config_array);
+        }
+    }
+    
     @SuppressWarnings("unchecked")
     private void setConfiguration(String name, String type, JsonNode configuration,
             Map<String, Map<String, String>> config_obj2, Map<String, List<String>> config_array2) {
